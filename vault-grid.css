@@ -1,0 +1,501 @@
+/* ============================================
+   VAULT GRID CONFIGURATOR
+   Slide-out panel + layout presets
+   ============================================ */
+
+/* --- Backdrop --- */
+.vg-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.vg-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --- Slide-out Panel --- */
+.vg-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 340px;
+  height: 100vh;
+  background: var(--bg2);
+  border-left: 1px solid var(--bd);
+  z-index: 910;
+  transform: translateX(100%);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.vg-panel.open {
+  transform: translateX(0);
+}
+
+/* Panel header */
+.vg-panel-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+}
+.vg-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  color: var(--tx);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vg-panel-title svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ac);
+}
+.vg-panel-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--tx3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all .15s;
+}
+.vg-panel-close:hover {
+  background: var(--bg3);
+  color: var(--tx);
+}
+
+/* Panel body scrollable */
+.vg-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 18px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg3) transparent;
+}
+.vg-panel-body::-webkit-scrollbar { width: 4px; }
+.vg-panel-body::-webkit-scrollbar-track { background: transparent; }
+.vg-panel-body::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+
+/* --- Section titles inside panel --- */
+.vg-section {
+  margin-bottom: 18px;
+}
+.vg-section-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--tx3);
+  margin-bottom: 10px;
+}
+
+/* === PRESETS === */
+.vg-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.vg-preset {
+  background: var(--bg);
+  border: 1.5px solid var(--bd);
+  border-radius: 8px;
+  padding: 8px 6px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+}
+.vg-preset:hover {
+  border-color: var(--tx3);
+}
+.vg-preset.active {
+  border-color: var(--ac);
+  background: var(--acbg);
+}
+.vg-preset-label {
+  font-size: 9px;
+  color: var(--tx2);
+  margin-top: 5px;
+  font-weight: 500;
+}
+.vg-preset.active .vg-preset-label {
+  color: var(--actx);
+}
+
+/* CSS-drawn thumbnails */
+.vg-thumb {
+  width: 100%;
+  aspect-ratio: 1.3;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 4px;
+  background: var(--bg2);
+}
+.vg-thumb-row {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--bg3);
+  min-height: 0;
+}
+.vg-thumb-cols {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  min-height: 0;
+}
+.vg-thumb-col {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--bg3);
+}
+.vg-preset.active .vg-thumb { background: color-mix(in srgb, var(--ac) 10%, var(--bg2)); }
+.vg-preset.active .vg-thumb-row,
+.vg-preset.active .vg-thumb-col { background: color-mix(in srgb, var(--ac) 25%, var(--bg3)); }
+
+/* --- WIDGET TOGGLES --- */
+.vg-widget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--bd);
+}
+.vg-widget-row:last-child {
+  border-bottom: none;
+}
+.vg-widget-name {
+  font-size: 11px;
+  color: var(--tx);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vg-widget-name svg {
+  width: 12px;
+  height: 12px;
+  color: var(--tx3);
+}
+
+/* Toggle switch */
+.vg-toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.vg-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.vg-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--bg3);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.vg-toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--tx3);
+  top: 2px;
+  left: 2px;
+  transition: all .2s;
+}
+.vg-toggle input:checked + .vg-toggle-track {
+  background: var(--ac);
+}
+.vg-toggle input:checked + .vg-toggle-track::after {
+  background: #fff;
+  transform: translateX(16px);
+}
+
+/* --- REORDER ROWS --- */
+.vg-order-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  cursor: grab;
+  transition: all .2s;
+}
+.vg-order-row:active { cursor: grabbing; }
+.vg-order-row.dragging {
+  opacity: .5;
+  border-color: var(--ac);
+  background: var(--acbg);
+}
+.vg-order-row.drag-over {
+  border-color: var(--ac);
+  transform: scale(1.02);
+}
+.vg-grip {
+  color: var(--tx3);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.vg-grip svg {
+  width: 12px;
+  height: 12px;
+}
+.vg-order-name {
+  flex: 1;
+  font-size: 11px;
+  color: var(--tx);
+}
+.vg-order-arrows {
+  display: flex;
+  gap: 2px;
+}
+.vg-arrow-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--bd);
+  background: transparent;
+  color: var(--tx3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all .15s;
+  padding: 0;
+}
+.vg-arrow-btn:hover {
+  border-color: var(--ac);
+  color: var(--actx);
+  background: var(--acbg);
+}
+.vg-arrow-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+.vg-arrow-btn:disabled:hover {
+  border-color: var(--bd);
+  color: var(--tx3);
+  background: transparent;
+}
+.vg-arrow-btn svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* --- SIDEBAR POSITION SELECTOR --- */
+.vg-sidebar-opts {
+  display: flex;
+  gap: 4px;
+}
+.vg-sidebar-opt {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 6px;
+  border: 1.5px solid var(--bd);
+  background: var(--bg);
+  color: var(--tx2);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+}
+.vg-sidebar-opt:hover {
+  border-color: var(--tx3);
+}
+.vg-sidebar-opt.active {
+  border-color: var(--ac);
+  background: var(--acbg);
+  color: var(--actx);
+}
+
+/* ============================================
+   LAYOUT CLASSES on #vg-content (.right)
+   ============================================ */
+
+/* Smooth transitions for layout changes */
+#vg-content .sec {
+  transition: opacity .35s ease, max-height .4s ease, margin .3s ease, transform .3s ease;
+}
+
+/* --- Stack (default) --- */
+.vg-layout-stack .sec {
+  /* Normal flow, single column — already the default */
+}
+
+/* --- Two Column --- */
+.vg-layout-two-col {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: start;
+  align-content: start;
+}
+.vg-layout-two-col .sec {
+  margin-bottom: 0;
+}
+
+/* --- Dashboard (hero + 2-col) --- */
+.vg-layout-dashboard {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: start;
+  align-content: start;
+}
+.vg-layout-dashboard .sec:first-child {
+  grid-column: 1 / -1;
+}
+.vg-layout-dashboard .sec {
+  margin-bottom: 0;
+}
+
+/* --- Focus (hero + horizontal strip) --- */
+.vg-layout-focus {
+  display: flex !important;
+  flex-direction: column;
+  gap: 12px;
+}
+.vg-layout-focus .sec:first-child {
+  flex-shrink: 0;
+}
+.vg-layout-focus .vg-focus-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg3) transparent;
+}
+.vg-layout-focus .vg-focus-row::-webkit-scrollbar { height: 4px; }
+.vg-layout-focus .vg-focus-row::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+.vg-layout-focus .vg-focus-row .sec {
+  flex: 0 0 320px;
+  min-width: 280px;
+  margin-bottom: 0;
+  max-height: 350px;
+  overflow: hidden;
+}
+
+/* --- Compact (3-col, capped height) --- */
+.vg-layout-compact {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-items: start;
+  align-content: start;
+}
+.vg-layout-compact .sec {
+  margin-bottom: 0;
+  max-height: 340px;
+  overflow: hidden;
+  position: relative;
+}
+.vg-layout-compact .sec::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(transparent, var(--bg));
+  pointer-events: none;
+  border-radius: 0 0 10px 10px;
+}
+
+/* --- Widget hidden state --- */
+.sec.vg-hidden {
+  opacity: 0;
+  max-height: 0 !important;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  pointer-events: none;
+  transition: opacity .25s ease, max-height .35s ease, margin .3s ease, padding .3s ease;
+}
+
+/* ============================================
+   SIDEBAR VARIANTS on .layout (#vg-layout)
+   ============================================ */
+
+#vg-layout {
+  transition: none;
+}
+#vg-layout .left {
+  transition: width .35s ease, min-width .35s ease, opacity .25s ease, padding .35s ease, border .25s ease;
+}
+
+/* Right sidebar */
+#vg-layout.vg-sidebar-right {
+  flex-direction: row-reverse;
+}
+#vg-layout.vg-sidebar-right .left {
+  border-right: none;
+  border-left: 1px solid var(--bd);
+}
+
+/* Hidden sidebar */
+#vg-layout.vg-sidebar-hidden .left {
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  border: none;
+  pointer-events: none;
+}
+
+/* ============================================
+   MOBILE
+   ============================================ */
+@media (max-width: 700px) {
+  .vg-panel {
+    width: 100%;
+  }
+  .vg-layout-two-col,
+  .vg-layout-dashboard,
+  .vg-layout-compact {
+    grid-template-columns: 1fr !important;
+  }
+  .vg-layout-dashboard .sec:first-child {
+    grid-column: 1;
+  }
+  .vg-layout-focus .vg-focus-row {
+    flex-direction: column;
+  }
+  .vg-layout-focus .vg-focus-row .sec {
+    flex: none;
+    min-width: 0;
+    max-height: none;
+  }
+}

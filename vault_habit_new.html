@@ -1,0 +1,439 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#191816;--bg2:#222120;--bg3:#2c2b28;--bg4:#353431;--tx:#e4e2dc;--tx2:#a8a69f;--tx3:#6e6d68;--bd:#333230;--ac:#1D9E75;--acbg:rgba(29,158,117,.15);--actx:#5DCAA5;--dn:#E24B4A;--dnbg:rgba(226,75,74,.15);--dntx:#F09595;--wn:#EF9F27;--wnbg:rgba(239,159,39,.15);--wntx:#FAC775;--inf:#378ADD;--infbg:rgba(55,138,221,.15);--inftx:#85B7EB;--pu:#7F77DD;--pubg:rgba(127,119,221,.15);--putx:#AFA9EC;--done:rgba(29,158,117,.18);--donetx:#5DCAA5;--card:#1f1e1c;--cardb:#2a2926}
+html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.45;height:100%;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2);text-decoration:none}
+.topbar-user:hover{background:var(--bg3)}
+.topbar-av{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px}
+.topbar-cog{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.topbar-cog:hover{background:var(--bg3);color:var(--tx)}
+.topbar-cog svg{width:16px;height:16px}
+.layout{display:flex;height:calc(100vh - 49px);overflow:hidden}
+.left{width:12vw;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.left::-webkit-scrollbar{width:4px}
+.left::-webkit-scrollbar-track{background:transparent}
+.left::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.left::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+.right{flex:1;padding:16px 20px;overflow-y:auto;min-width:0;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.right::-webkit-scrollbar{width:4px}
+.right::-webkit-scrollbar-track{background:transparent}
+.right::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.right::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+
+.lblock{margin-bottom:14px}
+.lblock-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.lblock-title svg{width:11px;height:11px}
+.lnav-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--tx2);cursor:pointer;text-decoration:none}
+.lnav-item:hover{color:var(--tx)}
+.lnav-item svg{width:11px;height:11px;flex-shrink:0;opacity:.5}
+
+/* Page header */
+.page-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.page-hdr h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.back-link{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx3);text-decoration:none;padding:4px 8px;border-radius:5px;transition:all .2s}
+.back-link:hover{color:var(--tx);background:var(--bg3)}
+.back-link svg{width:14px;height:14px}
+
+/* 2-column: form + preview */
+.form-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.form-card{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:20px 24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--tx);font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+.form-input:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acbg)}
+.form-input::placeholder{color:var(--tx3)}
+.form-select{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--tx);font-family:inherit;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6d68' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border-color .2s,box-shadow .2s}
+.form-select:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acbg)}
+.form-select option{background:var(--bg2);color:var(--tx)}
+
+/* Type selector cards */
+.type-selector{display:flex;gap:10px}
+.type-card{flex:1;background:var(--bg3);border:2px solid var(--bd);border-radius:9px;padding:14px;cursor:pointer;text-align:center;transition:all .2s}
+.type-card:hover{border-color:var(--tx3)}
+.type-card.selected{border-color:var(--ac);background:var(--acbg)}
+.type-card svg{width:28px;height:28px;margin-bottom:6px;color:var(--tx3)}
+.type-card.selected svg{color:var(--actx)}
+.type-card-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.type-card.selected .type-card-title{color:var(--actx)}
+.type-card-desc{font-size:10px;color:var(--tx3)}
+
+/* Color swatches */
+.color-swatches{display:flex;gap:8px;flex-wrap:wrap}
+.color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.selected{border-color:var(--tx);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tx)}
+
+/* Quantitative fields (conditional) */
+.quant-fields{display:none;border-top:1px solid var(--bd);padding-top:16px;margin-top:16px}
+.quant-fields.visible{display:block}
+.quant-row{display:flex;gap:12px}
+.quant-row .form-group{flex:1}
+
+/* Buttons */
+.form-actions{display:flex;gap:10px;margin-top:20px}
+.btn-primary{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{background:transparent;color:var(--tx2);border:1px solid var(--bd);border-radius:7px;padding:9px 20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center}
+.btn-secondary:hover{color:var(--tx);border-color:var(--tx3)}
+
+/* Validation */
+.form-input.error,.form-select.error{border-color:var(--dn)}
+.form-error{font-size:10px;color:var(--dntx);margin-top:3px;display:none}
+.form-error.visible{display:block}
+
+/* ── Preview panel (right column) ── */
+.preview-panel{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:20px 24px;position:sticky;top:0}
+.preview-title{font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.preview-card{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:14px 16px}
+.preview-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-name{font-size:15px;font-weight:600}
+.preview-badge{font-size:8px;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.preview-badge.bool{background:var(--acbg);color:var(--actx)}
+.preview-badge.quant{background:var(--infbg);color:var(--inftx)}
+.preview-freq{font-size:10px;color:var(--tx3);margin-bottom:8px}
+.preview-stepper{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.preview-stepper-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bd);background:transparent;color:var(--tx3);font-size:14px;display:flex;align-items:center;justify-content:center}
+.preview-stepper-val{font-size:11px;color:var(--tx);min-width:70px;text-align:center}
+.preview-pbar{height:5px;background:var(--bg3);border-radius:3px;margin-top:8px;overflow:hidden}
+.preview-pbar-fill{height:100%;border-radius:3px;width:65%;transition:background .2s}
+.preview-stats{font-size:9px;color:var(--tx3);margin-top:4px}
+.preview-check{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.preview-checkbox{width:22px;height:22px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center}
+.preview-checkbox.done{background:var(--ac);border-color:var(--ac)}
+.preview-checkbox svg{width:12px;height:12px}
+.preview-check-label{font-size:11px;color:var(--tx2)}
+
+/* GitHub-style heatmap preview */
+.preview-heatmap{margin-top:10px}
+.preview-hm-label{font-size:8px;color:var(--tx3);margin-bottom:4px}
+.phm-grid{display:flex;gap:2px}
+.phm-col{display:flex;flex-direction:column;gap:2px}
+.phm-cell{width:11px;height:11px;border-radius:2px;background:var(--bg3)}
+.phm-cell.on{background:var(--preview-color,var(--ac))}
+.phm-cell.i1{background:color-mix(in srgb,var(--preview-color,var(--ac)) 20%,var(--bg3))}
+.phm-cell.i2{background:color-mix(in srgb,var(--preview-color,var(--ac)) 45%,var(--bg3))}
+.phm-cell.i3{background:color-mix(in srgb,var(--preview-color,var(--ac)) 70%,var(--bg3))}
+.phm-cell.i4{background:var(--preview-color,var(--ac))}
+
+/* Summary stats in preview */
+.preview-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
+.psum-item{text-align:center}
+.psum-val{font-size:18px;font-weight:700}
+.psum-label{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px}
+
+/* Tips section */
+.preview-tips{margin-top:16px;padding-top:14px;border-top:1px solid var(--bd)}
+.preview-tips-title{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.tip-item{font-size:11px;color:var(--tx3);padding:3px 0;display:flex;align-items:flex-start;gap:6px}
+.tip-item::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--tx3);flex-shrink:0;margin-top:5px}
+
+@media(max-width:900px){.form-layout{grid-template-columns:1fr}.preview-panel{position:static}}
+@media(max-width:700px){.layout{flex-direction:column}.left{width:100%;border-right:none;border-bottom:1px solid var(--bd);max-height:160px}.type-selector{flex-direction:column}.quant-row{flex-direction:column}}
+</style>
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user"><div class="topbar-av">J</div>José</div>
+<button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Manage habits</a>
+<div class="lnav-item" style="color:var(--actx)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New habit</div>
+</div>
+</div>
+
+<div class="right">
+<div class="page-hdr">
+<a href="vault_habits.html" class="back-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Back</a>
+<h1>New Habit</h1>
+</div>
+
+<div class="form-layout">
+<!-- LEFT: Form -->
+<div class="form-card">
+<div class="form-group">
+<label for="habit-name">Habit name</label>
+<input type="text" id="habit-name" class="form-input" placeholder="e.g., Drink water, Read 30 minutes, Workout...">
+<div class="form-error" id="name-error">Please enter a habit name</div>
+</div>
+
+<div class="form-group">
+<label>Habit type</label>
+<div class="type-selector">
+<div class="type-card selected" data-type="boolean">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+<div class="type-card-title">Yes / No</div>
+<div class="type-card-desc">Simple completion tracking. Did you do it today?</div>
+</div>
+<div class="type-card" data-type="quantitative">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>
+<div class="type-card-title">Track amount</div>
+<div class="type-card-desc">Measure progress toward a daily goal with +/- stepper.</div>
+</div>
+</div>
+</div>
+
+<div class="form-group">
+<label for="habit-freq">Frequency</label>
+<select id="habit-freq" class="form-select">
+<option value="Daily">Daily</option>
+<option value="Weekly: 7x">Weekly: 7x</option>
+<option value="Weekly: 5x">Weekly: 5x</option>
+<option value="Weekly: 4x">Weekly: 4x</option>
+<option value="Weekly: 3x">Weekly: 3x</option>
+<option value="Custom">Custom</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Color</label>
+<div class="color-swatches">
+<div class="color-swatch selected" data-color="#1D9E75" style="background:#1D9E75"></div>
+<div class="color-swatch" data-color="#378ADD" style="background:#378ADD"></div>
+<div class="color-swatch" data-color="#EF9F27" style="background:#EF9F27"></div>
+<div class="color-swatch" data-color="#7F77DD" style="background:#7F77DD"></div>
+<div class="color-swatch" data-color="#E24B4A" style="background:#E24B4A"></div>
+<div class="color-swatch" data-color="#E891B9" style="background:#E891B9"></div>
+<div class="color-swatch" data-color="#5BC0BE" style="background:#5BC0BE"></div>
+<div class="color-swatch" data-color="#C4A35A" style="background:#C4A35A"></div>
+</div>
+</div>
+
+<div class="quant-fields" id="quant-fields">
+<div class="form-group">
+<label for="habit-uom">Unit of measure</label>
+<input type="text" id="habit-uom" class="form-input" placeholder="e.g., ml, hours, pages, km, reps...">
+</div>
+<div class="quant-row">
+<div class="form-group">
+<label for="habit-goal">Daily goal</label>
+<input type="number" id="habit-goal" class="form-input" placeholder="e.g., 2000" min="1" step="any">
+</div>
+<div class="form-group">
+<label for="habit-increment">Default increment</label>
+<input type="number" id="habit-increment" class="form-input" placeholder="e.g., 250" min="0.1" step="any">
+</div>
+</div>
+</div>
+
+<div class="form-actions">
+<a href="vault_habits.html" class="btn-secondary">Cancel</a>
+<button type="button" class="btn-primary" id="create-btn">Create Habit</button>
+</div>
+</div>
+
+<!-- RIGHT: Live preview -->
+<div class="preview-panel">
+<div class="preview-title">Live preview</div>
+
+<div class="preview-card" id="preview-card">
+<div class="preview-top">
+<div class="preview-dot" id="preview-dot" style="background:#1D9E75"></div>
+<div class="preview-name" id="preview-name">Habit name</div>
+<span class="preview-badge bool" id="preview-badge">Boolean</span>
+</div>
+<div class="preview-freq" id="preview-freq">Daily</div>
+
+<!-- Boolean check -->
+<div id="preview-bool-section">
+<div class="preview-check">
+<div class="preview-checkbox done"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+<div class="preview-check-label">Completed today</div>
+</div>
+</div>
+
+<!-- Quantitative stepper -->
+<div id="preview-quant-section" style="display:none">
+<div class="preview-stepper">
+<div class="preview-stepper-btn">−</div>
+<div class="preview-stepper-val" id="preview-goal-text">0 / 0</div>
+<div class="preview-stepper-btn">+</div>
+</div>
+</div>
+
+<!-- Heatmap -->
+<div class="preview-heatmap">
+<div class="preview-hm-label">12-week activity</div>
+<div class="phm-grid" id="preview-heatmap"></div>
+</div>
+
+<div class="preview-pbar"><div class="preview-pbar-fill" id="preview-fill" style="background:#1D9E75"></div></div>
+<div class="preview-stats">Progress: 65% · Streak: 3 days</div>
+</div>
+
+<!-- Summary stats -->
+<div class="preview-summary">
+<div class="psum-item"><div class="psum-val" id="psum-streak" style="color:var(--actx)">3</div><div class="psum-label">Day streak</div></div>
+<div class="psum-item"><div class="psum-val" id="psum-rate">65%</div><div class="psum-label">Completion</div></div>
+<div class="psum-item"><div class="psum-val" id="psum-best">7</div><div class="psum-label">Best streak</div></div>
+<div class="psum-item"><div class="psum-val" id="psum-total">54</div><div class="psum-label">Total days</div></div>
+</div>
+
+<!-- Tips -->
+<div class="preview-tips">
+<div class="preview-tips-title">Tips</div>
+<div class="tip-item" id="tip-1">Start small — consistency beats intensity</div>
+<div class="tip-item" id="tip-2">Track daily to build the streak</div>
+<div class="tip-item" id="tip-3">Review your heatmap weekly to spot patterns</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var selectedType='boolean';
+var selectedColor='#1D9E75';
+
+/* Type card selection */
+document.querySelectorAll('.type-card').forEach(function(card){
+card.addEventListener('click',function(){
+document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('selected')});
+card.classList.add('selected');
+selectedType=card.getAttribute('data-type');
+document.getElementById('quant-fields').classList.toggle('visible',selectedType==='quantitative');
+updatePreview();
+});
+});
+
+/* Color swatch selection */
+document.querySelectorAll('.color-swatch').forEach(function(swatch){
+swatch.addEventListener('click',function(){
+document.querySelectorAll('.color-swatch').forEach(function(s){s.classList.remove('selected')});
+swatch.classList.add('selected');
+selectedColor=swatch.getAttribute('data-color');
+updatePreview();
+});
+});
+
+/* Seeded random for consistent heatmap */
+function seededRand(seed){return function(){seed=(seed*16807+0)%2147483647;return(seed-1)/2147483646}}
+
+function updatePreview(){
+var name=document.getElementById('habit-name').value||'Habit name';
+var freq=document.getElementById('habit-freq').value;
+var uom=document.getElementById('habit-uom').value||'units';
+var goal=parseFloat(document.getElementById('habit-goal').value)||0;
+
+document.getElementById('preview-name').textContent=name;
+document.getElementById('preview-freq').textContent=freq;
+document.getElementById('preview-dot').style.background=selectedColor;
+document.getElementById('preview-fill').style.background=selectedColor;
+document.getElementById('psum-streak').style.color=selectedColor;
+
+var badge=document.getElementById('preview-badge');
+var boolSec=document.getElementById('preview-bool-section');
+var quantSec=document.getElementById('preview-quant-section');
+
+if(selectedType==='quantitative'){
+badge.className='preview-badge quant';
+badge.textContent='Quantitative';
+boolSec.style.display='none';
+quantSec.style.display='block';
+document.getElementById('preview-goal-text').textContent='0 / '+(goal||'?')+' '+uom;
+document.getElementById('tip-1').textContent='Set a realistic daily goal you can sustain';
+document.getElementById('tip-2').textContent='Use the stepper buttons for quick logging';
+}else{
+badge.className='preview-badge bool';
+badge.textContent='Boolean';
+boolSec.style.display='block';
+quantSec.style.display='none';
+document.getElementById('tip-1').textContent='Start small — consistency beats intensity';
+document.getElementById('tip-2').textContent='Track daily to build the streak';
+}
+
+/* Render heatmap (12 weeks x 7 days) */
+var rng=seededRand(42);
+var hm=document.getElementById('preview-heatmap');
+hm.style.setProperty('--preview-color',selectedColor);
+var html='';
+for(var w=0;w<12;w++){
+html+='<div class="phm-col">';
+for(var d=0;d<7;d++){
+var r=rng();
+if(selectedType==='boolean'){
+html+='<div class="phm-cell'+(r>0.35?' on':'')+'"></div>';
+}else{
+var cls='';
+if(r>0.85)cls=' i4';
+else if(r>0.6)cls=' i3';
+else if(r>0.35)cls=' i2';
+else if(r>0.15)cls=' i1';
+html+='<div class="phm-cell'+cls+'"></div>';
+}
+}
+html+='</div>';
+}
+hm.innerHTML=html;
+}
+
+document.getElementById('habit-name').addEventListener('input',updatePreview);
+document.getElementById('habit-freq').addEventListener('change',updatePreview);
+document.getElementById('habit-uom').addEventListener('input',updatePreview);
+document.getElementById('habit-goal').addEventListener('input',updatePreview);
+document.getElementById('habit-increment').addEventListener('input',updatePreview);
+
+updatePreview();
+
+/* Form validation & submit */
+document.getElementById('create-btn').addEventListener('click',function(){
+var nameInput=document.getElementById('habit-name');
+var nameError=document.getElementById('name-error');
+var name=nameInput.value.trim();
+
+if(!name){
+nameInput.classList.add('error');
+nameError.classList.add('visible');
+nameInput.focus();
+return;
+}
+nameInput.classList.remove('error');
+nameError.classList.remove('visible');
+
+if(selectedType==='quantitative'){
+var uom=document.getElementById('habit-uom').value.trim();
+var goal=parseFloat(document.getElementById('habit-goal').value);
+var increment=parseFloat(document.getElementById('habit-increment').value);
+if(!uom||!goal||goal<=0||!increment||increment<=0){
+alert('Please fill in all quantitative fields (unit, goal, and increment).');
+return;
+}
+}
+
+var habit={
+name:name,
+color:selectedColor,
+freq:document.getElementById('habit-freq').value,
+type:selectedType
+};
+if(selectedType==='quantitative'){
+habit.uom=document.getElementById('habit-uom').value.trim();
+habit.goal=parseFloat(document.getElementById('habit-goal').value);
+habit.increment=parseFloat(document.getElementById('habit-increment').value);
+}
+
+alert('Habit "'+habit.name+'" created!\n\nType: '+habit.type+'\nFrequency: '+habit.freq+(habit.type==='quantitative'?'\nGoal: '+habit.goal+habit.uom+'\nIncrement: '+habit.increment+habit.uom:''));
+window.location.href='vault_habits.html';
+});
+
+document.getElementById('habit-name').addEventListener('input',function(){
+this.classList.remove('error');
+document.getElementById('name-error').classList.remove('visible');
+});
+})();
+</script>

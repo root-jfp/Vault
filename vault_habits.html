@@ -1,0 +1,630 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#191816;--bg2:#222120;--bg3:#2c2b28;--bg4:#353431;--tx:#e4e2dc;--tx2:#a8a69f;--tx3:#6e6d68;--bd:#333230;--ac:#1D9E75;--acbg:rgba(29,158,117,.15);--actx:#5DCAA5;--dn:#E24B4A;--dnbg:rgba(226,75,74,.15);--dntx:#F09595;--wn:#EF9F27;--wnbg:rgba(239,159,39,.15);--wntx:#FAC775;--inf:#378ADD;--infbg:rgba(55,138,221,.15);--inftx:#85B7EB;--pu:#7F77DD;--pubg:rgba(127,119,221,.15);--putx:#AFA9EC;--done:rgba(29,158,117,.18);--donetx:#5DCAA5;--card:#1f1e1c;--cardb:#2a2926}
+html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.45;height:100%;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2);text-decoration:none}
+.topbar-user:hover{background:var(--bg3)}
+.topbar-av{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px}
+.topbar-cog{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.topbar-cog:hover{background:var(--bg3);color:var(--tx)}
+.topbar-cog svg{width:16px;height:16px}
+.layout{display:flex;height:calc(100vh - 49px);overflow:hidden}
+.left{width:12vw;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.left::-webkit-scrollbar{width:4px}
+.left::-webkit-scrollbar-track{background:transparent}
+.left::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.left::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+.right{flex:1;padding:16px 20px;overflow-y:auto;min-width:0;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.right::-webkit-scrollbar{width:4px}
+.right::-webkit-scrollbar-track{background:transparent}
+.right::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.right::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+
+.lblock{margin-bottom:14px}
+.lblock-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.lblock-title svg{width:11px;height:11px}
+.lcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 11px;margin-bottom:6px}
+.lnav-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--tx2);cursor:pointer;text-decoration:none}
+.lnav-item:hover{color:var(--tx)}
+.lnav-item svg{width:11px;height:11px;flex-shrink:0;opacity:.5}
+.hstat{margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.hstat:last-child{border:none;margin:0;padding:0}
+.hstat-name{font-size:11px;font-weight:500;display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.hstat-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.hstat-pill{font-size:8px;padding:1px 5px;border-radius:3px;margin-left:auto}
+.hstat-row{font-size:10px;color:var(--tx3);padding:1px 0}
+.hstat-row.good{color:var(--actx)}
+
+/* Page header */
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-hdr h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.btn-primary{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:opacity .2s}
+.btn-primary:hover{opacity:.85}
+.btn-primary svg{width:14px;height:14px}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:6px;margin-bottom:14px;font-size:11px}
+.filter-tab{padding:4px 12px;border-radius:6px;color:var(--tx3);cursor:pointer;border:1px solid transparent;transition:all .2s}
+.filter-tab:hover{color:var(--tx);background:var(--bg3)}
+.filter-tab.active{background:var(--tx);color:var(--bg);font-weight:600}
+
+/* Habit card — vertical layout */
+#habit-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.habit-row{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:12px 14px;transition:border-color .2s;overflow:hidden}
+.habit-row:hover{border-color:var(--bd)}
+.habit-header{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.habit-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.habit-name{font-size:13px;font-weight:600}
+.type-badge{font-size:8px;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.type-badge.bool{background:var(--acbg);color:var(--actx)}
+.type-badge.quant{background:var(--infbg);color:var(--inftx)}
+.habit-meta{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--tx3);margin-bottom:8px}
+.habit-meta .val{color:var(--tx);font-weight:600}
+.habit-meta .streak{color:var(--actx)}
+.habit-actions{margin-left:auto;display:flex;gap:4px}
+.act-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.act-btn:hover{background:var(--bg3);color:var(--tx);border-color:var(--tx3)}
+.act-btn.delete:hover{color:var(--dntx);border-color:var(--dn);background:var(--dnbg)}
+.act-btn svg{width:13px;height:13px}
+
+/* Progress bar for quantitative */
+.qprog{margin-bottom:8px}
+.qprog-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.qprog-fill{height:100%;border-radius:3px;transition:width .3s}
+.qprog-label{font-size:9px;color:var(--tx3);margin-top:2px}
+
+/* === HEATMAP === */
+.heatmap-wrap{margin-top:2px;overflow:hidden}
+.hm-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.hm-tabs{display:flex;gap:2px;font-size:9px;background:var(--bg3);border-radius:5px;padding:2px}
+.hm-tab{padding:2px 8px;border-radius:4px;color:var(--tx3);cursor:pointer;transition:all .15s;user-select:none}
+.hm-tab:hover{color:var(--tx)}
+.hm-tab.active{background:var(--bg);color:var(--tx);font-weight:600}
+.hm-legend{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:8px;color:var(--tx3)}
+.hm-legend-cell{width:9px;height:9px;border-radius:2px}
+
+/* Yearly: GitHub-style grid (52 cols x 7 rows) */
+.hm-yearly{display:flex;gap:0;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent;padding-bottom:4px}
+.hm-yearly::-webkit-scrollbar{height:3px}
+.hm-yearly::-webkit-scrollbar-track{background:transparent}
+.hm-yearly::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+.hm-ylabels{display:flex;flex-direction:column;gap:1px;margin-right:4px;flex-shrink:0;padding-top:14px}
+.hm-ylabels .yl{font-size:7px;color:var(--tx3);height:13px;display:flex;align-items:center}
+.hm-ybody{display:flex;flex-direction:column;gap:0;min-width:0}
+.hm-months{display:flex;gap:0;margin-bottom:2px;height:12px}
+.hm-months .ml{font-size:7px;color:var(--tx3);text-align:left;white-space:nowrap}
+.hm-cols{display:flex;gap:1px}
+.hm-col{display:flex;flex-direction:column;gap:1px}
+.hm-cell{width:13px;height:13px;border-radius:2px;background:var(--bg3);position:relative;cursor:default}
+.hm-cell[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--bd);color:var(--tx);font-size:8px;padding:2px 5px;border-radius:3px;white-space:nowrap;z-index:10;pointer-events:none}
+
+/* Monthly grid: 4-5 week cols x 7 rows */
+.hm-monthly{display:flex;gap:0}
+.hm-monthly .hm-ylabels{padding-top:16px}
+.hm-monthly .hm-ybody{min-width:0}
+.hm-monthly .hm-months{margin-bottom:3px}
+.hm-monthly .hm-cell{width:18px;height:18px;border-radius:3px;font-size:8px;display:flex;align-items:center;justify-content:center;color:var(--tx3)}
+.hm-monthly .hm-cols{gap:2px}
+.hm-monthly .hm-col{gap:2px}
+.hm-monthly .hm-ylabels .yl{height:18px;font-size:8px}
+.hm-monthly .hm-cell.today-cell{outline:1.5px solid var(--actx);color:var(--tx);font-weight:700}
+
+/* Weekly: 7 large cells in a row */
+.hm-weekly{display:flex;gap:3px;align-items:stretch}
+.hm-wcell{flex:1;background:var(--bg3);border-radius:5px;padding:6px 8px;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;cursor:default}
+.hm-wcell .wday{font-size:8px;color:var(--tx3);font-weight:600;text-transform:uppercase}
+.hm-wcell .wnum{font-size:12px;font-weight:600}
+.hm-wcell .wlabel{font-size:8px;color:var(--tx3);margin-top:1px}
+.hm-wcell.today-cell{outline:1.5px solid var(--actx)}
+.hm-wcell.today-cell .wday{color:var(--actx)}
+
+/* Heatmap intensity: using the habit's own color via inline style */
+.hm-cell.l0,.hm-wcell.l0{background:var(--bg3)}
+.hm-cell.l1{background:var(--hm-c1)}
+.hm-cell.l2{background:var(--hm-c2)}
+.hm-cell.l3{background:var(--hm-c3)}
+.hm-cell.l4{background:var(--hm-c4)}
+.hm-wcell.l1{background:var(--hm-c1)}
+.hm-wcell.l2{background:var(--hm-c2)}
+.hm-wcell.l3{background:var(--hm-c3)}
+.hm-wcell.l4{background:var(--hm-c4)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--tx3)}
+.empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
+.empty-state h3{font-size:15px;color:var(--tx2);margin-bottom:6px;font-weight:600}
+.empty-state p{font-size:12px;margin-bottom:16px}
+
+@media(max-width:900px){#habit-list{grid-template-columns:1fr}}
+@media(max-width:700px){.layout{flex-direction:column}.left{width:100%;border-right:none;border-bottom:1px solid var(--bd);max-height:200px}.hm-weekly{flex-wrap:wrap}.hm-wcell{flex:0 0 calc(25% - 3px)}}
+</style>
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user"><div class="topbar-av">J</div>José</div>
+<button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Habit statistics</div>
+<div id="sidebar-stats"></div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item" style="color:var(--actx)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<a href="vault_habit_new.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New habit</a>
+</div>
+</div>
+
+<div class="right">
+<div class="page-hdr">
+<h1>Habits</h1>
+<a href="vault_habit_new.html" class="btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Habit</a>
+</div>
+
+<div class="filter-tabs">
+<span class="filter-tab active" data-filter="all">All</span>
+<span class="filter-tab" data-filter="boolean">Boolean</span>
+<span class="filter-tab" data-filter="quantitative">Quantitative</span>
+<span class="filter-tab" data-filter="archived">Archived</span>
+</div>
+
+<div id="habit-list"></div>
+<div id="empty-state" style="display:none">
+<div class="empty-state">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+<h3>No habits yet</h3>
+<p>Create your first habit to start tracking your progress!</p>
+<a href="vault_habit_new.html" class="btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create habit</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+
+/* ── reference date: 6 April 2026, Monday ── */
+var TODAY=new Date(2026,3,6);
+var MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var DAY_SHORT=['S','M','T','W','T','F','S'];
+
+/* ── seed-able pseudo-random for consistent demo data ── */
+function seededRand(seed){return function(){seed=(seed*16807+0)%2147483647;return(seed-1)/2147483646}}
+
+/* ── generate a year of sample data keyed by "YYYY-MM-DD" ── */
+function genYearData(habit,seed){
+var rng=seededRand(seed);
+var data={};
+var d=new Date(TODAY);
+d.setFullYear(d.getFullYear()-1);
+d.setDate(d.getDate()+1);
+while(d<=TODAY){
+var key=dateKey(d);
+if(habit.type==='boolean'){
+data[key]=rng()>0.35?1:0;
+}else{
+var r=rng();
+if(r<0.15)data[key]=0;
+else if(r<0.4)data[key]=Math.round(habit.goal*rng()*0.45);
+else if(r<0.7)data[key]=Math.round(habit.goal*(0.5+rng()*0.49));
+else data[key]=Math.round(habit.goal*(1+rng()*0.3));
+}
+d.setDate(d.getDate()+1);
+}
+return data;
+}
+
+function dateKey(d){
+var mm=String(d.getMonth()+1).padStart(2,'0');
+var dd=String(d.getDate()).padStart(2,'0');
+return d.getFullYear()+'-'+mm+'-'+dd;
+}
+
+/* ── habits with generated yearly data ── */
+var habitsRaw=[
+{name:'6hr deep work',color:'#1D9E75',freq:'Weekly: 7x',type:'boolean'},
+{name:'Eat healthy',color:'#378ADD',freq:'Weekly: 7x',type:'boolean'},
+{name:'Reading',color:'#EF9F27',freq:'Weekly: 7x',type:'boolean'},
+{name:'Workout',color:'#7F77DD',freq:'Weekly: 4x',type:'boolean'},
+{name:'Drink water',color:'#378ADD',freq:'Daily',type:'quantitative',uom:'ml',goal:2000,increment:250},
+{name:'Study',color:'#EF9F27',freq:'Daily',type:'quantitative',uom:'hrs',goal:6,increment:0.5}
+];
+var habits=habitsRaw.map(function(h,i){
+h.data=genYearData(h,1337+i*71);
+return h;
+});
+
+var currentFilter='all';
+var viewPerHabit={};
+
+/* ── color palette per habit (4 intensity levels) ── */
+function colorLevels(hex){
+/* return css vars for 4 intensity shades using color-mix */
+return '--hm-c1:color-mix(in srgb,'+hex+' 18%,var(--bg3));--hm-c2:color-mix(in srgb,'+hex+' 40%,var(--bg3));--hm-c3:color-mix(in srgb,'+hex+' 65%,var(--bg3));--hm-c4:'+hex;
+}
+
+/* ── compute intensity level (0-4) for a day ── */
+function level(habit,key){
+var v=habit.data[key];
+if(v===undefined||v===0)return 0;
+if(habit.type==='boolean')return v?4:0;
+var pct=v/habit.goal;
+if(pct>=1)return 4;
+if(pct>=0.65)return 3;
+if(pct>=0.35)return 2;
+return 1;
+}
+
+/* ── tooltip text for a cell ── */
+function tip(habit,key,dateObj){
+var v=habit.data[key];
+var label=DAY_NAMES[dateObj.getDay()]+', '+dateObj.getDate()+' '+MONTH_NAMES[dateObj.getMonth()]+' '+dateObj.getFullYear();
+if(habit.type==='boolean'){
+return (v?'Done':'No entry')+' — '+label;
+}else{
+var amt=v||0;
+return amt+habit.uom+' / '+habit.goal+habit.uom+' ('+Math.round(amt/habit.goal*100)+'%) — '+label;
+}
+}
+
+/* ── streak from today backwards ── */
+function getStreak(h){
+var streak=0;
+var d=new Date(TODAY);
+while(true){
+var key=dateKey(d);
+if(!(key in h.data))break;
+if(h.type==='boolean'){
+if(!h.data[key])break;
+}else{
+if((h.data[key]||0)<h.goal)break;
+}
+streak++;
+d.setDate(d.getDate()-1);
+}
+return streak;
+}
+
+/* ── completion rate last 30 days ── */
+function getRate30(h){
+var done=0,total=30;
+var d=new Date(TODAY);
+for(var i=0;i<total;i++){
+var key=dateKey(d);
+if(h.type==='boolean'){if(h.data[key])done++;}
+else{if((h.data[key]||0)>=h.goal)done++;}
+d.setDate(d.getDate()-1);
+}
+return Math.round(done/total*100);
+}
+
+/* ══════════════════════════════════════════
+   HEATMAP RENDERERS
+   ══════════════════════════════════════════ */
+
+/* ── YEARLY: 52 week columns x 7 day rows ── */
+function renderYearly(habit){
+var startDate=new Date(TODAY);
+startDate.setFullYear(startDate.getFullYear()-1);
+startDate.setDate(startDate.getDate()+1);
+/* align to Sunday */
+while(startDate.getDay()!==0)startDate.setDate(startDate.getDate()-1);
+
+/* collect weeks */
+var weeks=[];
+var cur=new Date(startDate);
+while(cur<=TODAY||weeks.length<53){
+var week=[];
+for(var r=0;r<7;r++){
+week.push(new Date(cur));
+cur.setDate(cur.getDate()+1);
+}
+weeks.push(week);
+if(cur>TODAY&&weeks.length>=52)break;
+}
+
+/* month labels */
+var monthHtml='';
+var lastMonth=-1;
+var colWidth=14;/* 13px cell + 1px gap */
+weeks.forEach(function(week,wi){
+var firstDay=week[0];
+var m=firstDay.getMonth();
+if(m!==lastMonth){
+monthHtml+='<span class="ml" style="width:'+(wi===0?0:0)+'px;position:absolute;left:'+(wi*colWidth)+'px">'+MONTH_NAMES[m]+'</span>';
+lastMonth=m;
+}
+});
+
+/* day labels */
+var ylabels='<div class="hm-ylabels">';
+DAY_SHORT.forEach(function(d,i){
+ylabels+='<div class="yl">'+(i%2===1?d:'')+'</div>';
+});
+ylabels+='</div>';
+
+/* cells */
+var colsHtml='<div class="hm-cols">';
+var oneYearAgo=new Date(TODAY);
+oneYearAgo.setFullYear(oneYearAgo.getFullYear()-1);
+weeks.forEach(function(week){
+colsHtml+='<div class="hm-col">';
+week.forEach(function(day){
+var key=dateKey(day);
+var lv=level(habit,key);
+var isToday=dateKey(day)===dateKey(TODAY);
+var inRange=day>=oneYearAgo&&day<=TODAY;
+if(!inRange){
+colsHtml+='<div class="hm-cell l0" style="opacity:.25"></div>';
+}else{
+colsHtml+='<div class="hm-cell l'+lv+'"'+(isToday?' style="outline:1.5px solid var(--actx)"':'')+' data-tip="'+tip(habit,key,day)+'"></div>';
+}
+});
+colsHtml+='</div>';
+});
+colsHtml+='</div>';
+
+return '<div class="hm-yearly">'+ylabels+'<div class="hm-ybody"><div class="hm-months" style="position:relative;width:'+(weeks.length*colWidth)+'px;height:12px">'+monthHtml+'</div>'+colsHtml+'</div></div>';
+}
+
+/* ── MONTHLY: current month grid ── */
+function renderMonthly(habit){
+var year=TODAY.getFullYear(),month=TODAY.getMonth();
+var firstDay=new Date(year,month,1);
+var lastDay=new Date(year,month+1,0);
+var startDow=firstDay.getDay();/* 0=Sun */
+
+/* build weeks */
+var weeks=[];
+var cur=new Date(firstDay);
+cur.setDate(cur.getDate()-startDow);/* back to Sunday */
+while(cur<=lastDay||weeks.length<1){
+var week=[];
+for(var r=0;r<7;r++){
+week.push(new Date(cur));
+cur.setDate(cur.getDate()+1);
+}
+weeks.push(week);
+if(cur>lastDay)break;
+}
+
+/* header labels (week numbers or just spacer) */
+var header='<div class="hm-months">';
+weeks.forEach(function(w,i){
+header+='<span class="ml" style="width:20px;text-align:center">W'+(i+1)+'</span>';
+});
+header+='</div>';
+
+/* day labels */
+var ylabels='<div class="hm-ylabels">';
+DAY_SHORT.forEach(function(d){ylabels+='<div class="yl">'+d+'</div>';});
+ylabels+='</div>';
+
+/* cells */
+var colsHtml='<div class="hm-cols">';
+weeks.forEach(function(week){
+colsHtml+='<div class="hm-col">';
+week.forEach(function(day){
+var inMonth=day.getMonth()===month;
+var key=dateKey(day);
+var lv=inMonth?level(habit,key):0;
+var isFuture=day>TODAY;
+var isToday=dateKey(day)===dateKey(TODAY);
+var cls='hm-cell l'+(isFuture?0:lv)+(isToday?' today-cell':'');
+var content=inMonth?day.getDate():'';
+var opacity=(!inMonth||isFuture)?' style="opacity:.2"':'';
+var tipAttr=inMonth&&!isFuture?' data-tip="'+tip(habit,key,day)+'"':'';
+colsHtml+='<div class="'+cls+'"'+opacity+tipAttr+'>'+content+'</div>';
+});
+colsHtml+='</div>';
+});
+colsHtml+='</div>';
+
+return '<div class="hm-monthly">'+ylabels+'<div class="hm-ybody">'+header+colsHtml+'</div></div>';
+}
+
+/* ── WEEKLY: 7 large day cells ── */
+function renderWeekly(habit){
+/* find Monday of current week */
+var monday=new Date(TODAY);
+var dow=monday.getDay();
+var diff=dow===0?-6:1-dow;
+monday.setDate(monday.getDate()+diff);
+
+var html='<div class="hm-weekly">';
+for(var i=0;i<7;i++){
+var day=new Date(monday);
+day.setDate(day.getDate()+i);
+var key=dateKey(day);
+var lv=day<=TODAY?level(habit,key):0;
+var isToday=dateKey(day)===dateKey(TODAY);
+var isFuture=day>TODAY;
+var cls='hm-wcell l'+(isFuture?0:lv)+(isToday?' today-cell':'');
+
+var valueLabel='';
+if(!isFuture){
+if(habit.type==='boolean'){
+valueLabel=habit.data[key]?'Done':'—';
+}else{
+var amt=habit.data[key]||0;
+valueLabel=amt+' / '+habit.goal+habit.uom;
+}
+}
+
+html+='<div class="'+cls+'"'+(isFuture?' style="opacity:.35"':'')+'>';
+html+='<div class="wday">'+DAY_NAMES[day.getDay()].slice(0,3)+'</div>';
+html+='<div class="wnum">'+day.getDate()+'</div>';
+html+='<div class="wlabel">'+valueLabel+'</div>';
+html+='</div>';
+}
+html+='</div>';
+return html;
+}
+
+/* ── Legend row ── */
+function legendHtml(){
+return '<div class="hm-legend"><span>Less</span><div class="hm-legend-cell l0" style="background:var(--bg3)"></div><div class="hm-legend-cell l1" style="background:var(--hm-c1)"></div><div class="hm-legend-cell l2" style="background:var(--hm-c2)"></div><div class="hm-legend-cell l3" style="background:var(--hm-c3)"></div><div class="hm-legend-cell l4" style="background:var(--hm-c4)"></div><span>More</span></div>';
+}
+
+/* ══════════════════════════════════════════
+   RENDER HABIT LIST
+   ══════════════════════════════════════════ */
+function renderList(){
+var list=document.getElementById('habit-list');
+var empty=document.getElementById('empty-state');
+var filtered=habits.filter(function(h){
+if(currentFilter==='all')return true;
+if(currentFilter==='boolean')return h.type==='boolean';
+if(currentFilter==='quantitative')return h.type==='quantitative';
+if(currentFilter==='archived')return false;
+return true;
+});
+
+if(filtered.length===0){
+list.innerHTML='';
+empty.style.display='block';
+return;
+}
+empty.style.display='none';
+
+var html='';
+filtered.forEach(function(h,i){
+var idx=habits.indexOf(h);
+var streak=getStreak(h);
+var rate=getRate30(h);
+var badgeCls=h.type==='quantitative'?'type-badge quant':'type-badge bool';
+var badgeText=h.type==='quantitative'?'Quantitative':'Boolean';
+var view=viewPerHabit[idx]||'yearly';
+var colors=colorLevels(h.color);
+
+html+='<div class="habit-row" style="'+colors+'">';
+
+/* header row */
+html+='<div class="habit-header">';
+html+='<div class="habit-dot" style="background:'+h.color+'"></div>';
+html+='<div class="habit-name">'+h.name+'</div>';
+html+='<span class="'+badgeCls+'">'+badgeText+'</span>';
+html+='<span style="font-size:10px;color:var(--tx3);margin-left:4px">'+h.freq+'</span>';
+html+='<div class="habit-actions">';
+html+='<a href="vault_habit_edit.html" class="act-btn" title="Edit" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a>';
+html+='<button class="act-btn delete" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+html+='</div>';
+html+='</div>';
+
+/* stats row */
+html+='<div class="habit-meta">';
+html+='<div>Streak: <span class="streak" style="color:'+h.color+'">'+streak+' day'+(streak!==1?'s':'')+'</span></div>';
+html+='<div>Last 30d: <span class="val">'+rate+'%</span></div>';
+if(h.type==='quantitative'){
+var todayKey=dateKey(TODAY);
+var todayAmt=h.data[todayKey]||0;
+html+='<div>Today: <span class="val">'+todayAmt+h.uom+' / '+h.goal+h.uom+'</span></div>';
+}
+html+='</div>';
+
+/* quantitative progress bar */
+if(h.type==='quantitative'){
+var todayKey=dateKey(TODAY);
+var todayAmt=h.data[todayKey]||0;
+var pct=h.goal>0?Math.min(Math.round(todayAmt/h.goal*100),100):0;
+html+='<div class="qprog"><div class="qprog-bar"><div class="qprog-fill" style="width:'+pct+'%;background:'+h.color+'"></div></div><div class="qprog-label">'+pct+'% of daily goal</div></div>';
+}
+
+/* heatmap */
+html+='<div class="heatmap-wrap">';
+html+='<div class="hm-toolbar">';
+html+='<div class="hm-tabs" data-habit-idx="'+idx+'">';
+html+='<span class="hm-tab'+(view==='weekly'?' active':'')+'" data-view="weekly">Week</span>';
+html+='<span class="hm-tab'+(view==='monthly'?' active':'')+'" data-view="monthly">Month</span>';
+html+='<span class="hm-tab'+(view==='yearly'?' active':'')+'" data-view="yearly">Year</span>';
+html+='</div>';
+html+=legendHtml();
+html+='</div>';
+
+html+='<div class="hm-container" data-habit-idx="'+idx+'">';
+if(view==='yearly')html+=renderYearly(h);
+else if(view==='monthly')html+=renderMonthly(h);
+else html+=renderWeekly(h);
+html+='</div>';
+html+='</div>';
+
+html+='</div>';/* .habit-row */
+});
+list.innerHTML=html;
+bindHeatmapTabs();
+}
+
+function bindHeatmapTabs(){
+document.querySelectorAll('.hm-tabs').forEach(function(tabGroup){
+tabGroup.querySelectorAll('.hm-tab').forEach(function(tab){
+tab.addEventListener('click',function(){
+var idx=parseInt(tabGroup.getAttribute('data-habit-idx'));
+var view=tab.getAttribute('data-view');
+viewPerHabit[idx]=view;
+/* just re-render the container for this habit */
+var container=document.querySelector('.hm-container[data-habit-idx="'+idx+'"]');
+var habit=habits[idx];
+tabGroup.querySelectorAll('.hm-tab').forEach(function(t){t.classList.remove('active')});
+tab.classList.add('active');
+if(view==='yearly')container.innerHTML=renderYearly(habit);
+else if(view==='monthly')container.innerHTML=renderMonthly(habit);
+else container.innerHTML=renderWeekly(habit);
+});
+});
+});
+}
+
+/* ── Sidebar stats ── */
+function renderSidebarStats(){
+var el=document.getElementById('sidebar-stats');
+var html='';
+habits.forEach(function(h){
+var streak=getStreak(h);
+var rate=getRate30(h);
+html+='<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:'+h.color+'"></div>'+h.name+'<span class="hstat-pill" style="background:color-mix(in srgb,'+h.color+' 15%,transparent);color:'+h.color+'">'+(h.type==='quantitative'?'qty':'bool')+'</span></div>';
+html+='<div class="hstat-row">Streak: '+streak+' day'+(streak!==1?'s':'')+'</div>';
+html+='<div class="hstat-row">30-day rate: '+rate+'%</div>';
+if(h.type==='quantitative'){
+var todayAmt=h.data[dateKey(TODAY)]||0;
+html+='<div class="hstat-row'+(todayAmt>=h.goal?' good':'')+'">Today: '+todayAmt+h.uom+' / '+h.goal+h.uom+'</div>';
+}else{
+var isDone=h.data[dateKey(TODAY)]===1;
+html+='<div class="hstat-row'+(isDone?' good':'')+'">'+(isDone?'Completed today':'Not completed today')+'</div>';
+}
+html+='</div>';
+});
+el.innerHTML=html;
+}
+
+/* ── Filter tab clicks ── */
+document.querySelectorAll('.filter-tab').forEach(function(tab){
+tab.addEventListener('click',function(){
+document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active')});
+tab.classList.add('active');
+currentFilter=tab.getAttribute('data-filter');
+renderList();
+});
+});
+
+renderList();
+renderSidebarStats();
+})();
+</script>

@@ -1,0 +1,521 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#191816;--bg2:#222120;--bg3:#2c2b28;--bg4:#353431;--tx:#e4e2dc;--tx2:#a8a69f;--tx3:#6e6d68;--bd:#333230;--ac:#1D9E75;--acbg:rgba(29,158,117,.15);--actx:#5DCAA5;--dn:#E24B4A;--dnbg:rgba(226,75,74,.15);--dntx:#F09595;--wn:#EF9F27;--wnbg:rgba(239,159,39,.15);--wntx:#FAC775;--inf:#378ADD;--infbg:rgba(55,138,221,.15);--inftx:#85B7EB;--pu:#7F77DD;--pubg:rgba(127,119,221,.15);--putx:#AFA9EC;--done:rgba(29,158,117,.18);--donetx:#5DCAA5;--card:#1f1e1c;--cardb:#2a2926}
+html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.45;height:100%;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2);text-decoration:none}
+.topbar-user:hover{background:var(--bg3)}
+.topbar-av{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px}
+.topbar-cog{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.topbar-cog:hover{background:var(--bg3);color:var(--tx)}
+.topbar-cog svg{width:16px;height:16px}
+.layout{display:flex;height:calc(100vh - 49px);overflow:hidden}
+.left{width:12vw;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.left::-webkit-scrollbar{width:4px}
+.left::-webkit-scrollbar-track{background:transparent}
+.left::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.left::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+.right{flex:1;padding:16px 20px;overflow-y:auto;min-width:0;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.right::-webkit-scrollbar{width:4px}
+.right::-webkit-scrollbar-track{background:transparent}
+.right::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.right::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+
+.lblock{margin-bottom:14px}
+.lblock-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.lblock-title svg{width:11px;height:11px}
+.lcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 11px;margin-bottom:6px}
+.qa-btn{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:var(--tx2);cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.qa-btn:hover{color:var(--tx)}
+.qa-btn svg{width:11px;height:11px;flex-shrink:0}
+.lnav-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--tx2);cursor:pointer;text-decoration:none}
+.lnav-item:hover{color:var(--tx)}
+.lnav-item.active{color:var(--actx)}
+.lnav-item svg{width:11px;height:11px;flex-shrink:0;opacity:.5}
+.lnav-item.active svg{opacity:1}
+
+/* Page header */
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-hdr h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.page-hdr-actions{display:flex;gap:8px}
+.btn-primary{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:opacity .2s}
+.btn-primary:hover{opacity:.85}
+.btn-primary svg{width:14px;height:14px}
+.btn-secondary{background:transparent;color:var(--tx2);border:1px solid var(--bd);border-radius:7px;padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:all .2s}
+.btn-secondary:hover{color:var(--tx);border-color:var(--tx3)}
+.btn-secondary svg{width:14px;height:14px}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:6px;margin-bottom:14px;font-size:11px}
+.filter-tab{padding:4px 12px;border-radius:6px;color:var(--tx3);cursor:pointer;border:1px solid transparent;transition:all .2s}
+.filter-tab:hover{color:var(--tx);background:var(--bg3)}
+.filter-tab.active{background:var(--tx);color:var(--bg);font-weight:600}
+
+/* Sidebar summary */
+.sum-row{display:flex;align-items:center;gap:6px;font-size:11px;padding:3px 0}
+.sum-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sum-val{margin-left:auto;font-weight:600}
+.compliance-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px}
+.compliance-fill{height:100%;border-radius:3px;background:var(--ac);transition:width .3s}
+
+/* Maintenance row */
+.maint-row{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:36px 1.5fr 90px 90px 110px 80px;gap:10px;align-items:center;transition:border-color .2s}
+.maint-row:hover{border-color:var(--tx3)}
+.maint-icon{font-size:22px;text-align:center}
+.maint-info{min-width:0}
+.maint-name{font-size:13px;font-weight:600;margin-bottom:1px}
+.maint-freq{font-size:10px;color:var(--tx3)}
+.maint-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 10px;border-radius:5px}
+.maint-badge.overdue{background:var(--dnbg);color:var(--dntx)}
+.maint-badge.due-soon{background:var(--wnbg);color:var(--wntx)}
+.maint-badge.ok{background:var(--acbg);color:var(--actx)}
+.maint-interval{font-size:11px;color:var(--tx3)}
+.maint-nextdue{font-size:11px;color:var(--tx2)}
+.maint-nextdue.overdue{color:var(--dntx)}
+.maint-nextdue.due-soon{color:var(--wntx)}
+.maint-actions{display:flex;gap:4px}
+.act-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.act-btn:hover{background:var(--bg3);color:var(--tx);border-color:var(--tx3)}
+.act-btn.delete:hover{color:var(--dntx);border-color:var(--dn);background:var(--dnbg)}
+.act-btn.done:hover{color:var(--actx);border-color:var(--ac);background:var(--acbg)}
+.act-btn svg{width:13px;height:13px}
+
+/* History panel */
+.history-panel{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
+.history-panel.visible{display:block}
+.history-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.history-title svg{width:14px;height:14px}
+.history-entry{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:11px}
+.history-entry:last-child{border:none}
+.history-date{color:var(--tx3);min-width:100px}
+.history-item{font-weight:500}
+.history-note{color:var(--tx3);margin-left:auto;font-size:10px}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--tx3)}
+.empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
+.empty-state h3{font-size:15px;color:var(--tx2);margin-bottom:6px;font-weight:600}
+.empty-state p{font-size:12px;margin-bottom:16px}
+
+/* Modal overlay */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.visible{display:flex}
+.modal{background:var(--card);border:1px solid var(--cardb);border-radius:12px;padding:24px;max-width:420px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+.btn-danger{background:var(--dn);color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-danger:hover{opacity:.85}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--tx);font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+.form-input:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acbg)}
+.form-input::placeholder{color:var(--tx3)}
+.form-select{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--tx);font-family:inherit;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6d68' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border-color .2s,box-shadow .2s}
+.form-select:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acbg)}
+.form-select option{background:var(--bg2);color:var(--tx)}
+.form-row{display:flex;gap:12px}
+.form-row .form-group{flex:1}
+
+/* Cog popup */
+.cog-popup{position:fixed;top:49px;right:12px;background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:8px;min-width:180px;display:none;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.cog-popup.visible{display:block}
+.cog-item{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;color:var(--tx2);cursor:pointer;border-radius:6px;transition:all .15s}
+.cog-item:hover{background:var(--bg3);color:var(--tx)}
+.cog-item svg{width:13px;height:13px;flex-shrink:0;opacity:.6}
+.cog-sep{height:1px;background:var(--bd);margin:4px 0}
+
+@media(max-width:900px){.maint-row{grid-template-columns:36px 1fr 80px 70px}}
+@media(max-width:700px){.layout{flex-direction:column}.left{width:100%;border-right:none;border-bottom:1px solid var(--bd);max-height:200px}.maint-row{grid-template-columns:36px 1fr}.maint-interval,.maint-nextdue{display:none}}
+</style>
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user" id="user-switcher"><div class="topbar-av" id="user-av">J</div><span id="user-name">Jose</span></div>
+<button class="topbar-cog" id="cog-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<!-- Cog popup -->
+<div class="cog-popup" id="cog-popup">
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Notification settings</div>
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Export history</div>
+<div class="cog-sep"></div>
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1z"/></svg>Archived items</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Summary</div>
+<div class="lcard" id="sidebar-summary"></div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Quick actions</div>
+<button class="qa-btn" id="qa-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add item</button>
+<button class="qa-btn" id="qa-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>View history</button>
+<button class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notification settings</button>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_maintenance.html" class="lnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+</div>
+</div>
+
+<div class="right">
+<div class="page-hdr">
+<h1>Maintenance</h1>
+<div class="page-hdr-actions">
+<button class="btn-secondary" id="history-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History</button>
+<button class="btn-primary" id="add-item-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Item</button>
+</div>
+</div>
+
+<!-- History panel (toggled) -->
+<div class="history-panel" id="history-panel">
+<div class="history-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Completion History</div>
+<div id="history-list"></div>
+</div>
+
+<div class="filter-tabs" id="filter-tabs"></div>
+<div id="maint-list"></div>
+<div id="empty-state" style="display:none">
+<div class="empty-state">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+<h3>No items match</h3>
+<p>Try a different filter or add a new maintenance item.</p>
+<button class="btn-primary" onclick="document.getElementById('add-modal').classList.add('visible')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add item</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Mark done modal -->
+<div class="modal-overlay" id="done-modal">
+<div class="modal">
+<h2 id="done-modal-title">Mark as done</h2>
+<p style="font-size:12px;color:var(--tx3);margin-bottom:14px">Confirm completion of this maintenance item.</p>
+<div class="form-group">
+<label for="done-notes">Notes (optional)</label>
+<input type="text" id="done-notes" class="form-input" placeholder="e.g., Replaced with Oral-B Pro...">
+</div>
+<div class="modal-actions">
+<button class="btn-secondary" onclick="document.getElementById('done-modal').classList.remove('visible')">Cancel</button>
+<button class="btn-primary" id="confirm-done-btn">Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- Delete modal -->
+<div class="modal-overlay" id="delete-modal">
+<div class="modal">
+<h2>Delete item</h2>
+<p style="font-size:12px;color:var(--tx3);margin-bottom:14px" id="delete-msg">Are you sure you want to delete this item? This action cannot be undone.</p>
+<div class="modal-actions">
+<button class="btn-secondary" onclick="document.getElementById('delete-modal').classList.remove('visible')">Cancel</button>
+<button class="btn-danger" id="confirm-delete-btn">Delete</button>
+</div>
+</div>
+</div>
+
+<!-- Add/Edit item modal -->
+<div class="modal-overlay" id="add-modal">
+<div class="modal">
+<h2 id="add-modal-title">Add Maintenance Item</h2>
+<div class="form-group">
+<label for="item-name">Item name</label>
+<input type="text" id="item-name" class="form-input" placeholder="e.g., Replace toothbrush, Water plants...">
+</div>
+<div class="form-group">
+<label for="item-icon">Icon (emoji)</label>
+<input type="text" id="item-icon" class="form-input" placeholder="e.g., 🔧, 🪥, 🌱..." maxlength="4" style="width:80px">
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="item-category">Category</label>
+<select id="item-category" class="form-select">
+<option value="Home">Home</option>
+<option value="Car">Car</option>
+<option value="Health">Health</option>
+<option value="Garden">Garden</option>
+<option value="Other">Other</option>
+</select>
+</div>
+<div class="form-group">
+<label for="item-interval">Interval (days)</label>
+<input type="number" id="item-interval" class="form-input" placeholder="e.g., 90" min="1">
+</div>
+</div>
+<div class="form-group">
+<label for="item-notes">Notes (optional)</label>
+<input type="text" id="item-notes" class="form-input" placeholder="Additional details...">
+</div>
+<div class="modal-actions">
+<button class="btn-secondary" onclick="document.getElementById('add-modal').classList.remove('visible')">Cancel</button>
+<button class="btn-primary" id="save-item-btn">Save Item</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var TODAY=new Date(2026,3,6);
+
+var items=[
+{id:1,name:'Car oil change',icon:'🚗',category:'Car',intervalDays:180,lastCompleted:'2025-08-15',notes:'Use 5W-30 synthetic'},
+{id:2,name:'Smoke detectors',icon:'🔥',category:'Home',intervalDays:180,lastCompleted:'2025-09-20',notes:'Check batteries too'},
+{id:3,name:'HVAC filter',icon:'❄️',category:'Home',intervalDays:90,lastCompleted:'2026-02-10',notes:'Size: 20x25x1'},
+{id:4,name:'Replace toothbrush',icon:'🪥',category:'Health',intervalDays:90,lastCompleted:'2026-01-25',notes:''},
+{id:5,name:'Water plants',icon:'🌱',category:'Garden',intervalDays:3,lastCompleted:'2026-04-04',notes:'Indoor + balcony'},
+{id:6,name:'Clean fridge',icon:'🧊',category:'Home',intervalDays:30,lastCompleted:'2026-03-20',notes:'Check expiry dates'},
+{id:7,name:'Dentist checkup',icon:'🦷',category:'Health',intervalDays:180,lastCompleted:'2025-12-10',notes:'Dr. Silva, Lisbon'}
+];
+
+var history=[
+{date:'2026-04-04',item:'Water plants',notes:'All watered'},
+{date:'2026-03-31',item:'Water plants',notes:''},
+{date:'2026-03-28',item:'Water plants',notes:'Added fertilizer'},
+{date:'2026-03-20',item:'Clean fridge',notes:'Removed expired items'},
+{date:'2026-02-10',item:'HVAC filter',notes:'Replaced with MERV 11'},
+{date:'2026-01-25',item:'Replace toothbrush',notes:'Oral-B Pro'},
+{date:'2025-12-10',item:'Dentist checkup',notes:'All clear, no cavities'},
+{date:'2025-09-20',item:'Smoke detectors',notes:'Replaced batteries in bedroom'},
+{date:'2025-08-15',item:'Car oil change',notes:'5W-30, 12k km since last'}
+];
+
+var currentFilter='all';
+var doneTargetId=null;
+var deleteTargetId=null;
+
+function parseDate(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function daysDiff(a,b){return Math.round((a-b)/(1000*60*60*24))}
+function fmtDate(s){var d=parseDate(s);var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear()}
+
+function getStatus(item){
+var next=new Date(parseDate(item.lastCompleted));
+next.setDate(next.getDate()+item.intervalDays);
+var diff=daysDiff(next,TODAY);
+if(diff<0)return{status:'overdue',nextDue:next,diff:diff};
+if(diff<=3)return{status:'due-soon',nextDue:next,diff:diff};
+return{status:'ok',nextDue:next,diff:diff};
+}
+
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+function renderSidebar(){
+var el=document.getElementById('sidebar-summary');
+var counts={overdue:0,'due-soon':0,ok:0};
+items.forEach(function(it){counts[getStatus(it).status]++});
+var total=items.length;
+var pct=total>0?Math.round(counts.ok/total*100):0;
+var html='';
+html+='<div class="sum-row"><div class="sum-dot" style="background:var(--dn)"></div>Overdue<div class="sum-val" style="color:var(--dntx)">'+counts.overdue+'</div></div>';
+html+='<div class="sum-row"><div class="sum-dot" style="background:var(--wn)"></div>Due soon<div class="sum-val" style="color:var(--wntx)">'+counts['due-soon']+'</div></div>';
+html+='<div class="sum-row"><div class="sum-dot" style="background:var(--ac)"></div>OK<div class="sum-val" style="color:var(--actx)">'+counts.ok+'</div></div>';
+html+='<div style="font-size:9px;color:var(--tx3);margin-top:6px">Compliance</div>';
+html+='<div class="compliance-bar"><div class="compliance-fill" style="width:'+pct+'%"></div></div>';
+html+='<div style="font-size:9px;color:var(--tx3);margin-top:2px;text-align:right">'+pct+'%</div>';
+el.innerHTML=html;
+}
+
+function renderFilters(){
+var counts={all:items.length,overdue:0,'due-soon':0,ok:0};
+items.forEach(function(it){counts[getStatus(it).status]++});
+var el=document.getElementById('filter-tabs');
+var tabs=[
+{key:'all',label:'All ('+counts.all+')'},
+{key:'overdue',label:'Overdue ('+counts.overdue+')'},
+{key:'due-soon',label:'Due soon ('+counts['due-soon']+')'},
+{key:'ok',label:'OK ('+counts.ok+')'}
+];
+var html='';
+tabs.forEach(function(t){
+html+='<span class="filter-tab'+(currentFilter===t.key?' active':'')+'" data-filter="'+t.key+'">'+t.label+'</span>';
+});
+el.innerHTML=html;
+el.querySelectorAll('.filter-tab').forEach(function(tab){
+tab.addEventListener('click',function(){
+currentFilter=tab.getAttribute('data-filter');
+renderFilters();
+renderList();
+});
+});
+}
+
+function renderList(){
+var list=document.getElementById('maint-list');
+var empty=document.getElementById('empty-state');
+var filtered=items.filter(function(it){
+if(currentFilter==='all')return true;
+return getStatus(it).status===currentFilter;
+});
+
+if(filtered.length===0){
+list.innerHTML='';
+empty.style.display='block';
+return;
+}
+empty.style.display='none';
+
+var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var editSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+var delSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+var checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+
+var html='';
+filtered.forEach(function(it){
+var st=getStatus(it);
+var nd=st.nextDue;
+var ndStr=nd.getDate()+' '+months[nd.getMonth()]+' '+nd.getFullYear();
+var ndCls=st.status==='overdue'?'overdue':st.status==='due-soon'?'due-soon':'';
+
+html+='<div class="maint-row">';
+html+='<div class="maint-icon">'+it.icon+'</div>';
+html+='<div class="maint-info"><div class="maint-name">'+it.name+'</div><div class="maint-freq">Every '+it.intervalDays+' days · '+it.category+'</div></div>';
+html+='<div><span class="maint-badge '+st.status+'">'+
+(st.status==='overdue'?'Overdue':st.status==='due-soon'?'Due soon':'OK')+'</span></div>';
+html+='<div class="maint-interval">'+it.intervalDays+' days</div>';
+html+='<div class="maint-nextdue '+ndCls+'">'+ndStr+'</div>';
+html+='<div class="maint-actions">';
+html+='<button class="act-btn done" title="Mark done" data-id="'+it.id+'">'+checkSvg+'</button>';
+html+='<button class="act-btn" title="Edit" data-id="'+it.id+'" data-action="edit">'+editSvg+'</button>';
+html+='<button class="act-btn delete" title="Delete" data-id="'+it.id+'" data-action="delete">'+delSvg+'</button>';
+html+='</div>';
+html+='</div>';
+});
+list.innerHTML=html;
+
+/* Bind actions */
+list.querySelectorAll('.act-btn.done').forEach(function(btn){
+btn.addEventListener('click',function(){
+doneTargetId=parseInt(btn.getAttribute('data-id'));
+var it=items.find(function(x){return x.id===doneTargetId});
+document.getElementById('done-modal-title').textContent='Mark "'+it.name+'" as done';
+document.getElementById('done-notes').value='';
+document.getElementById('done-modal').classList.add('visible');
+});
+});
+list.querySelectorAll('[data-action="delete"]').forEach(function(btn){
+btn.addEventListener('click',function(){
+deleteTargetId=parseInt(btn.getAttribute('data-id'));
+var it=items.find(function(x){return x.id===deleteTargetId});
+document.getElementById('delete-msg').textContent='Are you sure you want to delete "'+it.name+'"? This action cannot be undone.';
+document.getElementById('delete-modal').classList.add('visible');
+});
+});
+}
+
+function renderHistory(){
+var el=document.getElementById('history-list');
+var html='';
+history.forEach(function(h){
+html+='<div class="history-entry">';
+html+='<div class="history-date">'+fmtDate(h.date)+'</div>';
+html+='<div class="history-item">'+h.item+'</div>';
+html+='<div class="history-note">'+h.notes+'</div>';
+html+='</div>';
+});
+el.innerHTML=html;
+}
+
+/* Confirm done */
+document.getElementById('confirm-done-btn').addEventListener('click',function(){
+if(!doneTargetId)return;
+var it=items.find(function(x){return x.id===doneTargetId});
+if(!it)return;
+var notes=document.getElementById('done-notes').value.trim();
+it.lastCompleted=dateKey(TODAY);
+history.unshift({date:dateKey(TODAY),item:it.name,notes:notes});
+document.getElementById('done-modal').classList.remove('visible');
+doneTargetId=null;
+renderAll();
+});
+
+/* Confirm delete */
+document.getElementById('confirm-delete-btn').addEventListener('click',function(){
+if(!deleteTargetId)return;
+items=items.filter(function(x){return x.id!==deleteTargetId});
+document.getElementById('delete-modal').classList.remove('visible');
+deleteTargetId=null;
+renderAll();
+});
+
+/* History toggle */
+document.getElementById('history-toggle-btn').addEventListener('click',function(){
+document.getElementById('history-panel').classList.toggle('visible');
+});
+document.getElementById('qa-history').addEventListener('click',function(){
+document.getElementById('history-panel').classList.toggle('visible');
+});
+
+/* Add item modal */
+document.getElementById('add-item-btn').addEventListener('click',function(){
+document.getElementById('add-modal-title').textContent='Add Maintenance Item';
+document.getElementById('item-name').value='';
+document.getElementById('item-icon').value='';
+document.getElementById('item-interval').value='';
+document.getElementById('item-notes').value='';
+document.getElementById('add-modal').classList.add('visible');
+});
+document.getElementById('qa-add').addEventListener('click',function(){
+document.getElementById('add-item-btn').click();
+});
+
+/* Save item */
+document.getElementById('save-item-btn').addEventListener('click',function(){
+var name=document.getElementById('item-name').value.trim();
+var icon=document.getElementById('item-icon').value.trim()||'🔧';
+var cat=document.getElementById('item-category').value;
+var interval=parseInt(document.getElementById('item-interval').value);
+if(!name||!interval||interval<1){alert('Please fill in name and interval.');return;}
+var maxId=items.reduce(function(m,x){return Math.max(m,x.id)},0);
+items.push({id:maxId+1,name:name,icon:icon,category:cat,intervalDays:interval,lastCompleted:dateKey(TODAY),notes:document.getElementById('item-notes').value.trim()});
+document.getElementById('add-modal').classList.remove('visible');
+renderAll();
+});
+
+/* Close modals on overlay click */
+document.querySelectorAll('.modal-overlay').forEach(function(overlay){
+overlay.addEventListener('click',function(e){
+if(e.target===overlay)overlay.classList.remove('visible');
+});
+});
+
+/* Cog popup */
+document.getElementById('cog-btn').addEventListener('click',function(e){
+e.stopPropagation();
+document.getElementById('cog-popup').classList.toggle('visible');
+});
+document.addEventListener('click',function(){
+document.getElementById('cog-popup').classList.remove('visible');
+});
+
+/* User switcher */
+var isJose=true;
+document.getElementById('user-switcher').addEventListener('click',function(){
+isJose=!isJose;
+document.getElementById('user-av').textContent=isJose?'J':'A';
+document.getElementById('user-av').style.background=isJose?'var(--ac)':'var(--inf)';
+document.getElementById('user-name').textContent=isJose?'Jose':'Ana';
+});
+
+function renderAll(){
+renderSidebar();
+renderFilters();
+renderList();
+renderHistory();
+}
+renderAll();
+})();
+</script>

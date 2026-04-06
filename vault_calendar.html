@@ -1,0 +1,436 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#191816;--bg2:#222120;--bg3:#2c2b28;--bg4:#353431;--tx:#e4e2dc;--tx2:#a8a69f;--tx3:#6e6d68;--bd:#333230;--ac:#1D9E75;--acbg:rgba(29,158,117,.15);--actx:#5DCAA5;--dn:#E24B4A;--dnbg:rgba(226,75,74,.15);--dntx:#F09595;--wn:#EF9F27;--wnbg:rgba(239,159,39,.15);--wntx:#FAC775;--inf:#378ADD;--infbg:rgba(55,138,221,.15);--inftx:#85B7EB;--pu:#7F77DD;--pubg:rgba(127,119,221,.15);--putx:#AFA9EC;--done:rgba(29,158,117,.18);--donetx:#5DCAA5;--card:#1f1e1c;--cardb:#2a2926}
+html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.45;height:100%;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2);text-decoration:none}
+.topbar-user:hover{background:var(--bg3)}
+.topbar-av{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px}
+.topbar-cog{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.topbar-cog:hover{background:var(--bg3);color:var(--tx)}
+.topbar-cog svg{width:16px;height:16px}
+.layout{display:flex;height:calc(100vh - 49px);overflow:hidden}
+.left{width:12vw;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.left::-webkit-scrollbar{width:4px}
+.left::-webkit-scrollbar-track{background:transparent}
+.left::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.left::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+.right{flex:1;padding:16px 20px;overflow-y:auto;min-width:0;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.right::-webkit-scrollbar{width:4px}
+.right::-webkit-scrollbar-track{background:transparent}
+.right::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.right::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+
+.lblock{margin-bottom:14px}
+.lblock-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.lblock-title svg{width:11px;height:11px}
+.lcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 11px;margin-bottom:6px}
+.lnav-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--tx2);cursor:pointer;text-decoration:none}
+.lnav-item:hover{color:var(--tx)}
+.lnav-item.active{color:var(--actx)}
+.lnav-item svg{width:11px;height:11px;flex-shrink:0;opacity:.5}
+.lnav-item.active svg{opacity:1}
+
+/* Mini month navigator */
+.mini-month{margin-bottom:6px}
+.mini-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.mini-hdr-label{font-size:11px;font-weight:600}
+.mini-nav{display:flex;gap:4px}
+.mini-nav-btn{width:20px;height:20px;border-radius:4px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
+.mini-nav-btn:hover{background:var(--bg3);color:var(--tx)}
+.mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}
+.mini-dh{font-size:7px;color:var(--tx3);padding:2px 0}
+.mini-d{font-size:8px;color:var(--tx3);padding:2px 0;border-radius:2px;cursor:pointer}
+.mini-d:hover{background:var(--bg3)}
+.mini-d.in-month{color:var(--tx2)}
+.mini-d.today{background:var(--ac);color:#fff;font-weight:700;border-radius:50%}
+.mini-d.has-event{position:relative}
+.mini-d.has-event::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--ac)}
+
+/* Source filters */
+.src-filter{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;color:var(--tx2);cursor:pointer}
+.src-check{width:12px;height:12px;border-radius:3px;border:1.5px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.src-check.active{border-color:transparent}
+.src-check svg{width:8px;height:8px}
+.src-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* Page header */
+.page-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.page-hdr h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.cal-nav{display:flex;align-items:center;gap:6px;margin-left:8px}
+.cal-nav-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.cal-nav-btn:hover{background:var(--bg3);color:var(--tx)}
+.cal-nav-btn svg{width:14px;height:14px}
+.cal-month-label{font-size:14px;font-weight:600;min-width:120px}
+.cal-today-btn{font-size:11px;color:var(--tx3);cursor:pointer;padding:4px 10px;border:1px solid var(--bd);border-radius:5px;background:transparent;transition:all .2s}
+.cal-today-btn:hover{color:var(--tx);border-color:var(--tx3)}
+.view-toggle{display:flex;gap:3px;margin-left:auto}
+.view-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;font-size:11px;transition:all .2s}
+.view-btn:hover{background:var(--bg3);color:var(--tx)}
+.view-btn.active{background:var(--tx);color:var(--bg);border-color:var(--tx);font-weight:600}
+.btn-primary{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:opacity .2s}
+.btn-primary:hover{opacity:.85}
+.btn-primary svg{width:14px;height:14px}
+
+/* Week view */
+.wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wk-hdr{font-size:10px;color:var(--tx3);text-align:center;padding:4px 0;font-weight:600}
+.wk-cell{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:8px;min-height:160px}
+.wk-cell.today{border-color:var(--ac)}
+.wk-cell-num{font-size:12px;font-weight:600;margin-bottom:6px}
+.wk-cell-num.today-num{color:var(--ac)}
+.ev-chip{font-size:9px;padding:4px 6px;border-radius:4px;margin-bottom:4px;cursor:pointer;transition:opacity .2s;position:relative;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-chip:hover{opacity:.8}
+.ev-chip.task{background:var(--infbg);color:var(--inftx);border-left:2px solid var(--inf)}
+.ev-chip.maintenance{background:var(--wnbg);color:var(--wntx);border-left:2px solid var(--wn)}
+.ev-chip.habit{background:var(--acbg);color:var(--actx);border-left:2px solid var(--ac)}
+.ev-chip.event{background:var(--pubg);color:var(--putx);border-left:2px solid var(--pu)}
+.ev-chip.overdue{background:var(--dnbg);color:var(--dntx);border-left:2px solid var(--dn)}
+.ev-more{font-size:8px;color:var(--tx3);cursor:pointer;margin-top:2px}
+.ev-more:hover{color:var(--tx)}
+
+/* Month view */
+.mo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mo-hdr{font-size:10px;color:var(--tx3);text-align:center;padding:4px 0;font-weight:600}
+.mo-cell{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:6px;min-height:80px}
+.mo-cell.today{border-color:var(--ac)}
+.mo-cell.other-month{opacity:.3}
+.mo-cell-num{font-size:11px;font-weight:600;margin-bottom:4px}
+.mo-cell-num.today-num{background:var(--ac);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px}
+.mo-dots{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:2px}
+.mo-dot{width:5px;height:5px;border-radius:50%}
+.mo-ev{font-size:8px;padding:2px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Event popover */
+.ev-popover{position:fixed;background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:14px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:100;display:none}
+.ev-popover.visible{display:block}
+.ev-pop-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.ev-pop-date{font-size:10px;color:var(--tx3);margin-bottom:6px}
+.ev-pop-type{font-size:9px;padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;display:inline-block;margin-bottom:6px}
+.ev-pop-project{font-size:10px;color:var(--inftx);margin-bottom:4px}
+.ev-pop-status{font-size:10px;color:var(--tx3)}
+
+/* User switcher + cog */
+.cog-popup{position:fixed;top:49px;right:12px;background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:8px;min-width:180px;display:none;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.cog-popup.visible{display:block}
+.cog-item{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;color:var(--tx2);cursor:pointer;border-radius:6px;transition:all .15s}
+.cog-item:hover{background:var(--bg3);color:var(--tx)}
+.cog-item svg{width:13px;height:13px;flex-shrink:0;opacity:.6}
+
+@media(max-width:900px){.wk-grid,.mo-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.layout{flex-direction:column}.left{width:100%;border-right:none;border-bottom:1px solid var(--bd);max-height:200px}.wk-grid,.mo-grid{grid-template-columns:repeat(2,1fr)}.page-hdr{flex-direction:column;align-items:flex-start;gap:8px}.view-toggle{margin-left:0}}
+</style>
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user" id="user-switcher"><div class="topbar-av" id="user-av">J</div><span id="user-name">Jose</span></div>
+<button class="topbar-cog" id="cog-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="cog-popup" id="cog-popup">
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Export calendar</div>
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Settings</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Mini calendar</div>
+<div class="lcard" id="mini-cal"></div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Event sources</div>
+<div class="src-filter" data-src="task"><div class="src-check active" style="background:var(--inf);border-color:var(--inf)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="src-dot" style="background:var(--inf)"></div>Tasks</div>
+<div class="src-filter" data-src="maintenance"><div class="src-check active" style="background:var(--wn);border-color:var(--wn)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="src-dot" style="background:var(--wn)"></div>Maintenance</div>
+<div class="src-filter" data-src="habit"><div class="src-check active" style="background:var(--ac);border-color:var(--ac)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="src-dot" style="background:var(--ac)"></div>Habits</div>
+<div class="src-filter" data-src="event"><div class="src-check active" style="background:var(--pu);border-color:var(--pu)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="src-dot" style="background:var(--pu)"></div>Events</div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="lnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+</div>
+</div>
+
+<div class="right">
+<div class="page-hdr">
+<h1>Calendar</h1>
+<div class="cal-nav">
+<button class="cal-nav-btn" id="nav-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+<div class="cal-month-label" id="month-label">April 2026</div>
+<button class="cal-nav-btn" id="nav-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+<button class="cal-today-btn" id="today-btn">Today</button>
+</div>
+<div class="view-toggle">
+<button class="view-btn active" data-view="week">Week</button>
+<button class="view-btn" data-view="month">Month</button>
+</div>
+<button class="btn-primary" id="add-event-btn" style="margin-left:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add event</button>
+</div>
+
+<div id="calendar-view"></div>
+</div>
+</div>
+</div>
+
+<!-- Event popover -->
+<div class="ev-popover" id="ev-popover"></div>
+
+<script>
+(function(){
+var TODAY=new Date(2026,3,6);
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var currentView='week';
+var sources={task:true,maintenance:true,habit:true,event:true};
+
+/* Events data */
+var events=[
+{date:'2026-04-06',title:'Notion template tutorial',type:'task',project:'Notion template',status:'Not started'},
+{date:'2026-04-06',title:'Fix IFS posting control',type:'task',project:null,status:'In progress'},
+{date:'2026-04-06',title:'6hr deep work',type:'habit',project:null,status:'Completed'},
+{date:'2026-04-07',title:'Water plants',type:'maintenance',project:null,status:'Due'},
+{date:'2026-04-07',title:'Study ASP.NET middleware',type:'task',project:null,status:'In review'},
+{date:'2026-04-07',title:'Learn Framer basics',type:'task',project:'Learn Framer',status:'In progress'},
+{date:'2026-04-08',title:'Email newsletter draft',type:'task',project:'Content creation',status:'Not started'},
+{date:'2026-04-08',title:'Framer 2nd video',type:'task',project:'Learn Framer',status:'Not started'},
+{date:'2026-04-08',title:'Review invoice module',type:'task',project:null,status:'In review'},
+{date:'2026-04-09',title:'Research competitor templates',type:'task',project:'Notion template',status:'Not started'},
+{date:'2026-04-09',title:'Content creation batch',type:'task',project:'Content creation',status:'Not started'},
+{date:'2026-04-10',title:'Water plants',type:'maintenance',project:null,status:'Due'},
+{date:'2026-04-10',title:'Dentist appointment',type:'event',project:null,status:'Scheduled'},
+{date:'2026-04-10',title:'Email newsletter send',type:'task',project:'Content creation',status:'Not started'},
+{date:'2026-04-11',title:'CapCut advanced editing',type:'task',project:'CapCut + Notion',status:'In progress'},
+{date:'2026-04-11',title:'Team sync call',type:'event',project:null,status:'Scheduled'},
+{date:'2026-04-12',title:'Design landing page',type:'task',project:'Notion template',status:'Not started'},
+{date:'2026-04-12',title:'Content creation review',type:'task',project:'Content creation',status:'Not started'},
+{date:'2026-04-04',title:'Car oil change',type:'maintenance',project:null,status:'Overdue'},
+{date:'2026-04-15',title:'Smoke detectors check',type:'maintenance',project:null,status:'Due'}
+];
+
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseDate(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function isToday(d){return dateKey(d)===dateKey(TODAY)}
+function getEventsForDate(dk){
+return events.filter(function(e){
+return e.date===dk&&sources[e.type];
+});
+}
+
+function chipClass(ev){
+if(ev.status==='Overdue')return 'overdue';
+return ev.type;
+}
+
+function renderMiniCal(){
+var el=document.getElementById('mini-cal');
+var year=TODAY.getFullYear(),month=TODAY.getMonth();
+var first=new Date(year,month,1);
+var last=new Date(year,month+1,0);
+var startDow=(first.getDay()+6)%7;/* Mon=0 */
+
+var eventDates={};
+events.forEach(function(e){eventDates[e.date]=true});
+
+var html='<div class="mini-month">';
+html+='<div class="mini-hdr"><div class="mini-hdr-label">'+MONTHS[month]+' '+year+'</div></div>';
+html+='<div class="mini-grid">';
+DAYS.forEach(function(d){html+='<div class="mini-dh">'+d.charAt(0)+'</div>'});
+for(var i=0;i<startDow;i++){
+var pd=new Date(year,month,-startDow+i+1);
+html+='<div class="mini-d">'+pd.getDate()+'</div>';
+}
+for(var d=1;d<=last.getDate();d++){
+var dk=dateKey(new Date(year,month,d));
+var cls='mini-d in-month';
+if(dk===dateKey(TODAY))cls+=' today';
+if(eventDates[dk])cls+=' has-event';
+html+='<div class="'+cls+'">'+d+'</div>';
+}
+html+='</div></div>';
+el.innerHTML=html;
+}
+
+function renderWeekView(){
+var cal=document.getElementById('calendar-view');
+/* Find Monday of current week */
+var monday=new Date(TODAY);
+var dow=(monday.getDay()+6)%7;
+monday.setDate(monday.getDate()-dow);
+
+var html='<div class="wk-grid">';
+DAYS.forEach(function(d){html+='<div class="wk-hdr">'+d+'</div>'});
+for(var i=0;i<7;i++){
+var day=new Date(monday);
+day.setDate(day.getDate()+i);
+var dk=dateKey(day);
+var today=isToday(day);
+var evs=getEventsForDate(dk);
+
+html+='<div class="wk-cell'+(today?' today':'')+'">';
+html+='<div class="wk-cell-num'+(today?' today-num':'')+'">'+day.getDate()+'</div>';
+var maxShow=4;
+evs.slice(0,maxShow).forEach(function(ev){
+html+='<div class="ev-chip '+chipClass(ev)+'" data-ev=\''+JSON.stringify(ev).replace(/'/g,"&#39;")+'\'>'+ev.title+'</div>';
+});
+if(evs.length>maxShow){
+html+='<div class="ev-more">+'+(evs.length-maxShow)+' more</div>';
+}
+html+='</div>';
+}
+html+='</div>';
+cal.innerHTML=html;
+document.getElementById('month-label').textContent=MONTHS[monday.getMonth()]+' '+monday.getFullYear();
+bindChips();
+}
+
+function renderMonthView(){
+var cal=document.getElementById('calendar-view');
+var year=TODAY.getFullYear(),month=TODAY.getMonth();
+var first=new Date(year,month,1);
+var last=new Date(year,month+1,0);
+var startDow=(first.getDay()+6)%7;
+
+var html='<div class="mo-grid">';
+DAYS.forEach(function(d){html+='<div class="mo-hdr">'+d+'</div>'});
+
+/* Previous month padding */
+for(var i=0;i<startDow;i++){
+var pd=new Date(year,month,-startDow+i+1);
+var dk=dateKey(pd);
+var evs=getEventsForDate(dk);
+html+='<div class="mo-cell other-month"><div class="mo-cell-num">'+pd.getDate()+'</div>';
+if(evs.length){html+='<div class="mo-dots">';evs.forEach(function(e){html+='<div class="mo-dot" style="background:var(--'+typeColor(e.type)+')"></div>'});html+='</div>';}
+html+='</div>';
+}
+
+for(var d=1;d<=last.getDate();d++){
+var day=new Date(year,month,d);
+var dk=dateKey(day);
+var today=isToday(day);
+var evs=getEventsForDate(dk);
+
+html+='<div class="mo-cell'+(today?' today':'')+'">';
+if(today)html+='<div class="mo-cell-num today-num">'+d+'</div>';
+else html+='<div class="mo-cell-num">'+d+'</div>';
+
+var maxShow=2;
+evs.slice(0,maxShow).forEach(function(ev){
+html+='<div class="mo-ev ev-chip '+chipClass(ev)+'" data-ev=\''+JSON.stringify(ev).replace(/'/g,"&#39;")+'\' style="font-size:8px;padding:2px 4px;margin-bottom:2px">'+ev.title+'</div>';
+});
+if(evs.length>maxShow)html+='<div class="ev-more">+'+(evs.length-maxShow)+' more</div>';
+html+='</div>';
+}
+
+/* Next month padding */
+var totalCells=startDow+last.getDate();
+var remaining=totalCells%7===0?0:7-totalCells%7;
+for(var i=1;i<=remaining;i++){
+html+='<div class="mo-cell other-month"><div class="mo-cell-num">'+i+'</div></div>';
+}
+
+html+='</div>';
+cal.innerHTML=html;
+document.getElementById('month-label').textContent=MONTHS[month]+' '+year;
+bindChips();
+}
+
+function typeColor(type){
+var map={task:'inf',maintenance:'wn',habit:'ac',event:'pu'};
+return map[type]||'inf';
+}
+
+function bindChips(){
+document.querySelectorAll('.ev-chip').forEach(function(chip){
+chip.addEventListener('click',function(e){
+e.stopPropagation();
+var ev=JSON.parse(chip.getAttribute('data-ev'));
+var pop=document.getElementById('ev-popover');
+var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var d=parseDate(ev.date);
+var typeColors={task:{bg:'var(--infbg)',tx:'var(--inftx)'},maintenance:{bg:'var(--wnbg)',tx:'var(--wntx)'},habit:{bg:'var(--acbg)',tx:'var(--actx)'},event:{bg:'var(--pubg)',tx:'var(--putx)'}};
+var tc=typeColors[ev.type]||typeColors.task;
+
+var html='<div class="ev-pop-title">'+ev.title+'</div>';
+html+='<div class="ev-pop-date">'+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+'</div>';
+html+='<div class="ev-pop-type" style="background:'+tc.bg+';color:'+tc.tx+'">'+ev.type+'</div>';
+if(ev.project)html+='<div class="ev-pop-project">Project: '+ev.project+'</div>';
+html+='<div class="ev-pop-status">Status: '+ev.status+'</div>';
+pop.innerHTML=html;
+
+var rect=chip.getBoundingClientRect();
+pop.style.top=(rect.bottom+6)+'px';
+pop.style.left=Math.min(rect.left,window.innerWidth-240)+'px';
+pop.classList.add('visible');
+});
+});
+}
+
+function render(){
+if(currentView==='week')renderWeekView();
+else renderMonthView();
+}
+
+/* View toggle */
+document.querySelectorAll('.view-btn').forEach(function(btn){
+btn.addEventListener('click',function(){
+document.querySelectorAll('.view-btn').forEach(function(b){b.classList.remove('active')});
+btn.classList.add('active');
+currentView=btn.getAttribute('data-view');
+render();
+});
+});
+
+/* Source filter toggles */
+document.querySelectorAll('.src-filter').forEach(function(f){
+f.addEventListener('click',function(){
+var src=f.getAttribute('data-src');
+sources[src]=!sources[src];
+var check=f.querySelector('.src-check');
+check.classList.toggle('active',sources[src]);
+check.querySelector('svg').style.display=sources[src]?'':'none';
+render();
+});
+});
+
+/* Close popover */
+document.addEventListener('click',function(){
+document.getElementById('ev-popover').classList.remove('visible');
+});
+
+/* Add event (placeholder) */
+document.getElementById('add-event-btn').addEventListener('click',function(){
+alert('Add event form would open here');
+});
+
+/* Cog */
+document.getElementById('cog-btn').addEventListener('click',function(e){
+e.stopPropagation();
+document.getElementById('cog-popup').classList.toggle('visible');
+});
+document.addEventListener('click',function(){document.getElementById('cog-popup').classList.remove('visible')});
+
+/* User switcher */
+var isJose=true;
+document.getElementById('user-switcher').addEventListener('click',function(){
+isJose=!isJose;
+document.getElementById('user-av').textContent=isJose?'J':'A';
+document.getElementById('user-av').style.background=isJose?'var(--ac)':'var(--inf)';
+document.getElementById('user-name').textContent=isJose?'Jose':'Ana';
+});
+
+renderMiniCal();
+render();
+})();
+</script>

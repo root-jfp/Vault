@@ -1,0 +1,739 @@
+<link rel="stylesheet" href="vault-modal.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#191816;--bg2:#222120;--bg3:#2c2b28;--bg4:#353431;--tx:#e4e2dc;--tx2:#a8a69f;--tx3:#6e6d68;--bd:#333230;--ac:#1D9E75;--acbg:rgba(29,158,117,.15);--actx:#5DCAA5;--dn:#E24B4A;--dnbg:rgba(226,75,74,.15);--dntx:#F09595;--wn:#EF9F27;--wnbg:rgba(239,159,39,.15);--wntx:#FAC775;--inf:#378ADD;--infbg:rgba(55,138,221,.15);--inftx:#85B7EB;--pu:#7F77DD;--pubg:rgba(127,119,221,.15);--putx:#AFA9EC;--done:rgba(29,158,117,.18);--donetx:#5DCAA5;--card:#1f1e1c;--cardb:#2a2926}
+html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.45;height:100%;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2)}
+.topbar-user:hover{background:var(--bg3)}
+.topbar-av{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px}
+.topbar-cog{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.topbar-cog:hover{background:var(--bg3);color:var(--tx)}
+.topbar-cog svg{width:16px;height:16px}
+.layout{display:flex;height:calc(100vh - 49px);overflow:hidden}
+.left{width:12vw;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.left::-webkit-scrollbar{width:4px}
+.left::-webkit-scrollbar-track{background:transparent}
+.left::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.left::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+.right{flex:1;padding:16px 20px;overflow-y:auto;min-width:0;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.right::-webkit-scrollbar{width:4px}
+.right::-webkit-scrollbar-track{background:transparent}
+.right::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.right::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+
+.lblock{margin-bottom:14px}
+.lblock-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.lblock-title svg{width:11px;height:11px}
+.lcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 11px;margin-bottom:6px}
+.perf-date{font-size:10px;color:var(--tx3);margin-bottom:5px}
+.perf-section{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin:7px 0 3px;font-weight:600}
+.perf-item{font-size:11px;padding:2px 0;display:flex;align-items:center;gap:5px}
+.pdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.perf-footer{font-size:9px;color:var(--tx3);margin-top:6px;padding-top:5px;border-top:1px solid var(--bd)}
+.perf-footer div{padding:1px 0}
+.qa-btn{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:var(--tx2);cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.qa-btn:hover{color:var(--tx)}
+.qa-btn svg{width:11px;height:11px;flex-shrink:0}
+.lnav-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--tx2);cursor:pointer}
+.lnav-item:hover{color:var(--tx)}
+.lnav-item svg{width:11px;height:11px;flex-shrink:0;opacity:.5}
+.hstat{margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.hstat:last-child{border:none;margin:0;padding:0}
+.hstat-name{font-size:11px;font-weight:500;display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.hstat-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.hstat-pill{font-size:8px;padding:1px 5px;border-radius:3px;margin-left:auto}
+.hstat-row{font-size:10px;color:var(--tx3);padding:1px 0}
+.hstat-row.good{color:var(--actx)}
+
+.sec{margin-bottom:12px;border:1px solid var(--bd);border-radius:10px;padding:10px 14px;background:var(--bg)}
+.sec-hdr{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx2);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.sec-new{margin-left:auto;font-size:10px;font-weight:500;color:var(--tx3);cursor:pointer;padding:2px 8px;border:1px solid var(--bd);border-radius:5px;text-transform:none;letter-spacing:0}
+.sec-new:hover{color:var(--tx);border-color:var(--tx3)}
+.sec-hdr svg{width:14px;height:14px}
+
+/* === HORIZONTAL SCROLL CONTAINER === */
+.hscroll-wrap{position:relative}
+.hscroll{display:flex;gap:10px;flex-wrap:wrap;padding:2px 0}
+.arrow{display:none}
+
+/* Habit cards */
+.hcard{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1 1 150px;min-width:150px;max-width:185px}
+.hcard-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.hcard-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.hcard-name{font-size:12px;font-weight:600}
+.hcard-freq{font-size:9px;color:var(--tx3);margin-bottom:3px}
+.mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}
+.mcal .dh{font-size:7px;color:var(--tx3);padding:0}
+.mcal .d{aspect-ratio:1;border-radius:2px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--tx3)}
+.mcal .d.dn{background:var(--done);color:var(--donetx)}
+.mcal .d.today{outline:1.5px solid var(--ac);font-weight:700;color:var(--tx)}
+.mcal .d.empty{background:transparent}
+.hcard-check{font-size:9px;color:var(--actx);margin-top:3px}
+.hcard-pbar{height:4px;background:var(--bg3);border-radius:2px;margin-top:4px;overflow:hidden}
+.hcard-pbar-fill{height:100%;border-radius:2px;transition:width .3s}
+.hcard-stats{font-size:8px;color:var(--tx3);margin-top:2px;display:flex;align-items:center;justify-content:space-between}
+.hcard-stats .hi{color:var(--actx)}
+.sec-newpage{margin-top:0}
+.sec-newpage-btn{background:transparent;border:1px dashed var(--bd);border-radius:7px;padding:8px;color:var(--tx3);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:40px}
+.sec-newpage-btn:hover{border-color:var(--tx3);color:var(--tx2)}
+.hscroll .sec-newpage-btn{flex:1 1 150px;min-width:150px;max-width:185px}
+.hscroll .sec-newpage-btn.tcol-size{flex:1 1 160px;min-width:160px;max-width:200px}
+.hscroll .sec-newpage-btn.pcard-size{flex:1 1 160px;min-width:160px;max-width:200px}
+
+/* Circular checkbox */
+.hcheck{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.hcheck:hover{border-color:var(--ac)}
+.hcheck.done{background:var(--ac);border-color:var(--ac)}
+.hcheck.done svg{opacity:1}
+.hcheck svg{width:12px;height:12px;opacity:0;transition:opacity .2s}
+.dhcard.completed{background:color-mix(in srgb,var(--ac) 8%,var(--card))}
+
+/* Stepper controls for quantitative habits */
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bd);background:transparent;color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;transition:all .2s;padding:0;line-height:1}
+.stepper-btn:hover{border-color:var(--ac);color:var(--ac);background:var(--acbg)}
+.stepper-val{font-size:10px;color:var(--tx);font-weight:500;min-width:60px;text-align:center}
+.stepper-val .uom{color:var(--tx3);font-size:9px}
+
+/* Intensity levels for quantitative calendar cells */
+.mcal .d.intensity-1{background:color-mix(in srgb,var(--ac) 15%,var(--bg3));color:color-mix(in srgb,var(--actx) 50%,var(--tx3))}
+.mcal .d.intensity-2{background:color-mix(in srgb,var(--ac) 35%,var(--bg3));color:var(--actx)}
+.mcal .d.intensity-3{background:var(--done);color:var(--donetx)}
+
+/* Type badge */
+.type-badge{font-size:7px;padding:1px 4px;border-radius:2px;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.type-badge.bool{background:var(--acbg);color:var(--actx)}
+.type-badge.quant{background:var(--infbg);color:var(--inftx)}
+
+/* Daily habit cards */
+.dhcard{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1 1 150px;min-width:150px;max-width:185px}
+.dhcard-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.dhcard-name{font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;flex:1}
+.dhcard-freq{font-size:9px;color:var(--tx3);margin-bottom:3px}
+
+/* Task columns */
+.tcol{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:8px;flex:1 1 160px;min-width:160px;max-width:200px}
+.tcol-name{font-size:11px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.tdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.titem{font-size:10px;background:var(--bg3);border-radius:5px;padding:6px 8px;margin-bottom:4px}
+.ev-tag{font-size:8px;padding:1px 4px;border-radius:2px;margin-top:3px;display:inline-block}
+
+/* Project cards */
+.pcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;flex:1 1 160px;min-width:160px;max-width:200px}
+.pcard-name{font-size:12px;font-weight:600;margin-bottom:2px;color:var(--inftx)}
+.pcard-desc{font-size:10px;color:var(--tx3);margin-bottom:5px}
+.pcard-row{font-size:10px;color:var(--tx3);padding:1px 0}
+.pcard-footer{font-size:10px;color:var(--tx3);margin-top:5px;padding-top:5px;border-top:1px solid var(--bd)}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:8px;font-size:10px}
+.tab{padding:3px 10px;border-radius:5px;color:var(--tx3);cursor:pointer}
+.tab.active{background:var(--tx);color:var(--bg);font-weight:600}
+.ptabs{display:flex;gap:6px;margin-bottom:8px;font-size:10px;align-items:center}
+.ptab{padding:3px 8px;border-radius:4px;color:var(--tx3);cursor:pointer}
+.ptab.active{color:var(--tx);font-weight:600}
+
+/* Calendar */
+.cal-tabs{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px}
+.cal-tab{padding:3px 8px;border-radius:4px;color:var(--tx3);cursor:pointer}
+.cal-tab.active{background:var(--bg3);color:var(--tx);font-weight:600}
+.cal-month{font-size:13px;font-weight:600;margin-bottom:6px}
+.wkgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wkh{font-size:10px;color:var(--tx3);text-align:center;padding:3px 0;font-weight:600}
+.wkday{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:6px;min-height:80px}
+.wkday-num{font-size:11px;font-weight:600;margin-bottom:4px}
+.wkday-num.today-num{color:var(--ac)}
+.wkday.today-col{border-color:var(--ac)}
+.wk-ev{font-size:9px;background:var(--bg3);border-radius:4px;padding:3px 5px;margin-bottom:3px}
+
+@media(max-width:700px){.layout{flex-direction:column}.left{width:100%;border-right:none;border-bottom:1px solid var(--bd);max-height:300px}.hscroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hscroll::-webkit-scrollbar{display:none}.hcard,.dhcard{flex:0 0 180px;min-width:180px}.tcol{flex:0 0 170px;min-width:170px}.pcard{flex:0 0 170px;min-width:170px}.wkgrid{grid-template-columns:repeat(4,1fr)}}
+</style>
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user"><div class="topbar-av">J</div>José</div>
+<button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Performance</div>
+<div class="lcard">
+<div style="font-size:11px;font-weight:600;margin-bottom:3px">Performance overview</div>
+<div class="perf-date">Monday, 6 April 2026 · Week 15</div>
+<div class="perf-section">Today's tasks</div>
+<div class="perf-item"><div class="pdot" style="background:var(--ac)"></div>Fix IFS posting control</div>
+<div class="perf-item"><div class="pdot" style="background:var(--inf)"></div>Study ASP.NET middleware</div>
+<div class="perf-item"><div class="pdot" style="background:var(--pu)"></div>FERRO workout session</div>
+<div class="perf-section">Due &amp; upcoming</div>
+<div class="perf-item" style="color:var(--dntx)"><div class="pdot" style="background:var(--dn)"></div>Car oil change</div>
+<div class="perf-item" style="color:var(--wntx)"><div class="pdot" style="background:var(--wn)"></div>Review invoice module</div>
+<div class="perf-footer"><div>0 tasks overdue last week.</div><div>6 upcoming tasks this month.</div></div>
+</div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Quick action</div>
+<a href="vault_task_new.html" class="qa-btn" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add new task</a>
+<button class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add new project</button>
+<a href="vault_habit_new.html" class="qa-btn" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add new habit</a>
+<button class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>New habit goal</button>
+<button class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Change grid</button>
+<button class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Database</button>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_habits.html" class="lnav-item" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_maintenance.html" class="lnav-item" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_tasks.html" class="lnav-item" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="lnav-item" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="lnav-item" style="text-decoration:none;color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Habit statistic</div>
+<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:var(--ac)"></div>6hr deep work<span class="hstat-pill" style="background:var(--acbg);color:var(--actx)">week</span></div><div class="hstat-row">Records this week: 5</div><div class="hstat-row">Days missed: 0</div><div class="hstat-row good">1 day (new record!)</div></div>
+<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:var(--inf)"></div>Eat healthy<span class="hstat-pill" style="background:var(--infbg);color:var(--inftx)">month</span></div><div class="hstat-row">Records this month: 1</div><div class="hstat-row">Days missed: 0</div><div class="hstat-row good">1 day (new record!)</div></div>
+<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:var(--wn)"></div>Reading<span class="hstat-pill" style="background:var(--wnbg);color:var(--wntx)">day</span></div><div class="hstat-row">Records today: 1</div><div class="hstat-row good">Completed today</div></div>
+<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:var(--pu)"></div>Workout<span class="hstat-pill" style="background:var(--pubg);color:var(--putx)">month</span></div><div class="hstat-row">Records this month: 1</div><div class="hstat-row">Days missed: 0</div><div class="hstat-row good">1 day (new record!)</div></div>
+</div>
+</div>
+
+<div class="right">
+
+<!-- HABIT STREAK & GOAL TRACKING -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habit streak &amp; goal tracking<a href="vault_habits.html" class="sec-new" style="text-decoration:none;color:inherit">Manage</a><a href="vault_habit_new.html" class="sec-new" style="text-decoration:none;color:inherit">+ New</a></div>
+<div class="hscroll-wrap" data-scroll="streak"><button class="arrow left hidden" data-dir="-1">&lt;</button><div class="hscroll" id="streak-scroll"></div><button class="arrow right" data-dir="1">&gt;</button></div>
+</div>
+
+<!-- DAILY HABIT TRACKING -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Daily habit tracking<span class="sec-new">+ New</span></div>
+<div class="hscroll-wrap" data-scroll="daily"><button class="arrow left hidden" data-dir="-1">&lt;</button><div class="hscroll" id="daily-scroll"></div><button class="arrow right" data-dir="1">&gt;</button></div>
+</div>
+
+<!-- TASKS -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks<a href="vault_tasks.html" class="sec-new" style="text-decoration:none;color:inherit">Manage</a><a href="vault_task_new.html" class="sec-new" style="text-decoration:none;color:inherit">+ New</a></div>
+<div class="tabs"><span class="tab active">Today</span><span class="tab">Unrelated tasks</span><span class="tab">This week's progress</span><span class="tab">Completed</span></div>
+<div class="hscroll-wrap" data-scroll="tasks"><button class="arrow left hidden" data-dir="-1">&lt;</button><div class="hscroll" id="tasks-scroll"></div><button class="arrow right" data-dir="1">&gt;</button></div>
+</div>
+
+<!-- PROJECT MANAGER -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Project manager<span class="sec-new">+ New</span></div>
+<div class="ptabs"><span class="ptab active">All projects</span><span class="ptab">Complete</span><span class="ptab">Inbox</span></div>
+<div class="hscroll-wrap" data-scroll="projects"><button class="arrow left hidden" data-dir="-1">&lt;</button><div class="hscroll" id="projects-scroll"></div><button class="arrow right" data-dir="1">&gt;</button></div>
+</div>
+
+<!-- WEEKLY & MONTHLY CALENDAR -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Weekly &amp; monthly calendar</div>
+<div class="cal-tabs"><span class="cal-tab active">This week</span><span class="cal-tab">This month</span><span style="margin-left:auto;font-size:10px;color:var(--tx3);cursor:pointer">Open in calendar</span><span style="font-size:10px;color:var(--tx3);margin-left:8px;cursor:pointer">Today</span></div>
+<div class="cal-month">April 2026</div>
+<div class="wkgrid" id="cal-grid"></div>
+</div>
+
+</div>
+</div>
+
+<div class="vm-overlay" id="vault-modal"><div class="vm-dialog">
+<div class="vm-header"><div class="vm-hdot" id="vm-dot"></div><div class="vm-hgroup"><div class="vm-htitle" id="vm-title"></div><div class="vm-hsub" id="vm-sub"></div></div><button class="vm-close" id="vm-close">&times;</button></div>
+<div class="vm-body" id="vm-body"></div>
+<div class="vm-footer" id="vm-footer"></div>
+</div></div>
+
+</div>
+
+<script>
+(function(){
+
+/* ===== DATA ARRAYS ===== */
+
+var habits=[
+{name:'6hr deep work',color:'var(--ac)',freq:'Weekly: 7x',type:'boolean',done:[1,2,3,5,6]},
+{name:'Eat healthy',color:'var(--inf)',freq:'Weekly: 7x',type:'boolean',done:[1,2,4,5,6]},
+{name:'Reading',color:'var(--wn)',freq:'Weekly: 7x',type:'boolean',done:[1,3,5]},
+{name:'Workout',color:'var(--pu)',freq:'Weekly: 4x',type:'boolean',done:[2,5]},
+{name:'Drink water',color:'var(--inf)',freq:'Daily',type:'quantitative',uom:'ml',goal:2000,increment:250,done:[],progress:{1:2000,2:1500,3:2000,4:750,5:2000,6:500}},
+{name:'Study',color:'var(--wn)',freq:'Daily',type:'quantitative',uom:'hrs',goal:6,increment:0.5,done:[],progress:{1:6,2:4,3:5.5,4:6,5:3,6:2}}
+];
+var startDay=3,total=30,today=6;
+
+var tasks=[
+{id:0,title:'Notion template',description:'Create a comprehensive Notion template for productivity tracking and content planning workflow.',column:'Productivity Vault',columnColor:'var(--ac)',label:'Content creation',labelBg:'var(--infbg)',labelTx:'var(--inftx)',status:'Not started',statusBg:'var(--dnbg)',statusTx:'var(--dntx)',due:'2026-04-06',dueLabel:'due today!',priority:'High',project:'Notion template'},
+{id:1,title:'Content creation',description:'Plan and draft content pieces for the week including social media posts and blog articles.',column:'Email',columnColor:'var(--inf)',label:null,labelBg:null,labelTx:null,status:'Not started',statusBg:'var(--dnbg)',statusTx:'var(--dntx)',due:'2026-04-06',dueLabel:'due today!',priority:'Medium',project:'Content creation'},
+{id:2,title:'Learn Framer',description:'Watch Framer tutorial videos and practice building interactive prototypes and animations.',column:'Framer 2nd video',columnColor:'var(--wn)',label:null,labelBg:null,labelTx:null,status:'Not started',statusBg:'var(--dnbg)',statusTx:'var(--dntx)',due:null,dueLabel:null,priority:'Low',project:'Learn Framer'}
+];
+
+var projects=[
+{id:0,name:'Notion template',description:'Build and publish a complete Notion productivity template for content creators.',totalTasks:4,incomplete:4,completed:0,daysLeft:7,status:'In Progress',color:'var(--inf)'},
+{id:1,name:'Content creation',description:'Weekly content creation pipeline for social media and blog.',totalTasks:4,incomplete:4,completed:0,daysLeft:7,status:'In Progress',color:'var(--ac)'},
+{id:2,name:'CapCut + Notion',description:'Learning video editing with CapCut and advanced Notion workflows.',totalTasks:0,incomplete:0,completed:0,daysLeft:7,status:'In Progress',color:'var(--pu)'},
+{id:3,name:'Learn Framer',description:'Master Framer for interactive web design and prototyping.',totalTasks:2,incomplete:3,completed:0,daysLeft:60,status:'In Progress',color:'var(--wn)'}
+];
+
+var calendarEvents=[
+{id:0,title:'Notion tutorial',day:6,tags:[{text:'Notion template',bg:'var(--infbg)',tx:'var(--inftx)'},{text:'Not started',bg:'var(--dnbg)',tx:'var(--dntx)'}],action:'Mark as completed',linkedModule:'project',linkedId:0},
+{id:1,title:'Notion tutorial',day:7,tags:[{text:'Notion template',bg:'var(--infbg)',tx:'var(--inftx)'}],action:'Mark as completed',linkedModule:'project',linkedId:0},
+{id:2,title:'Learn Framer',day:7,tags:[{text:'Not started',bg:'var(--dnbg)',tx:'var(--dntx)'}],action:null,linkedModule:'project',linkedId:3},
+{id:3,title:'Framer 2nd video',day:8,tags:[{text:'Learn Framer',bg:'var(--acbg)',tx:'var(--actx)'},{text:'Not started',bg:'var(--dnbg)',tx:'var(--dntx)'}],action:null,linkedModule:'task',linkedId:2},
+{id:4,title:'Email',day:8,tags:[{text:'Not started',bg:'var(--dnbg)',tx:'var(--dntx)'}],action:null,linkedModule:'task',linkedId:1},
+{id:5,title:'Content creation',day:9,tags:[{text:'Not started',bg:'var(--dnbg)',tx:'var(--dntx)'}],action:null,linkedModule:'task',linkedId:1},
+{id:6,title:'Email',day:10,tags:[{text:'Content creation',bg:'var(--infbg)',tx:'var(--inftx)'}],action:'Mark as completed',linkedModule:'project',linkedId:1},
+{id:7,title:'CapCut',day:11,tags:[],action:'Mark as completed',linkedModule:'project',linkedId:2},
+{id:8,title:'Notion tutorial',day:12,tags:[{text:'Notion template',bg:'var(--infbg)',tx:'var(--inftx)'}],action:null,linkedModule:'project',linkedId:0},
+{id:9,title:'Content creation',day:12,tags:[{text:'Not started',bg:'var(--dnbg)',tx:'var(--dntx)'}],action:null,linkedModule:'project',linkedId:1}
+];
+
+/* ===== HABIT CALENDAR HELPER ===== */
+
+function cal(h){
+var s='<div class="mcal"><div class="dh">S</div><div class="dh">M</div><div class="dh">T</div><div class="dh">W</div><div class="dh">T</div><div class="dh">F</div><div class="dh">S</div>';
+for(var i=0;i<startDay;i++)s+='<div class="d empty"></div>';
+for(var d=1;d<=total;d++){
+var c='d';
+if(h.type==='quantitative'){
+var amt=h.progress&&h.progress[d]?h.progress[d]:0;
+var pct=h.goal>0?amt/h.goal:0;
+if(pct>=1)c+=' intensity-3';
+else if(pct>=0.5)c+=' intensity-2';
+else if(pct>0)c+=' intensity-1';
+}else{
+if(h.done&&h.done.indexOf(d)!==-1)c+=' dn';
+}
+if(d===today)c+=' today';
+s+='<div class="'+c+'">'+d+'</div>';
+}
+return s+'</div>';
+}
+
+/* ===== RENDER: STREAK SECTION ===== */
+
+var ss=document.getElementById('streak-scroll');
+if(ss){
+var h='';
+habits.forEach(function(x){
+if(x.type==='quantitative'){
+var todayAmt=x.progress&&x.progress[today]?x.progress[today]:0;
+var pct=x.goal>0?Math.round(todayAmt/x.goal*100):0;
+var streak=todayAmt>=x.goal?'1 day':'0 days';
+h+='<div class="hcard"><div class="hcard-top"><div class="hcard-dot" style="background:'+x.color+'"></div><div class="hcard-name">'+x.name+'</div><span class="type-badge quant">qty</span></div><div class="hcard-freq">'+x.freq+'</div>'+cal(x)+'<div class="hcard-check">'+todayAmt+x.uom+' / '+x.goal+x.uom+'</div><div class="hcard-pbar"><div class="hcard-pbar-fill" style="width:'+Math.min(pct,100)+'%;background:'+x.color+'"></div></div><div class="hcard-stats"><div>Progress: '+pct+'%</div><div class="hi">Streak: '+streak+'</div></div></div>';
+}else{
+var ct=x.done.filter(function(d){return d<=today}).length;
+var pct=Math.round(ct/total*100);
+var streak=ct>0?'1 day (new record!)':'0 days';
+h+='<div class="hcard"><div class="hcard-top"><div class="hcard-dot" style="background:'+x.color+'"></div><div class="hcard-name">'+x.name+'</div><span class="type-badge bool">bool</span></div><div class="hcard-freq">'+x.freq+'</div>'+cal(x)+'<div class="hcard-check">Completed today</div><div class="hcard-pbar"><div class="hcard-pbar-fill" style="width:'+pct+'%;background:'+x.color+'"></div></div><div class="hcard-stats"><div>Progress: '+pct+'%</div><div class="hi">Streak: '+streak+'</div></div></div>';
+}
+});
+h+='<a href="vault_habit_new.html" class="sec-newpage-btn" style="flex:1 1 150px;min-width:150px;max-width:185px;align-self:stretch;text-decoration:none;color:inherit">+ New habit</a>';
+ss.innerHTML=h;
+}
+
+/* ===== RENDER: DAILY SECTION ===== */
+
+var ds=document.getElementById('daily-scroll');
+if(ds){
+var d='';
+habits.forEach(function(x,idx){
+var checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+if(x.type==='quantitative'){
+var todayAmt=x.progress&&x.progress[today]?x.progress[today]:0;
+var goalMet=todayAmt>=x.goal;
+var cardCls=goalMet?'dhcard completed':'dhcard';
+d+='<div class="'+cardCls+'" data-habit-idx="'+idx+'">';
+d+='<div class="dhcard-top"><div class="dhcard-name"><div style="width:7px;height:7px;border-radius:50%;background:'+x.color+';flex-shrink:0"></div>'+x.name+'</div></div>';
+d+='<div class="dhcard-freq">'+x.freq+' · '+x.uom+'</div>';
+d+='<div style="font-size:9px;color:var(--tx3);margin-bottom:3px">Today &gt; 6/April/2026</div>';
+d+='<div class="stepper" data-idx="'+idx+'">';
+d+='<button class="stepper-btn" data-action="dec">−</button>';
+d+='<div class="stepper-val"><span class="stepper-cur">'+todayAmt+'</span><span class="uom"> / '+x.goal+x.uom+'</span></div>';
+d+='<button class="stepper-btn" data-action="inc">+</button>';
+d+='</div>';
+var pct=x.goal>0?Math.min(Math.round(todayAmt/x.goal*100),100):0;
+d+='<div class="hcard-pbar" style="margin-top:6px"><div class="hcard-pbar-fill" style="width:'+pct+'%;background:'+x.color+'"></div></div>';
+d+=cal(x);
+d+='<div class="hcard-stats" style="margin-top:6px"><div class="hi">Goal: '+(goalMet?'Reached!':''+pct+'%')+'</div></div>';
+d+='</div>';
+}else{
+var isDone=x.done.indexOf(today)!==-1;
+var dstreak=isDone?'1 day (new record!)':'0 days';
+var checkCls=isDone?'hcheck done':'hcheck';
+var cardCls=isDone?'dhcard completed':'dhcard';
+d+='<div class="'+cardCls+'" data-habit="'+x.name+'">';
+d+='<div class="dhcard-top"><div class="dhcard-name"><div style="width:7px;height:7px;border-radius:50%;background:'+x.color+';flex-shrink:0"></div>'+x.name+'</div><div class="'+checkCls+'" data-habit="'+x.name+'">'+checkSvg+'</div></div>';
+d+='<div class="dhcard-freq">'+x.freq+'</div>';
+d+='<div style="font-size:9px;color:var(--tx3);margin-bottom:3px">Today &gt; 6/April/2026</div>';
+d+=cal(x);
+d+='<div class="hcard-stats" style="margin-top:6px"><div class="hi">Streak: '+dstreak+'</div><div>'+(isDone?'Completed today':'')+'</div></div>';
+d+='</div>';
+}
+});
+d+='<a href="vault_habit_new.html" class="sec-newpage-btn" style="flex:1 1 150px;min-width:150px;max-width:185px;align-self:stretch;text-decoration:none;color:inherit">+ New habit</a>';
+ds.innerHTML=d;
+}
+
+/* ===== RENDER: TASKS ===== */
+
+var ts=document.getElementById('tasks-scroll');
+if(ts){
+var h='';
+tasks.forEach(function(t,i){
+h+='<div class="tcol" data-task-idx="'+i+'"><div class="tcol-name"><div class="tdot" style="background:'+t.columnColor+'"></div>'+t.column+'</div>';
+h+='<div class="titem" data-task-idx="'+i+'"><div>'+t.title+'</div>';
+if(t.label)h+='<div class="ev-tag" style="background:'+t.labelBg+';color:'+t.labelTx+'">'+t.label+'</div>';
+h+='<div class="ev-tag" style="background:'+t.statusBg+';color:'+t.statusTx+'">'+t.status+'</div>';
+if(t.dueLabel)h+='<div style="font-size:9px;color:var(--dntx);margin-top:3px">'+t.dueLabel+'</div>';
+h+='<div style="font-size:9px;color:var(--tx3);margin-top:2px">Mark as completed</div>';
+h+='</div></div>';
+});
+h+='<button class="sec-newpage-btn tcol-size">+ New page</button>';
+ts.innerHTML=h;
+}
+
+/* ===== RENDER: PROJECTS ===== */
+
+var ps=document.getElementById('projects-scroll');
+if(ps){
+var h='';
+projects.forEach(function(p,i){
+h+='<div class="pcard" data-proj-idx="'+i+'">';
+h+='<div class="pcard-name">'+p.name+'</div>';
+h+='<div class="pcard-desc">'+p.description+'</div>';
+h+='<div class="pcard-row">Total related tasks: '+p.totalTasks+'</div>';
+h+='<div class="pcard-row">Total incomplete: '+p.incomplete+'</div>';
+h+='<div class="pcard-row">Total completed: '+p.completed+'</div>';
+h+='<div class="pcard-footer">'+p.daysLeft+' days to go · '+p.status+'</div>';
+h+='</div>';
+});
+h+='<button class="sec-newpage-btn pcard-size">+ New page</button>';
+ps.innerHTML=h;
+}
+
+/* ===== RENDER: CALENDAR ===== */
+
+var cg=document.getElementById('cal-grid');
+if(cg){
+var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var h='';
+days.forEach(function(d){h+='<div class="wkh">'+d+'</div>';});
+for(var dayNum=6;dayNum<=12;dayNum++){
+var isToday=dayNum===today;
+h+='<div class="wkday'+(isToday?' today-col':'')+'">';
+h+='<div class="wkday-num'+(isToday?' today-num':'')+'">'+dayNum+'</div>';
+var dayEvs=calendarEvents.filter(function(e){return e.day===dayNum;});
+dayEvs.forEach(function(ev){
+h+='<div class="wk-ev" data-ev-idx="'+ev.id+'">';
+var tTitle=ev.title.length>12?ev.title.substring(0,12)+'...':ev.title;
+h+='<div>'+tTitle+'</div>';
+ev.tags.forEach(function(tag){
+h+='<div class="ev-tag" style="background:'+tag.bg+';color:'+tag.tx+'">'+tag.text+'</div>';
+});
+if(ev.action)h+='<div style="font-size:8px;color:var(--tx3);margin-top:2px">Mark as com...</div>';
+h+='</div>';
+});
+h+='</div>';
+}
+cg.innerHTML=h;
+}
+
+/* ===== SCROLL ARROWS ===== */
+
+document.querySelectorAll('.hscroll-wrap').forEach(function(wrap){
+var scr=wrap.querySelector('.hscroll');
+var arrows=wrap.querySelectorAll('.arrow');
+if(!scr||!arrows.length)return;
+function upd(){
+var sl=scr.scrollLeft,sw=scr.scrollWidth,cw=scr.clientWidth;
+arrows[0].classList.toggle('hidden',sl<5);
+arrows[1].classList.toggle('hidden',sl+cw>=sw-5);
+}
+arrows.forEach(function(a){a.addEventListener('click',function(){
+var dir=parseInt(a.getAttribute('data-dir'));
+scr.scrollBy({left:dir*230,behavior:'smooth'});
+})});
+scr.addEventListener('scroll',upd);
+setTimeout(upd,100);
+});
+
+/* ===== CHECKBOX + STEPPER ===== */
+
+document.querySelectorAll('.hcheck').forEach(function(el){
+el.addEventListener('click',function(){
+var done=el.classList.toggle('done');
+var card=el.closest('.dhcard');
+if(card)card.classList.toggle('completed',done);
+});
+});
+
+document.querySelectorAll('.stepper').forEach(function(stepper){
+var idx=parseInt(stepper.getAttribute('data-idx'));
+var habit=habits[idx];
+if(!habit||habit.type!=='quantitative')return;
+var btns=stepper.querySelectorAll('.stepper-btn');
+var curEl=stepper.querySelector('.stepper-cur');
+var card=stepper.closest('.dhcard');
+var pbar=card?card.querySelector('.hcard-pbar-fill'):null;
+btns.forEach(function(btn){
+btn.addEventListener('click',function(){
+var action=btn.getAttribute('data-action');
+var cur=habit.progress[today]||0;
+if(action==='inc')cur+=habit.increment;
+else cur=Math.max(0,cur-habit.increment);
+habit.progress[today]=cur;
+curEl.textContent=cur;
+var pct=habit.goal>0?Math.min(Math.round(cur/habit.goal*100),100):0;
+if(pbar)pbar.style.width=pct+'%';
+var goalMet=cur>=habit.goal;
+if(card)card.classList.toggle('completed',goalMet);
+var statsEl=card?card.querySelector('.hcard-stats .hi'):null;
+if(statsEl)statsEl.textContent='Goal: '+(goalMet?'Reached!':pct+'%');
+});
+});
+});
+
+/* ===== MODAL CONTROLLER ===== */
+
+var modal=document.getElementById('vault-modal');
+var vmTitle=document.getElementById('vm-title');
+var vmSub=document.getElementById('vm-sub');
+var vmDot=document.getElementById('vm-dot');
+var vmBody=document.getElementById('vm-body');
+var vmFooter=document.getElementById('vm-footer');
+
+function openModal(opts){
+vmDot.style.background=opts.color||'var(--tx3)';
+vmTitle.textContent=opts.title||'';
+vmSub.textContent=opts.subtitle||'';
+vmBody.innerHTML=opts.body||'';
+vmFooter.innerHTML=opts.footer||'';
+modal.classList.add('open');
+document.body.style.overflow='hidden';
+}
+
+function closeModal(){
+modal.classList.remove('open');
+document.body.style.overflow='';
+}
+
+document.getElementById('vm-close').addEventListener('click',closeModal);
+modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
+vmFooter.addEventListener('click',function(e){if(e.target.classList.contains('vm-btn'))closeModal();});
+
+/* ===== HABIT MODAL ===== */
+
+function openHabitModal(idx){
+var h=habits[idx];
+if(!h)return;
+var isQ=h.type==='quantitative';
+var subtitle=isQ?'Habit ('+h.uom+')':'Habit';
+var completedDays=0,missedDays=0;
+if(isQ){
+for(var d=1;d<today;d++){
+if(h.progress&&h.progress[d]&&h.progress[d]>=h.goal)completedDays++;
+else missedDays++;
+}
+}else{
+completedDays=h.done?h.done.filter(function(d){return d<today;}).length:0;
+missedDays=(today-1)-completedDays;
+}
+if(missedDays<0)missedDays=0;
+var rate=(today>1)?Math.round(completedDays/(today-1)*100):0;
+var streak=completedDays>0?completedDays+' day'+(completedDays>1?'s':''):'0 days';
+
+var b='';
+b+='<div class="vm-section"><div class="vm-row" style="gap:8px;align-items:center">';
+b+='<span class="type-badge '+(isQ?'quant':'bool')+'">'+(isQ?'quantitative':'boolean')+'</span>';
+b+='<span style="font-size:11px;color:var(--tx2)">'+h.freq+'</span>';
+b+='</div></div>';
+
+if(isQ){
+var todayAmt=h.progress&&h.progress[today]?h.progress[today]:0;
+var pct=h.goal>0?Math.min(Math.round(todayAmt/h.goal*100),100):0;
+b+='<div class="vm-section"><div class="vm-label">Today\'s progress</div>';
+b+='<div class="vm-value">'+todayAmt+' / '+h.goal+' '+h.uom+' ('+pct+'%)</div>';
+b+='<div class="vm-progress"><div class="vm-progress-fill" style="width:'+pct+'%;background:'+h.color+'"></div></div>';
+b+='</div>';
+}
+
+b+='<div class="vm-section"><div class="vm-label">Statistics</div>';
+b+='<div class="vm-stat-grid">';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--actx)">'+completedDays+'</div><div class="vm-stat-lbl">Completed</div></div>';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--dntx)">'+missedDays+'</div><div class="vm-stat-lbl">Missed</div></div>';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--inftx)">'+rate+'%</div><div class="vm-stat-lbl">Rate</div></div>';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--wntx)">'+streak+'</div><div class="vm-stat-lbl">Streak</div></div>';
+b+='</div></div>';
+
+b+='<div class="vm-section"><div class="vm-label">April 2026</div>';
+b+=cal(h);
+b+='</div>';
+
+b+='<div class="vm-section"><div class="vm-label">Notes</div>';
+b+='<div style="font-size:11px;color:var(--tx3);font-style:italic">No notes yet.</div>';
+b+='</div>';
+
+var f='<button class="vm-btn danger">Delete</button><button class="vm-btn">Edit</button><button class="vm-btn primary">Done</button>';
+openModal({title:h.name,subtitle:subtitle,color:h.color,body:b,footer:f});
+}
+
+/* ===== TASK MODAL ===== */
+
+function openTaskModal(idx){
+var t=tasks[idx];
+if(!t)return;
+var b='';
+b+='<div class="vm-section"><div class="vm-label">Description</div>';
+b+='<div class="vm-value">'+t.description+'</div></div>';
+
+b+='<div class="vm-section"><div class="vm-row">';
+b+='<div class="vm-col"><div class="vm-label">Column</div><div class="vm-value" style="display:flex;align-items:center;gap:5px"><div class="tdot" style="background:'+t.columnColor+'"></div>'+t.column+'</div></div>';
+b+='<div class="vm-col"><div class="vm-label">Priority</div><div class="vm-value">'+t.priority+'</div></div>';
+b+='</div></div>';
+
+b+='<div class="vm-section"><div class="vm-row">';
+if(t.label){
+b+='<div class="vm-col"><div class="vm-label">Label</div><div class="vm-tag" style="background:'+t.labelBg+';color:'+t.labelTx+'">'+t.label+'</div></div>';
+}
+b+='<div class="vm-col"><div class="vm-label">Status</div><div class="vm-tag" style="background:'+t.statusBg+';color:'+t.statusTx+'">'+t.status+'</div></div>';
+b+='</div></div>';
+
+if(t.due){
+b+='<div class="vm-section"><div class="vm-label">Due date</div>';
+b+='<div class="vm-value" style="color:var(--dntx)">'+t.due+' — '+t.dueLabel+'</div></div>';
+}
+if(t.project){
+b+='<div class="vm-section"><div class="vm-label">Project</div>';
+b+='<div class="vm-value" style="color:var(--inftx)">'+t.project+'</div></div>';
+}
+
+var f='<button class="vm-btn danger">Delete</button><button class="vm-btn">Edit</button><button class="vm-btn primary">Mark complete</button>';
+openModal({title:t.title,subtitle:t.column,color:t.columnColor,body:b,footer:f});
+}
+
+/* ===== PROJECT MODAL ===== */
+
+function openProjectModal(idx){
+var p=projects[idx];
+if(!p)return;
+var pct=p.totalTasks>0?Math.round(p.completed/p.totalTasks*100):0;
+var b='';
+
+b+='<div class="vm-section"><div class="vm-label">Description</div>';
+b+='<div class="vm-value">'+p.description+'</div></div>';
+
+b+='<div class="vm-section"><div class="vm-label">Progress</div>';
+b+='<div class="vm-value">'+pct+'% complete</div>';
+b+='<div class="vm-progress"><div class="vm-progress-fill" style="width:'+pct+'%;background:'+p.color+'"></div></div>';
+b+='</div>';
+
+b+='<div class="vm-section"><div class="vm-stat-grid">';
+b+='<div class="vm-stat-card"><div class="vm-stat-num">'+p.totalTasks+'</div><div class="vm-stat-lbl">Total tasks</div></div>';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--wntx)">'+p.incomplete+'</div><div class="vm-stat-lbl">Incomplete</div></div>';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--actx)">'+p.completed+'</div><div class="vm-stat-lbl">Completed</div></div>';
+b+='<div class="vm-stat-card"><div class="vm-stat-num" style="color:var(--inftx)">'+p.daysLeft+'d</div><div class="vm-stat-lbl">Remaining</div></div>';
+b+='</div></div>';
+
+b+='<div class="vm-section"><div class="vm-row">';
+b+='<div class="vm-col"><div class="vm-label">Deadline</div><div class="vm-value">'+p.daysLeft+' days remaining</div></div>';
+b+='<div class="vm-col"><div class="vm-label">Status</div><div class="vm-value">'+p.status+'</div></div>';
+b+='</div></div>';
+
+var linked=tasks.filter(function(t){return t.project===p.name;});
+if(linked.length>0){
+b+='<div class="vm-section"><div class="vm-label">Linked tasks</div>';
+linked.forEach(function(t){
+b+='<div class="vm-task-link"><div class="vm-task-dot" style="background:'+t.columnColor+'"></div>'+t.title;
+b+='<span class="vm-tag" style="margin-left:auto;background:'+t.statusBg+';color:'+t.statusTx+'">'+t.status+'</span></div>';
+});
+b+='</div>';
+}
+
+var f='<button class="vm-btn danger">Archive</button><button class="vm-btn">Edit</button><button class="vm-btn primary">Close project</button>';
+openModal({title:p.name,subtitle:'Project',color:p.color,body:b,footer:f});
+}
+
+/* ===== EVENT MODAL ===== */
+
+function openEventModal(idx){
+var ev=calendarEvents.filter(function(e){return e.id===idx;})[0];
+if(!ev)return;
+var b='';
+
+b+='<div class="vm-section"><div class="vm-label">Date</div>';
+b+='<div class="vm-value">April '+ev.day+', 2026</div></div>';
+
+if(ev.tags.length>0){
+b+='<div class="vm-section"><div class="vm-label">Tags</div><div style="display:flex;gap:6px;flex-wrap:wrap">';
+ev.tags.forEach(function(tag){
+b+='<div class="vm-tag" style="background:'+tag.bg+';color:'+tag.tx+'">'+tag.text+'</div>';
+});
+b+='</div></div>';
+}
+
+if(ev.linkedModule){
+var linkedName='';
+if(ev.linkedModule==='project'&&projects[ev.linkedId])linkedName=projects[ev.linkedId].name;
+else if(ev.linkedModule==='task'&&tasks[ev.linkedId])linkedName=tasks[ev.linkedId].title;
+b+='<div class="vm-section"><div class="vm-label">Linked '+ev.linkedModule+'</div>';
+b+='<div class="vm-value" style="color:var(--inftx)">'+linkedName+'</div></div>';
+}
+
+var f='';
+if(ev.action)f+='<button class="vm-btn primary">'+ev.action+'</button>';
+f+='<button class="vm-btn">Close</button>';
+openModal({title:ev.title,subtitle:'April '+ev.day,color:'var(--wn)',body:b,footer:f});
+}
+
+/* ===== CLICK DELEGATION ===== */
+
+var streakScroll=document.getElementById('streak-scroll');
+if(streakScroll)streakScroll.addEventListener('click',function(e){
+var card=e.target.closest('.hcard');
+if(!card)return;
+var idx=Array.prototype.indexOf.call(streakScroll.querySelectorAll('.hcard'),card);
+if(idx>=0)openHabitModal(idx);
+});
+
+var dailyScroll=document.getElementById('daily-scroll');
+if(dailyScroll)dailyScroll.addEventListener('click',function(e){
+if(e.target.closest('.stepper-btn')||e.target.closest('.hcheck'))return;
+var card=e.target.closest('.dhcard');
+if(!card)return;
+var idx=Array.prototype.indexOf.call(dailyScroll.querySelectorAll('.dhcard'),card);
+if(idx>=0)openHabitModal(idx);
+});
+
+var tasksScroll=document.getElementById('tasks-scroll');
+if(tasksScroll)tasksScroll.addEventListener('click',function(e){
+var item=e.target.closest('.titem');
+if(!item)return;
+var idx=item.getAttribute('data-task-idx');
+if(idx!==null)openTaskModal(parseInt(idx));
+});
+
+var projScroll=document.getElementById('projects-scroll');
+if(projScroll)projScroll.addEventListener('click',function(e){
+var card=e.target.closest('.pcard');
+if(!card)return;
+var idx=card.getAttribute('data-proj-idx');
+if(idx!==null)openProjectModal(parseInt(idx));
+});
+
+var calGrid=document.getElementById('cal-grid');
+if(calGrid)calGrid.addEventListener('click',function(e){
+var ev=e.target.closest('.wk-ev');
+if(!ev)return;
+var idx=ev.getAttribute('data-ev-idx');
+if(idx!==null)openEventModal(parseInt(idx));
+});
+
+})();
+</script>

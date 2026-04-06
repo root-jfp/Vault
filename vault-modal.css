@@ -1,0 +1,71 @@
+/* === Vault Modal System === */
+
+/* Clickable cards */
+.hcard,.dhcard,.titem,.pcard,.wk-ev{cursor:pointer}
+
+/* Overlay backdrop */
+.vm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.vm-overlay.open{opacity:1;pointer-events:auto}
+
+/* Dialog container */
+.vm-dialog{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;width:92%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;transform:scale(.95) translateY(10px);transition:transform .2s;overflow:hidden}
+.vm-overlay.open .vm-dialog{transform:scale(1) translateY(0)}
+
+/* Header */
+.vm-header{display:flex;align-items:center;gap:10px;padding:16px 20px 12px;border-bottom:1px solid var(--bd)}
+.vm-hdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.vm-hgroup{flex:1;min-width:0}
+.vm-htitle{font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vm-hsub{font-size:11px;color:var(--tx2);margin-top:1px}
+.vm-close{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.vm-close:hover{background:var(--bg3);color:var(--tx)}
+
+/* Body */
+.vm-body{padding:16px 20px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.vm-body::-webkit-scrollbar{width:4px}
+.vm-body::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+
+/* Footer */
+.vm-footer{display:flex;gap:8px;padding:12px 20px;border-top:1px solid var(--bd);justify-content:flex-end}
+
+/* Utility: sections & labels */
+.vm-section{margin-bottom:14px}
+.vm-section:last-child{margin-bottom:0}
+.vm-label{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:4px;font-weight:600}
+.vm-value{font-size:12px;color:var(--tx)}
+
+/* Utility: layout */
+.vm-row{display:flex;gap:12px;flex-wrap:wrap}
+.vm-col{flex:1;min-width:100px}
+.vm-divider{height:1px;background:var(--bd);margin:12px 0}
+
+/* Utility: tag */
+.vm-tag{display:inline-block;font-size:9px;padding:2px 8px;border-radius:3px;font-weight:500}
+
+/* Buttons */
+.vm-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx2);cursor:pointer;font-size:11px;font-weight:500;transition:all .15s}
+.vm-btn:hover{background:var(--bg3);color:var(--tx)}
+.vm-btn.primary{background:var(--ac);border-color:var(--ac);color:#fff}
+.vm-btn.primary:hover{opacity:.85}
+.vm-btn.danger{color:var(--dntx);border-color:color-mix(in srgb,var(--dn) 40%,transparent)}
+.vm-btn.danger:hover{background:var(--dnbg)}
+
+/* Stat grid */
+.vm-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.vm-stat-card{background:var(--bg3);border-radius:6px;padding:8px 10px;text-align:center}
+.vm-stat-num{font-size:18px;font-weight:700}
+.vm-stat-lbl{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+
+/* Progress bar */
+.vm-progress{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px}
+.vm-progress-fill{height:100%;border-radius:3px;transition:width .3s}
+
+/* Linked task row */
+.vm-task-link{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg3);border-radius:5px;margin-bottom:4px;font-size:11px;cursor:pointer}
+.vm-task-link:hover{background:var(--bd)}
+.vm-task-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* Mobile: full-width modal */
+@media(max-width:700px){
+.vm-dialog{width:100%;max-width:100%;max-height:100vh;border-radius:0;height:100%}
+}
