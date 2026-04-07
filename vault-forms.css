@@ -1,0 +1,23 @@
+/* ============================================
+   VAULT FORMS — Shared form preview styles
+   Used by: habit_new, habit_edit, task_new
+   ============================================ */
+
+/* Preview panel */
+.preview-panel{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:20px 24px;position:sticky;top:0}
+.preview-title{font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+/* Preview summary stats */
+.preview-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
+.psum-item{text-align:center}
+.psum-val{font-size:18px;font-weight:700}
+.psum-label{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px}
+
+/* Tips section */
+.preview-tips{margin-top:16px;padding-top:14px;border-top:1px solid var(--bd)}
+.preview-tips-title{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.tip-item{font-size:11px;color:var(--tx3);padding:3px 0;display:flex;align-items:flex-start;gap:6px}
+.tip-item::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--tx3);flex-shrink:0;margin-top:5px}
+
+/* Responsive */
+@media(max-width:900px){.form-layout{grid-template-columns:1fr}.preview-panel{position:static}}

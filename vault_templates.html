@@ -1,0 +1,582 @@
+<link rel="stylesheet" href="vault-core.css">
+<style>
+/* Template grid */
+.tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.tpl-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.tpl-grid{grid-template-columns:1fr}}
+
+/* Template card */
+.tpl-card{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .2s,transform .2s}
+.tpl-card:hover{border-color:var(--tx3);transform:translateY(-2px)}
+.tpl-cat{display:inline-block;font-size:8px;padding:2px 8px;border-radius:3px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
+.tpl-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.tpl-desc{font-size:11px;color:var(--tx3);margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.4}
+.tpl-footer{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--tx3)}
+.tpl-diff{font-size:8px;padding:2px 6px;border-radius:3px;font-weight:600}
+.tpl-diff.beginner{background:var(--acbg);color:var(--actx)}
+.tpl-diff.intermediate{background:var(--infbg);color:var(--inftx)}
+.tpl-diff.advanced{background:var(--wnbg);color:var(--wntx)}
+</style>
+
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user"><div class="gm-level-badge sm">8</div><div class="topbar-av">J</div>José</div>
+<button class="topbar-cog" id="cog-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="cog-popup" id="cog-popup">
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Export templates</div>
+<div class="cog-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Template settings</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</div>
+<div class="lcard">
+<div class="sum-row"><div class="sum-dot" style="background:var(--ac)"></div>Templates<div class="sum-val" style="color:var(--actx)">16</div></div>
+<div class="sum-row"><div class="sum-dot" style="background:var(--inf)"></div>Categories<div class="sum-val" style="color:var(--inftx)">4</div></div>
+</div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Level & XP</div>
+<div id="gm-sidebar-container"></div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<a href="vault_templates.html" class="lnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+<a href="vault_achievements.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+</div>
+</div>
+
+<div class="right">
+<div class="page-hdr">
+<h1>Templates</h1>
+<input type="text" class="form-input" id="tpl-search" placeholder="Search templates..." style="width:240px;flex-shrink:0">
+</div>
+
+<div class="filter-tabs" id="filter-tabs">
+<span class="filter-tab active" data-filter="all">All (16)</span>
+<span class="filter-tab" data-filter="habits">Habits (4)</span>
+<span class="filter-tab" data-filter="tasks">Tasks & Projects (4)</span>
+<span class="filter-tab" data-filter="maintenance">Maintenance (4)</span>
+<span class="filter-tab" data-filter="widgets">Widgets (4)</span>
+</div>
+
+<div class="tpl-grid" id="tpl-grid">
+
+<!-- Template 1: Fitness Starter -->
+<div class="tpl-card" data-category="habits" data-tpl-idx="0">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Habits</div>
+<div class="tpl-name">Fitness Starter</div>
+<div class="tpl-desc">Start your fitness journey with essential daily exercise habits</div>
+<div class="tpl-footer"><span>5 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 2: Mindfulness -->
+<div class="tpl-card" data-category="habits" data-tpl-idx="1">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Habits</div>
+<div class="tpl-name">Mindfulness</div>
+<div class="tpl-desc">Build a daily mindfulness and meditation practice</div>
+<div class="tpl-footer"><span>4 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 3: Productivity -->
+<div class="tpl-card" data-category="habits" data-tpl-idx="2">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Habits</div>
+<div class="tpl-name">Productivity</div>
+<div class="tpl-desc">Power habits for maximum focus and output</div>
+<div class="tpl-footer"><span>3 items</span><span class="tpl-diff intermediate">Intermediate</span></div>
+</div>
+
+<!-- Template 4: Health & Wellness -->
+<div class="tpl-card" data-category="habits" data-tpl-idx="3">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Habits</div>
+<div class="tpl-name">Health & Wellness</div>
+<div class="tpl-desc">Comprehensive health tracking for diet, sleep and hydration</div>
+<div class="tpl-footer"><span>5 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 5: Home Renovation -->
+<div class="tpl-card" data-category="tasks" data-tpl-idx="4">
+<div class="tpl-cat" style="background:var(--infbg);color:var(--inftx)">Tasks & Projects</div>
+<div class="tpl-name">Home Renovation</div>
+<div class="tpl-desc">Complete home renovation project with task breakdown</div>
+<div class="tpl-footer"><span>12 items</span><span class="tpl-diff advanced">Advanced</span></div>
+</div>
+
+<!-- Template 6: Content Calendar -->
+<div class="tpl-card" data-category="tasks" data-tpl-idx="5">
+<div class="tpl-cat" style="background:var(--infbg);color:var(--inftx)">Tasks & Projects</div>
+<div class="tpl-name">Content Calendar</div>
+<div class="tpl-desc">Weekly content creation pipeline for social media</div>
+<div class="tpl-footer"><span>8 items</span><span class="tpl-diff intermediate">Intermediate</span></div>
+</div>
+
+<!-- Template 7: Learning Path -->
+<div class="tpl-card" data-category="tasks" data-tpl-idx="6">
+<div class="tpl-cat" style="background:var(--infbg);color:var(--inftx)">Tasks & Projects</div>
+<div class="tpl-name">Learning Path</div>
+<div class="tpl-desc">Structured learning plan with milestones and deadlines</div>
+<div class="tpl-footer"><span>6 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 8: Event Planning -->
+<div class="tpl-card" data-category="tasks" data-tpl-idx="7">
+<div class="tpl-cat" style="background:var(--infbg);color:var(--inftx)">Tasks & Projects</div>
+<div class="tpl-name">Event Planning</div>
+<div class="tpl-desc">End-to-end event planning from venue to follow-up</div>
+<div class="tpl-footer"><span>10 items</span><span class="tpl-diff intermediate">Intermediate</span></div>
+</div>
+
+<!-- Template 9: Apartment Essentials -->
+<div class="tpl-card" data-category="maintenance" data-tpl-idx="8">
+<div class="tpl-cat" style="background:var(--wnbg);color:var(--wntx)">Maintenance</div>
+<div class="tpl-name">Apartment Essentials</div>
+<div class="tpl-desc">Essential maintenance tasks for apartment living</div>
+<div class="tpl-footer"><span>8 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 10: Homeowner Full -->
+<div class="tpl-card" data-category="maintenance" data-tpl-idx="9">
+<div class="tpl-cat" style="background:var(--wnbg);color:var(--wntx)">Maintenance</div>
+<div class="tpl-name">Homeowner Full</div>
+<div class="tpl-desc">Comprehensive home maintenance schedule for homeowners</div>
+<div class="tpl-footer"><span>15 items</span><span class="tpl-diff intermediate">Intermediate</span></div>
+</div>
+
+<!-- Template 11: Car Maintenance -->
+<div class="tpl-card" data-category="maintenance" data-tpl-idx="10">
+<div class="tpl-cat" style="background:var(--wnbg);color:var(--wntx)">Maintenance</div>
+<div class="tpl-name">Car Maintenance</div>
+<div class="tpl-desc">Complete car maintenance and service schedule</div>
+<div class="tpl-footer"><span>6 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 12: Pet Care -->
+<div class="tpl-card" data-category="maintenance" data-tpl-idx="11">
+<div class="tpl-cat" style="background:var(--wnbg);color:var(--wntx)">Maintenance</div>
+<div class="tpl-name">Pet Care</div>
+<div class="tpl-desc">Pet care routine including vet visits, grooming and feeding</div>
+<div class="tpl-footer"><span>7 items</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 13: Fitness Dashboard -->
+<div class="tpl-card" data-category="widgets" data-tpl-idx="12">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Widgets</div>
+<div class="tpl-name">Fitness Dashboard</div>
+<div class="tpl-desc">Dashboard layout with streak grid, daily tracker and performance chart</div>
+<div class="tpl-footer"><span>3 widgets</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 14: Content Creator -->
+<div class="tpl-card" data-category="widgets" data-tpl-idx="13">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Widgets</div>
+<div class="tpl-name">Content Creator</div>
+<div class="tpl-desc">Task board and project tracker widgets for content pipelines</div>
+<div class="tpl-footer"><span>2 widgets</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+<!-- Template 15: Home Manager -->
+<div class="tpl-card" data-category="widgets" data-tpl-idx="14">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Widgets</div>
+<div class="tpl-name">Home Manager</div>
+<div class="tpl-desc">Full dashboard with all five widgets for complete household overview</div>
+<div class="tpl-footer"><span>5 widgets</span><span class="tpl-diff intermediate">Intermediate</span></div>
+</div>
+
+<!-- Template 16: Minimal Focus -->
+<div class="tpl-card" data-category="widgets" data-tpl-idx="15">
+<div class="tpl-cat" style="background:var(--acbg);color:var(--actx)">Widgets</div>
+<div class="tpl-name">Minimal Focus</div>
+<div class="tpl-desc">Distraction-free view with streak grid and daily tracker only</div>
+<div class="tpl-footer"><span>2 widgets</span><span class="tpl-diff beginner">Beginner</span></div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- Preview modal -->
+<div class="vm-overlay" id="tpl-modal"><div class="vm-dialog">
+<div class="vm-header"><div class="vm-hdot" id="tpl-dot"></div><div class="vm-hgroup"><div class="vm-htitle" id="tpl-title"></div><div class="vm-hsub" id="tpl-sub"></div></div><button class="vm-close" id="tpl-close">&times;</button></div>
+<div class="vm-body" id="tpl-body"></div>
+<div class="vm-footer" id="tpl-footer"></div>
+</div></div>
+
+<!-- Bottom Navigation -->
+<div class="bnav"><div class="bnav-inner">
+<a href="vault_dashboard_v5_wide_scroll.html" class="bnav-item" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+<a href="vault_habits.html" class="bnav-item" data-nav="habits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_tasks.html" class="bnav-item" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_maintenance.html" class="bnav-item" data-nav="maint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+<div class="bnav-item" data-nav="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+</div></div>
+
+<!-- More Sheet -->
+<div class="mobile-sheet-backdrop" id="mobile-sheet-backdrop"></div>
+<div class="mobile-sheet" id="mobile-sheet">
+<div class="mobile-sheet-handle"></div>
+<div class="mobile-sheet-title">More</div>
+<a href="vault_projects.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<div class="mobile-sheet-sep"></div>
+<a href="vault_templates.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+<a href="vault_achievements.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+</div>
+
+<script src="vault-gamification.js"></script>
+<script src="vault-mobile.js"></script>
+</div>
+
+<script src="vault-store.js"></script>
+<script src="vault-widget-registry.js"></script>
+<script src="vault-widget-renderers.js"></script>
+<script>
+(function(){
+
+/* ===== TEMPLATES DATA ===== */
+
+var TEMPLATES=[
+{name:'Fitness Starter',category:'habits',description:'Start your fitness journey with essential daily exercise habits',difficulty:'beginner',items:[
+{name:'Morning run',type:'boolean',freq:'Daily',color:'#1D9E75',uom:null,goal:null},
+{name:'Push-ups',type:'quantitative',freq:'Daily',color:'#378ADD',uom:'reps',goal:50},
+{name:'Stretching',type:'boolean',freq:'Daily',color:'#EF9F27',uom:null,goal:null},
+{name:'Evening walk',type:'boolean',freq:'Daily',color:'#7F77DD',uom:null,goal:null},
+{name:'Water intake',type:'quantitative',freq:'Daily',color:'#378ADD',uom:'ml',goal:2000}
+]},
+{name:'Mindfulness',category:'habits',description:'Build a daily mindfulness and meditation practice',difficulty:'beginner',items:[
+{name:'Morning meditation',type:'quantitative',freq:'Daily',color:'#7F77DD',uom:'min',goal:15},
+{name:'Gratitude journal',type:'boolean',freq:'Daily',color:'#EF9F27',uom:null,goal:null},
+{name:'Deep breathing',type:'boolean',freq:'Daily',color:'#1D9E75',uom:null,goal:null},
+{name:'Evening reflection',type:'boolean',freq:'Daily',color:'#378ADD',uom:null,goal:null}
+]},
+{name:'Productivity',category:'habits',description:'Power habits for maximum focus and output',difficulty:'intermediate',items:[
+{name:'Deep work',type:'quantitative',freq:'Daily',color:'#1D9E75',uom:'hrs',goal:6},
+{name:'No social media before noon',type:'boolean',freq:'Daily',color:'#E24B4A',uom:null,goal:null},
+{name:'Plan tomorrow',type:'boolean',freq:'Daily',color:'#378ADD',uom:null,goal:null}
+]},
+{name:'Health & Wellness',category:'habits',description:'Comprehensive health tracking for diet, sleep and hydration',difficulty:'beginner',items:[
+{name:'Drink water',type:'quantitative',freq:'Daily',color:'#378ADD',uom:'ml',goal:2000},
+{name:'Sleep 8 hours',type:'quantitative',freq:'Daily',color:'#7F77DD',uom:'hrs',goal:8},
+{name:'Eat healthy',type:'boolean',freq:'Daily',color:'#1D9E75',uom:null,goal:null},
+{name:'No processed food',type:'boolean',freq:'Daily',color:'#EF9F27',uom:null,goal:null},
+{name:'Take vitamins',type:'boolean',freq:'Daily',color:'#378ADD',uom:null,goal:null}
+]},
+{name:'Home Renovation',category:'tasks',description:'Complete home renovation project with task breakdown',difficulty:'advanced',items:[
+{name:'Set budget and timeline',priority:'High',label:'Planning'},
+{name:'Hire contractor',priority:'High',label:'Planning'},
+{name:'Demolition',priority:'High',label:'Execution'},
+{name:'Electrical work',priority:'High',label:'Execution'},
+{name:'Plumbing updates',priority:'High',label:'Execution'},
+{name:'Drywall and painting',priority:'Medium',label:'Execution'},
+{name:'Flooring installation',priority:'Medium',label:'Execution'},
+{name:'Kitchen cabinets',priority:'Medium',label:'Execution'},
+{name:'Bathroom fixtures',priority:'Medium',label:'Execution'},
+{name:'Final inspection',priority:'High',label:'Review'},
+{name:'Punch list items',priority:'Low',label:'Review'},
+{name:'Move-in prep',priority:'Medium',label:'Closing'}
+]},
+{name:'Content Calendar',category:'tasks',description:'Weekly content creation pipeline for social media',difficulty:'intermediate',items:[
+{name:'Content brainstorm',priority:'High',label:'Ideation'},
+{name:'Script writing',priority:'High',label:'Creation'},
+{name:'Video recording',priority:'High',label:'Creation'},
+{name:'Video editing',priority:'Medium',label:'Production'},
+{name:'Thumbnail design',priority:'Medium',label:'Production'},
+{name:'Write captions',priority:'Low',label:'Copy'},
+{name:'Schedule posts',priority:'Medium',label:'Distribution'},
+{name:'Engagement review',priority:'Low',label:'Analytics'}
+]},
+{name:'Learning Path',category:'tasks',description:'Structured learning plan with milestones and deadlines',difficulty:'beginner',items:[
+{name:'Define learning goals',priority:'High',label:'Setup'},
+{name:'Gather resources',priority:'Medium',label:'Setup'},
+{name:'Complete module 1',priority:'High',label:'Study'},
+{name:'Practice exercises',priority:'Medium',label:'Practice'},
+{name:'Build mini project',priority:'High',label:'Application'},
+{name:'Review and assess',priority:'Medium',label:'Review'}
+]},
+{name:'Event Planning',category:'tasks',description:'End-to-end event planning from venue to follow-up',difficulty:'intermediate',items:[
+{name:'Define event goals',priority:'High',label:'Planning'},
+{name:'Set budget',priority:'High',label:'Planning'},
+{name:'Book venue',priority:'High',label:'Logistics'},
+{name:'Send invitations',priority:'High',label:'Communication'},
+{name:'Arrange catering',priority:'Medium',label:'Logistics'},
+{name:'Set up decorations',priority:'Low',label:'Design'},
+{name:'AV equipment check',priority:'Medium',label:'Logistics'},
+{name:'Day-of coordination',priority:'High',label:'Execution'},
+{name:'Thank you notes',priority:'Low',label:'Follow-up'},
+{name:'Post-event review',priority:'Medium',label:'Follow-up'}
+]},
+{name:'Apartment Essentials',category:'maintenance',description:'Essential maintenance tasks for apartment living',difficulty:'beginner',items:[
+{name:'Clean kitchen',icon:'kitchen',intervalDays:7},
+{name:'Vacuum floors',icon:'vacuum',intervalDays:7},
+{name:'Clean bathroom',icon:'bathroom',intervalDays:7},
+{name:'Wash bedding',icon:'bed',intervalDays:14},
+{name:'Check smoke detectors',icon:'alarm',intervalDays:180},
+{name:'Replace water filter',icon:'water',intervalDays:90},
+{name:'Deep clean fridge',icon:'fridge',intervalDays:30},
+{name:'Clean windows',icon:'window',intervalDays:90}
+]},
+{name:'Homeowner Full',category:'maintenance',description:'Comprehensive home maintenance schedule for homeowners',difficulty:'intermediate',items:[
+{name:'HVAC filter change',icon:'hvac',intervalDays:90},
+{name:'Gutter cleaning',icon:'gutter',intervalDays:180},
+{name:'Water heater flush',icon:'water',intervalDays:365},
+{name:'Roof inspection',icon:'roof',intervalDays:365},
+{name:'Smoke detector batteries',icon:'alarm',intervalDays:180},
+{name:'Pest inspection',icon:'pest',intervalDays:365},
+{name:'Caulk inspection',icon:'seal',intervalDays:365},
+{name:'Dryer vent cleaning',icon:'vent',intervalDays:365},
+{name:'Foundation check',icon:'foundation',intervalDays:365},
+{name:'Lawn maintenance',icon:'lawn',intervalDays:14},
+{name:'Exterior paint touch-up',icon:'paint',intervalDays:730},
+{name:'Garage door lubrication',icon:'garage',intervalDays:180},
+{name:'Septic tank pump',icon:'septic',intervalDays:1095},
+{name:'Pressure wash exterior',icon:'pressure',intervalDays:365},
+{name:'Check fire extinguishers',icon:'fire',intervalDays:365}
+]},
+{name:'Car Maintenance',category:'maintenance',description:'Complete car maintenance and service schedule',difficulty:'beginner',items:[
+{name:'Oil change',icon:'oil',intervalDays:180},
+{name:'Tire rotation',icon:'tire',intervalDays:180},
+{name:'Brake inspection',icon:'brake',intervalDays:365},
+{name:'Air filter replacement',icon:'filter',intervalDays:365},
+{name:'Coolant flush',icon:'coolant',intervalDays:730},
+{name:'Battery check',icon:'battery',intervalDays:180}
+]},
+{name:'Pet Care',category:'maintenance',description:'Pet care routine including vet visits, grooming and feeding',difficulty:'beginner',items:[
+{name:'Vet checkup',icon:'vet',intervalDays:365},
+{name:'Flea treatment',icon:'flea',intervalDays:30},
+{name:'Grooming session',icon:'groom',intervalDays:42},
+{name:'Nail trimming',icon:'nail',intervalDays:21},
+{name:'Dental cleaning',icon:'dental',intervalDays:365},
+{name:'Vaccinations',icon:'vaccine',intervalDays:365},
+{name:'Deworming',icon:'deworm',intervalDays:90}
+]},
+{name:'Fitness Dashboard',category:'widgets',description:'Dashboard layout with streak grid, daily tracker and performance chart',difficulty:'beginner',items:[
+{widget:'streak',label:'Streak Grid',desc:'52-week contribution grid showing habit streaks'},
+{widget:'daily',label:'Daily Tracker',desc:'Today\'s habits with quick check-off'},
+{widget:'calendar',label:'Calendar',desc:'Weekly calendar with event dots'}
+]},
+{name:'Content Creator',category:'widgets',description:'Task board and project tracker widgets for content pipelines',difficulty:'beginner',items:[
+{widget:'tasks',label:'Task Board',desc:'Kanban-style task columns'},
+{widget:'projects',label:'Projects',desc:'Project cards with progress bars'}
+]},
+{name:'Home Manager',category:'widgets',description:'Full dashboard with all five widgets for complete household overview',difficulty:'intermediate',items:[
+{widget:'streak',label:'Streak Grid',desc:'52-week contribution grid showing habit streaks'},
+{widget:'daily',label:'Daily Tracker',desc:'Today\'s habits with quick check-off'},
+{widget:'tasks',label:'Task Board',desc:'Kanban-style task columns'},
+{widget:'projects',label:'Projects',desc:'Project cards with progress bars'},
+{widget:'calendar',label:'Calendar',desc:'Weekly calendar with event dots'}
+]},
+{name:'Minimal Focus',category:'widgets',description:'Distraction-free view with streak grid and daily tracker only',difficulty:'beginner',items:[
+{widget:'streak',label:'Streak Grid',desc:'52-week contribution grid showing habit streaks'},
+{widget:'daily',label:'Daily Tracker',desc:'Today\'s habits with quick check-off'}
+]}
+];
+
+/* ===== CATEGORY LABEL MAP ===== */
+var CAT_LABELS={habits:'Habits',tasks:'Tasks & Projects',maintenance:'Maintenance',widgets:'Widgets'};
+var CAT_COLORS={habits:{bg:'var(--acbg)',tx:'var(--actx)'},tasks:{bg:'var(--infbg)',tx:'var(--inftx)'},maintenance:{bg:'var(--wnbg)',tx:'var(--wntx)'},widgets:{bg:'var(--acbg)',tx:'var(--actx)'}};
+
+/* ===== FILTER TABS ===== */
+var currentFilter='all';
+var filterTabs=document.getElementById('filter-tabs');
+
+/* Read URL parameter */
+var urlParams=new URLSearchParams(window.location.search);
+var paramCat=urlParams.get('category');
+if(paramCat&&CAT_LABELS[paramCat]){
+currentFilter=paramCat;
+}
+
+function setActiveTab(){
+filterTabs.querySelectorAll('.filter-tab').forEach(function(tab){
+tab.classList.toggle('active',tab.getAttribute('data-filter')===currentFilter);
+});
+}
+
+filterTabs.addEventListener('click',function(e){
+var tab=e.target.closest('.filter-tab');
+if(!tab)return;
+currentFilter=tab.getAttribute('data-filter');
+setActiveTab();
+applyFilters();
+});
+
+/* ===== SEARCH ===== */
+var searchInput=document.getElementById('tpl-search');
+searchInput.addEventListener('input',function(){
+applyFilters();
+});
+
+/* ===== FILTER LOGIC ===== */
+function applyFilters(){
+var query=searchInput.value.toLowerCase().trim();
+var cards=document.querySelectorAll('.tpl-card');
+cards.forEach(function(card){
+var cat=card.getAttribute('data-category');
+var name=card.querySelector('.tpl-name').textContent.toLowerCase();
+var desc=card.querySelector('.tpl-desc').textContent.toLowerCase();
+var matchesCat=currentFilter==='all'||cat===currentFilter;
+var matchesSearch=!query||name.indexOf(query)!==-1||desc.indexOf(query)!==-1;
+card.style.display=(matchesCat&&matchesSearch)?'':'none';
+});
+}
+
+/* Apply initial filter from URL parameter */
+setActiveTab();
+applyFilters();
+
+/* ===== MODAL ===== */
+var modal=document.getElementById('tpl-modal');
+var tplTitle=document.getElementById('tpl-title');
+var tplSub=document.getElementById('tpl-sub');
+var tplDot=document.getElementById('tpl-dot');
+var tplBody=document.getElementById('tpl-body');
+var tplFooter=document.getElementById('tpl-footer');
+var tplClose=document.getElementById('tpl-close');
+
+var currentModalIdx=-1;
+function openModal(idx){
+var tpl=TEMPLATES[idx];
+if(!tpl)return;
+currentModalIdx=idx;
+var cc=CAT_COLORS[tpl.category];
+
+tplDot.style.background=cc.tx;
+tplTitle.textContent=tpl.name;
+tplSub.innerHTML='<span style="background:'+cc.bg+';color:'+cc.tx+';font-size:9px;padding:2px 8px;border-radius:3px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-right:6px">'+CAT_LABELS[tpl.category]+'</span><span class="tpl-diff '+tpl.difficulty+'" style="font-size:9px;padding:2px 8px;border-radius:3px;font-weight:600">'+tpl.difficulty.charAt(0).toUpperCase()+tpl.difficulty.slice(1)+'</span>';
+
+var b='';
+b+='<div style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.5">'+tpl.description+'</div>';
+b+='<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin-bottom:8px">Items ('+tpl.items.length+')</div>';
+b+='<div style="max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent">';
+
+if(tpl.category==='habits'){
+tpl.items.forEach(function(item){
+b+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;margin-bottom:4px;font-size:11px">';
+b+='<div style="width:8px;height:8px;border-radius:50%;background:'+item.color+';flex-shrink:0"></div>';
+b+='<div style="flex:1;min-width:0"><div style="font-weight:600">'+item.name+'</div>';
+b+='<div style="font-size:9px;color:var(--tx3);margin-top:1px">'+item.freq+' · '+(item.type==='boolean'?'Boolean':'Quantitative')+(item.goal?' · Goal: '+item.goal+item.uom:'')+'</div>';
+b+='</div>';
+b+='<span style="font-size:8px;padding:2px 6px;border-radius:3px;background:'+(item.type==='boolean'?'var(--acbg)':'var(--infbg)')+';color:'+(item.type==='boolean'?'var(--actx)':'var(--inftx)')+';font-weight:600;text-transform:uppercase">'+(item.type==='boolean'?'Bool':'Qty')+'</span>';
+b+='</div>';
+});
+}else if(tpl.category==='tasks'){
+tpl.items.forEach(function(item){
+var prioColor=item.priority==='High'?'var(--dntx)':item.priority==='Medium'?'var(--wntx)':'var(--tx3)';
+var prioBg=item.priority==='High'?'var(--dnbg)':item.priority==='Medium'?'var(--wnbg)':'var(--bg3)';
+b+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;margin-bottom:4px;font-size:11px">';
+b+='<div style="width:8px;height:8px;border-radius:2px;background:'+prioColor+';flex-shrink:0"></div>';
+b+='<div style="flex:1;min-width:0"><div style="font-weight:600">'+item.name+'</div>';
+b+='<div style="font-size:9px;color:var(--tx3);margin-top:1px">'+item.label+'</div>';
+b+='</div>';
+b+='<span style="font-size:8px;padding:2px 6px;border-radius:3px;background:'+prioBg+';color:'+prioColor+';font-weight:600">'+item.priority+'</span>';
+b+='</div>';
+});
+}else if(tpl.category==='widgets'){
+tpl.items.forEach(function(item){
+b+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;margin-bottom:4px;font-size:11px">';
+b+='<div style="width:8px;height:8px;border-radius:4px;background:var(--ac);flex-shrink:0"></div>';
+b+='<div style="flex:1;min-width:0"><div style="font-weight:600">'+item.label+'</div>';
+b+='<div style="font-size:9px;color:var(--tx3);margin-top:1px">'+item.desc+'</div>';
+b+='</div>';
+b+='<span style="font-size:8px;padding:2px 6px;border-radius:3px;background:var(--acbg);color:var(--actx);font-weight:600;text-transform:uppercase">Widget</span>';
+b+='</div>';
+});
+}else{
+tpl.items.forEach(function(item){
+var days=item.intervalDays;
+var interval=days>=365?(days/365)+'y':days>=30?Math.round(days/30)+'mo':days+'d';
+b+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;margin-bottom:4px;font-size:11px">';
+b+='<div style="width:8px;height:8px;border-radius:50%;background:var(--wn);flex-shrink:0"></div>';
+b+='<div style="flex:1;min-width:0"><div style="font-weight:600">'+item.name+'</div>';
+b+='<div style="font-size:9px;color:var(--tx3);margin-top:1px">Every '+interval+'</div>';
+b+='</div>';
+b+='<span style="font-size:8px;padding:2px 6px;border-radius:3px;background:var(--wnbg);color:var(--wntx);font-weight:600">'+interval+'</span>';
+b+='</div>';
+});
+}
+
+b+='</div>';
+tplBody.innerHTML=b;
+
+tplFooter.innerHTML='<button class="vm-btn" id="tpl-cancel">Cancel</button><button class="vm-btn primary" id="tpl-use">Use Template</button>';
+
+modal.classList.add('open');
+document.body.style.overflow='hidden';
+
+document.getElementById('tpl-cancel').addEventListener('click',closeModal);
+document.getElementById('tpl-use').addEventListener('click',function(){
+var tpl=TEMPLATES[currentModalIdx];
+if(!tpl){closeModal();return;}
+
+if(tpl.category==='widgets'&&typeof VaultWidgetRegistry!=='undefined'){
+/* Add widget instances to registry */
+tpl.items.forEach(function(item){
+VaultWidgetRegistry.addInstance(item.widget,{});
+});
+}else if(tpl.category==='habits'&&typeof VaultStore!=='undefined'){
+/* Save habit templates to store */
+var existing=VaultStore.get('habit_templates',[]);
+var merged=existing.concat(tpl.items);
+VaultStore.set('habit_templates',merged);
+}else if(tpl.category==='tasks'&&typeof VaultStore!=='undefined'){
+/* Save task templates to store */
+var existingT=VaultStore.get('task_templates',[]);
+var mergedT=existingT.concat(tpl.items);
+VaultStore.set('task_templates',mergedT);
+}else if(tpl.category==='maintenance'&&typeof VaultStore!=='undefined'){
+/* Save maintenance templates to store */
+var existingM=VaultStore.get('maintenance_templates',[]);
+var mergedM=existingM.concat(tpl.items);
+VaultStore.set('maintenance_templates',mergedM);
+}
+
+closeModal();
+if(typeof VAULT_GAMIFICATION!=='undefined'){
+VAULT_GAMIFICATION.renderToast('Template "'+tpl.name+'" applied!',25);
+}
+});
+}
+
+function closeModal(){
+modal.classList.remove('open');
+document.body.style.overflow='';
+}
+
+tplClose.addEventListener('click',closeModal);
+modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
+
+/* ===== CARD CLICK DELEGATION ===== */
+document.getElementById('tpl-grid').addEventListener('click',function(e){
+var card=e.target.closest('.tpl-card');
+if(!card)return;
+var idx=parseInt(card.getAttribute('data-tpl-idx'));
+if(!isNaN(idx))openModal(idx);
+});
+
+/* ===== COG ===== */
+document.getElementById('cog-btn').addEventListener('click',function(e){
+e.stopPropagation();
+document.getElementById('cog-popup').classList.toggle('visible');
+});
+document.addEventListener('click',function(){document.getElementById('cog-popup').classList.remove('visible')});
+
+})();
+</script>

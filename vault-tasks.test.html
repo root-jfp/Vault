@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>vault-tasks.js — Test Suite</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#191816;color:#e4e2dc;font-size:13px;padding:24px}
+h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.meta{font-size:11px;color:#6e6d68;margin-bottom:20px}
+.suite{margin-bottom:20px}
+.suite-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6e6d68;margin-bottom:6px}
+.test{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:5px;margin-bottom:3px}
+.test.pass{background:rgba(29,158,117,.12)}
+.test.fail{background:rgba(226,75,74,.12)}
+.badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:1px}
+.badge.pass{background:rgba(29,158,117,.3);color:#5DCAA5}
+.badge.fail{background:rgba(226,75,74,.3);color:#F09595}
+.test-name{font-size:11px;flex:1}
+.test-err{font-size:10px;color:#F09595;margin-top:2px;font-family:monospace}
+.summary{margin-top:16px;padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600}
+.summary.all-pass{background:rgba(29,158,117,.15);color:#5DCAA5}
+.summary.has-fail{background:rgba(226,75,74,.15);color:#F09595}
+</style>
+</head>
+<body>
+<h1>vault-tasks.js — Test Suite</h1>
+<p class="meta">Browser-based TDD. Mock VaultStore so tests run isolated from real localStorage.</p>
+<div id="output"></div>
+
+<script>
+/* ── Mock VaultStore (isolated per test via reset) ── */
+(function(){
+  var _store = {};
+  window.VaultStore = {
+    get: function(key, def) {
+      var v = _store['vault_' + key];
+      return v !== undefined ? JSON.parse(JSON.stringify(v)) : def;
+    },
+    set: function(key, val) { _store['vault_' + key] = JSON.parse(JSON.stringify(val)); },
+    remove: function(key) { delete _store['vault_' + key]; },
+    _clear: function() { _store = {}; }
+  };
+})();
+</script>
+<script src="vault-tasks.js"></script>
+<script>
+(function(){
+
+/* ── Minimal test runner ── */
+var results = [];
+var currentSuite = '';
+
+function suite(name) { currentSuite = name; }
+
+function test(name, fn) {
+  try {
+    fn();
+    results.push({suite: currentSuite, name: name, pass: true});
+  } catch(e) {
+    results.push({suite: currentSuite, name: name, pass: false, err: e.message});
+  }
+}
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg || 'Assertion failed');
+}
+
+function assertEqual(a, b, msg) {
+  if (a !== b) throw new Error((msg || 'Expected equal') + ': got ' + JSON.stringify(a) + ' vs ' + JSON.stringify(b));
+}
+
+function assertNull(v, msg) {
+  if (v !== null) throw new Error((msg || 'Expected null') + ': got ' + JSON.stringify(v));
+}
+
+function assertLength(arr, n, msg) {
+  if (!arr || arr.length !== n) throw new Error((msg || 'Expected length ' + n) + ': got ' + (arr ? arr.length : 'null'));
+}
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+function offsetDate(n) {
+  var d = new Date(); d.setDate(d.getDate() + n);
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+
+/* ════════════════════════════════════════
+   SUITE: Seeding & initialization
+   ════════════════════════════════════════ */
+suite('Seeding & initialization');
+
+test('getAll() seeds demo data on first call', function() {
+  VaultStore._clear();
+  var tasks = TaskStore.getAll();
+  assert(tasks.length > 0, 'Should have seeded tasks');
+});
+
+test('getAll() does NOT re-seed after reset()', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var tasks = TaskStore.getAll();
+  assertLength(tasks, 0, 'After reset, tasks should be empty');
+});
+
+test('getColumns() returns 4 default columns', function() {
+  VaultStore._clear();
+  var cols = TaskStore.getColumns();
+  assertLength(cols, 4, 'Should have 4 default columns');
+  assertEqual(cols[0].name, 'To Do', 'First column name');
+  assertEqual(cols[3].name, 'Done', 'Last column name');
+});
+
+/* ════════════════════════════════════════
+   SUITE: getAll / get
+   ════════════════════════════════════════ */
+suite('getAll / get');
+
+test('getAll() without userId returns all tasks', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'User1 task', columnId:1, position:0, userId:1, priority:'low'});
+  TaskStore.create({title:'User2 task', columnId:1, position:1, userId:2, priority:'low'});
+  var all = TaskStore.getAll();
+  assertLength(all, 2, 'getAll() should return both users tasks');
+});
+
+test('getAll(userId) filters by user', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'User1 task', columnId:1, position:0, userId:1, priority:'low'});
+  TaskStore.create({title:'User2 task', columnId:1, position:1, userId:2, priority:'low'});
+  var u1 = TaskStore.getAll(1);
+  assertLength(u1, 1, 'Should return only user 1 tasks');
+  assertEqual(u1[0].title, 'User1 task', 'Should be user 1 task');
+});
+
+test('get(id) returns the correct task', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var created = TaskStore.create({title:'Find me', columnId:1, position:0, userId:1, priority:'low'});
+  var found = TaskStore.get(created.id);
+  assert(found !== null, 'Should find the task');
+  assertEqual(found.title, 'Find me', 'Should match title');
+});
+
+test('get(unknownId) returns null', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var result = TaskStore.get(99999);
+  assertNull(result, 'Should return null for unknown id');
+});
+
+/* ════════════════════════════════════════
+   SUITE: create
+   ════════════════════════════════════════ */
+suite('create');
+
+test('create() assigns a unique id', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var t1 = TaskStore.create({title:'T1', columnId:1, position:0, userId:1, priority:'low'});
+  var t2 = TaskStore.create({title:'T2', columnId:1, position:1, userId:1, priority:'low'});
+  assert(t1.id !== t2.id, 'IDs should be unique');
+  assert(typeof t1.id === 'number', 'ID should be a number');
+});
+
+test('create() sets created_at and updated_at', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var t = TaskStore.create({title:'With timestamps', columnId:1, position:0, userId:1, priority:'low'});
+  assert(typeof t.created_at === 'string', 'Should have created_at');
+  assert(typeof t.updated_at === 'string', 'Should have updated_at');
+});
+
+test('create() persists across getAll calls', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'Persisted', columnId:1, position:0, userId:1, priority:'low'});
+  var all = TaskStore.getAll(1);
+  assertLength(all, 1, 'Should persist the created task');
+  assertEqual(all[0].title, 'Persisted', 'Should have correct title');
+});
+
+/* ════════════════════════════════════════
+   SUITE: update
+   ════════════════════════════════════════ */
+suite('update');
+
+test('update() changes specified fields', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var t = TaskStore.create({title:'Original', columnId:1, position:0, userId:1, priority:'low'});
+  var updated = TaskStore.update(t.id, {title:'Updated', priority:'high'});
+  assertEqual(updated.title, 'Updated', 'Title should be updated');
+  assertEqual(updated.priority, 'high', 'Priority should be updated');
+});
+
+test('update() preserves unchanged fields', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var t = TaskStore.create({title:'Keep me', columnId:2, position:0, userId:1, priority:'medium', label:'MyLabel'});
+  var updated = TaskStore.update(t.id, {title:'Changed'});
+  assertEqual(updated.label, 'MyLabel', 'Unchanged field should be preserved');
+  assertEqual(updated.columnId, 2, 'Column should be preserved');
+});
+
+test('update() returns null for unknown id', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var result = TaskStore.update(99999, {title:'Ghost'});
+  assertNull(result, 'Should return null for unknown id');
+});
+
+/* ════════════════════════════════════════
+   SUITE: delete
+   ════════════════════════════════════════ */
+suite('delete');
+
+test('delete() removes the task', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var t = TaskStore.create({title:'Delete me', columnId:1, position:0, userId:1, priority:'low'});
+  var removed = TaskStore['delete'](t.id);
+  assert(removed === true, 'Should return true on success');
+  assertNull(TaskStore.get(t.id), 'Task should no longer exist');
+});
+
+test('delete() returns false for unknown id', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var result = TaskStore['delete'](99999);
+  assert(result === false, 'Should return false for unknown id');
+});
+
+/* ════════════════════════════════════════
+   SUITE: move
+   ════════════════════════════════════════ */
+suite('move');
+
+test('move() updates columnId and position', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var t = TaskStore.create({title:'Moveable', columnId:1, position:0, userId:1, priority:'low'});
+  TaskStore.move(t.id, 2, 0);
+  var updated = TaskStore.get(t.id);
+  assertEqual(updated.columnId, 2, 'columnId should be updated');
+});
+
+test('move() returns false for unknown id', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  var result = TaskStore.move(99999, 2, 0);
+  assert(result === false, 'Should return false for unknown id');
+});
+
+/* ════════════════════════════════════════
+   SUITE: filter helpers
+   ════════════════════════════════════════ */
+suite('filter helpers');
+
+test('getOverdue() returns tasks with past due date, not done', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'Overdue', columnId:1, position:0, userId:1, priority:'high', dueDate:offsetDate(-3)});
+  TaskStore.create({title:'Future', columnId:1, position:1, userId:1, priority:'low', dueDate:offsetDate(3)});
+  TaskStore.create({title:'Overdue but Done', columnId:4, position:0, userId:1, priority:'low', dueDate:offsetDate(-1)});
+  var overdue = TaskStore.getOverdue(1);
+  assertLength(overdue, 1, 'Should return exactly 1 overdue task');
+  assertEqual(overdue[0].title, 'Overdue', 'Should be the overdue task');
+});
+
+test('getDueToday() returns tasks due today, not done', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'Due Today', columnId:1, position:0, userId:1, priority:'medium', dueDate:todayStr()});
+  TaskStore.create({title:'Due Tomorrow', columnId:1, position:1, userId:1, priority:'low', dueDate:offsetDate(1)});
+  TaskStore.create({title:'Today but Done', columnId:4, position:0, userId:1, priority:'low', dueDate:todayStr()});
+  var today = TaskStore.getDueToday(1);
+  assertLength(today, 1, 'Should return exactly 1 task due today');
+  assertEqual(today[0].title, 'Due Today', 'Should be the today task');
+});
+
+test('getUpcoming() returns tasks due within N days (not today, not done)', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'Tomorrow', columnId:1, position:0, userId:1, priority:'low', dueDate:offsetDate(1)});
+  TaskStore.create({title:'In 5 days', columnId:2, position:0, userId:1, priority:'low', dueDate:offsetDate(5)});
+  TaskStore.create({title:'In 10 days', columnId:1, position:1, userId:1, priority:'low', dueDate:offsetDate(10)});
+  TaskStore.create({title:'Overdue', columnId:1, position:2, userId:1, priority:'low', dueDate:offsetDate(-1)});
+  var upcoming = TaskStore.getUpcoming(1, 7);
+  assertLength(upcoming, 2, 'Should return 2 tasks upcoming within 7 days');
+});
+
+test('getCompleted() returns only done column tasks', function() {
+  VaultStore._clear();
+  TaskStore.reset();
+  TaskStore.create({title:'Done task', columnId:4, position:0, userId:1, priority:'low'});
+  TaskStore.create({title:'Active task', columnId:1, position:0, userId:1, priority:'low'});
+  var done = TaskStore.getCompleted(1);
+  assertLength(done, 1, 'Should return only completed tasks');
+  assertEqual(done[0].title, 'Done task', 'Should be the done task');
+});
+
+/* ════════════════════════════════════════
+   SUITE: columns
+   ════════════════════════════════════════ */
+suite('columns');
+
+test('createColumn() adds a new column', function() {
+  VaultStore._clear();
+  var before = TaskStore.getColumns().length;
+  TaskStore.createColumn('Backlog', '#6e6d68');
+  var after = TaskStore.getColumns().length;
+  assertEqual(after, before + 1, 'Should have one more column');
+  var last = TaskStore.getColumns()[after - 1];
+  assertEqual(last.name, 'Backlog', 'New column should have correct name');
+});
+
+/* ════════════════════════════════════════
+   SUITE: user management
+   ════════════════════════════════════════ */
+suite('user management');
+
+test('getCurrentUser() defaults to 1', function() {
+  VaultStore._clear();
+  assertEqual(TaskStore.getCurrentUser(), 1, 'Default user should be 1');
+});
+
+test('setCurrentUser() persists the user id', function() {
+  VaultStore._clear();
+  TaskStore.setCurrentUser(2);
+  assertEqual(TaskStore.getCurrentUser(), 2, 'Should return the set user id');
+  TaskStore.setCurrentUser(1); // restore
+});
+
+/* ════════════════════════════════════════
+   RENDER RESULTS
+   ════════════════════════════════════════ */
+var suites = {};
+results.forEach(function(r){
+  if(!suites[r.suite]) suites[r.suite] = [];
+  suites[r.suite].push(r);
+});
+
+var total = results.length;
+var passed = results.filter(function(r){return r.pass}).length;
+var failed = total - passed;
+
+var html = '';
+Object.keys(suites).forEach(function(name){
+  html += '<div class="suite"><div class="suite-name">' + name + '</div>';
+  suites[name].forEach(function(r){
+    html += '<div class="test ' + (r.pass?'pass':'fail') + '">';
+    html += '<span class="badge ' + (r.pass?'pass':'fail') + '">' + (r.pass?'PASS':'FAIL') + '</span>';
+    html += '<div><div class="test-name">' + r.name + '</div>';
+    if(!r.pass) html += '<div class="test-err">' + r.err + '</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+});
+
+html += '<div class="summary ' + (failed===0?'all-pass':'has-fail') + '">';
+html += failed === 0
+  ? '✓ All ' + total + ' tests passed'
+  : '✗ ' + failed + ' failed, ' + passed + ' passed (' + total + ' total)';
+html += '</div>';
+
+document.getElementById('output').innerHTML = html;
+
+})();
+</script>
+</body>
+</html>

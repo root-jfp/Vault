@@ -1,0 +1,316 @@
+/* ============================================
+   VAULT MOBILE RESPONSIVENESS
+   Bottom nav, more sheet, touch targets,
+   responsive card/table conversions
+   ============================================ */
+
+/* === BOTTOM NAVIGATION BAR === */
+.bnav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--bg2);
+  border-top: 1px solid var(--bd);
+  z-index: 800;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bnav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 56px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 8px;
+  color: var(--tx3);
+  text-decoration: none;
+  font-size: 9px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: color .2s;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+.bnav-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.bnav-item.active {
+  color: var(--actx);
+}
+.bnav-item:hover {
+  color: var(--tx);
+}
+
+/* === MORE SHEET (slide-up) === */
+.mobile-sheet-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 850;
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+.mobile-sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.mobile-sheet {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg2);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  z-index: 860;
+  max-height: 60vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  padding: 0 16px 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
+}
+.mobile-sheet.open {
+  transform: translateY(0);
+}
+.mobile-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  margin: 10px auto 14px;
+}
+.mobile-sheet-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--tx2);
+  margin-bottom: 10px;
+}
+.mobile-sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 8px;
+  font-size: 13px;
+  color: var(--tx);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-sheet-item:hover {
+  background: var(--bg3);
+}
+.mobile-sheet-item svg {
+  width: 18px;
+  height: 18px;
+  color: var(--tx3);
+  flex-shrink: 0;
+}
+.mobile-sheet-sep {
+  height: 1px;
+  background: var(--bd);
+  margin: 4px 0;
+}
+
+/* === MOBILE LAYOUT OVERRIDES === */
+@media (max-width: 700px) {
+  /* Show bottom nav */
+  .bnav {
+    display: block;
+  }
+  .mobile-sheet-backdrop,
+  .mobile-sheet {
+    display: block;
+  }
+
+  /* Hide sidebar entirely */
+  .layout .left {
+    display: none !important;
+  }
+
+  /* Adjust layout for bottom nav */
+  .layout {
+    height: calc(100vh - 49px - 56px) !important;
+    flex-direction: column;
+  }
+  .right {
+    height: 100% !important;
+  }
+
+  /* === TOUCH-FRIENDLY TARGETS === */
+  .act-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .filter-tab {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .topbar-cog {
+    width: 44px;
+    height: 44px;
+  }
+  .color-swatch {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .stepper-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* === RESPONSIVE TABLE -> CARD CONVERSION === */
+  /* Maintenance rows */
+  .maint-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+    padding: 12px;
+  }
+  .maint-row .maint-icon {
+    display: none;
+  }
+  .maint-row .maint-interval {
+    display: none !important;
+  }
+  .maint-row .maint-nextdue {
+    display: block !important;
+    font-size: 10px;
+  }
+  .maint-row .maint-actions {
+    justify-content: flex-end;
+  }
+
+  /* Performance compliance rows */
+  .comp-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Task list rows */
+  .tl-header {
+    display: none !important;
+  }
+  .tl-row {
+    grid-template-columns: 24px 1fr !important;
+    gap: 6px;
+    padding: 10px;
+    position: relative;
+  }
+
+  /* Stat grid always 2 columns */
+  .stat-grid,
+  .vm-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* === SCROLL HINTS === */
+  .hscroll-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to right, transparent, var(--bg));
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 0 10px 10px 0;
+  }
+  .hscroll-wrap {
+    position: relative;
+  }
+
+  .kanban {
+    position: relative;
+  }
+
+  /* Horizontal scroll cards */
+  .hscroll {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hscroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scroll arrows on mobile */
+  .arrow {
+    display: none !important;
+  }
+
+  /* Form layout single column */
+  .form-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Project grid single column */
+  .proj-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Project list simplified */
+  .pl-header,
+  .pl-row {
+    grid-template-columns: 10px 1fr 60px !important;
+  }
+
+  /* Page header stack on very small */
+  .page-hdr {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .page-hdr-actions {
+    flex-wrap: wrap;
+  }
+
+  /* Topbar compact */
+  .topbar-title {
+    font-size: 18px;
+  }
+
+  /* Calendar week grid */
+  .wkgrid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Habit list single column */
+  #habit-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Heatmap weekly wrap */
+  .hm-weekly {
+    flex-wrap: wrap;
+  }
+  .hm-wcell {
+    flex: 0 0 calc(25% - 3px);
+  }
+
+  /* Kanban columns full width */
+  .kb-col {
+    flex: 0 0 85vw !important;
+    min-width: 85vw !important;
+  }
+}

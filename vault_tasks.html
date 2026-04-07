@@ -1,62 +1,7 @@
-
+<link rel="stylesheet" href="vault-core.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#191816;--bg2:#222120;--bg3:#2c2b28;--bg4:#353431;--tx:#e4e2dc;--tx2:#a8a69f;--tx3:#6e6d68;--bd:#333230;--ac:#1D9E75;--acbg:rgba(29,158,117,.15);--actx:#5DCAA5;--dn:#E24B4A;--dnbg:rgba(226,75,74,.15);--dntx:#F09595;--wn:#EF9F27;--wnbg:rgba(239,159,39,.15);--wntx:#FAC775;--inf:#378ADD;--infbg:rgba(55,138,221,.15);--inftx:#85B7EB;--pu:#7F77DD;--pubg:rgba(127,119,221,.15);--putx:#AFA9EC;--done:rgba(29,158,117,.18);--donetx:#5DCAA5;--card:#1f1e1c;--cardb:#2a2926}
-html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.45;height:100%;overflow:hidden}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
-.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
-.topbar-right{display:flex;align-items:center;gap:12px}
-.topbar-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2);text-decoration:none}
-.topbar-user:hover{background:var(--bg3)}
-.topbar-av{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px}
-.topbar-cog{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.topbar-cog:hover{background:var(--bg3);color:var(--tx)}
-.topbar-cog svg{width:16px;height:16px}
-.layout{display:flex;height:calc(100vh - 49px);overflow:hidden}
-.left{width:12vw;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
-.left::-webkit-scrollbar{width:4px}
-.left::-webkit-scrollbar-track{background:transparent}
-.left::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
-.left::-webkit-scrollbar-thumb:hover{background:var(--bd)}
+/* Page-specific override: .right uses overflow:hidden + flex column for kanban layout */
 .right{flex:1;padding:16px 20px;overflow:hidden;min-width:0;height:100%;display:flex;flex-direction:column}
-.right::-webkit-scrollbar{width:4px}
-.right::-webkit-scrollbar-track{background:transparent}
-.right::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
-.right::-webkit-scrollbar-thumb:hover{background:var(--bd)}
-
-.lblock{margin-bottom:14px}
-.lblock-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.lblock-title svg{width:11px;height:11px}
-.lnav-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:var(--tx2);cursor:pointer;text-decoration:none}
-.lnav-item:hover{color:var(--tx)}
-.lnav-item svg{width:11px;height:11px;flex-shrink:0;opacity:.5}
-.hstat{margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
-.hstat:last-child{border:none;margin:0;padding:0}
-.hstat-name{font-size:11px;font-weight:500;display:flex;align-items:center;gap:5px;margin-bottom:2px}
-.hstat-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
-.hstat-row{font-size:10px;color:var(--tx3);padding:1px 0}
-.hstat-row.good{color:var(--actx)}
-.hstat-row.warn{color:var(--wntx)}
-.hstat-row.bad{color:var(--dntx)}
-
-/* Page header */
-.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0}
-.page-hdr h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
-.btn-primary{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:opacity .2s}
-.btn-primary:hover{opacity:.85}
-.btn-primary svg{width:14px;height:14px}
-
-/* Controls bar */
-.controls{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-shrink:0}
-.filter-tabs{display:flex;gap:4px;font-size:11px}
-.filter-tab{padding:4px 10px;border-radius:6px;color:var(--tx3);cursor:pointer;border:1px solid transparent;transition:all .2s}
-.filter-tab:hover{color:var(--tx);background:var(--bg3)}
-.filter-tab.active{background:var(--tx);color:var(--bg);font-weight:600}
-.view-toggle{display:flex;gap:3px;margin-left:auto}
-.view-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.view-btn:hover{background:var(--bg3);color:var(--tx)}
-.view-btn.active{background:var(--tx);color:var(--bg);border-color:var(--tx)}
-.view-btn svg{width:14px;height:14px}
 
 /* === KANBAN === */
 .kanban{display:flex;gap:10px;flex:1;overflow-x:auto;overflow-y:hidden;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
@@ -114,28 +59,22 @@ html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color
 .tl-col{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tx3)}
 .tl-col-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .tl-actions{display:flex;gap:3px}
-.act-btn{width:24px;height:24px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.act-btn:hover{background:var(--bg3);color:var(--tx);border-color:var(--tx3)}
-.act-btn.delete:hover{color:var(--dntx);border-color:var(--dn);background:var(--dnbg)}
-.act-btn svg{width:11px;height:11px}
-
-/* Empty state */
-.empty-state{text-align:center;padding:60px 20px;color:var(--tx3)}
-.empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
-.empty-state h3{font-size:15px;color:var(--tx2);margin-bottom:6px;font-weight:600}
-.empty-state p{font-size:12px;margin-bottom:16px}
+.tl-actions .act-btn{width:24px;height:24px;border-radius:5px}
+.tl-actions .act-btn svg{width:11px;height:11px}
 
 @media(max-width:900px){.kb-col{flex:0 0 220px;min-width:220px}.tl-header,.tl-row{grid-template-columns:24px 1.5fr 80px 70px 80px}}
-@media(max-width:700px){.layout{flex-direction:column}.left{width:100%;border-right:none;border-bottom:1px solid var(--bd);max-height:200px}.kanban{overflow-x:auto}.kb-col{flex:0 0 85vw;min-width:85vw}.tl-header,.tl-row{grid-template-columns:24px 1fr 70px 60px}}
+@media(max-width:700px){.kanban{overflow-x:auto}.kb-col{flex:0 0 85vw;min-width:85vw}.tl-header,.tl-row{grid-template-columns:24px 1fr 70px 60px}}
 </style>
 
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 
 <div>
 <div class="topbar">
 <div class="topbar-title">Vault</div>
 <div class="topbar-right">
-<div class="topbar-user"><div class="topbar-av">J</div>José</div>
+<div class="topbar-user"><div class="gm-level-badge sm">8</div><div class="topbar-av">J</div>José</div>
 <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </div>
 </div>
@@ -156,6 +95,12 @@ html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color
 <a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
 <a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
 <a href="vault_task_new.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New task</a>
+<a href="vault_templates.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+<a href="vault_achievements.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Level & XP</div>
+<div id="gm-sidebar-container"></div>
 </div>
 </div>
 
@@ -168,6 +113,7 @@ html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color
 <div class="controls">
 <div class="filter-tabs">
 <span class="filter-tab active" data-filter="all">All</span>
+<span class="filter-tab" data-filter="today">Today</span>
 <span class="filter-tab" data-filter="priority">By Priority</span>
 <span class="filter-tab" data-filter="dueDate">By Due Date</span>
 <span class="filter-tab" data-filter="project">By Project</span>
@@ -191,12 +137,37 @@ html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color
 </div>
 </div>
 </div>
+
+<!-- Bottom Navigation -->
+<div class="bnav"><div class="bnav-inner">
+<a href="vault_dashboard_v5_wide_scroll.html" class="bnav-item" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+<a href="vault_habits.html" class="bnav-item" data-nav="habits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_tasks.html" class="bnav-item" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_maintenance.html" class="bnav-item" data-nav="maint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+<div class="bnav-item" data-nav="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+</div></div>
+
+<div class="mobile-sheet-backdrop" id="mobile-sheet-backdrop"></div>
+<div class="mobile-sheet" id="mobile-sheet">
+<div class="mobile-sheet-handle"></div>
+<div class="mobile-sheet-title">More</div>
+<a href="vault_projects.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<div class="mobile-sheet-sep"></div>
+<a href="vault_templates.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+<a href="vault_achievements.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
 </div>
 
+</div>
+
+<script src="vault-store.js"></script>
+<script src="vault-tasks.js"></script>
+<script src="vault-gamification.js"></script>
 <script>
 (function(){
 
-var TODAY=new Date(2026,3,6);
+var TODAY=new Date();
 var PRIORITY_MAP={
 low:{bg:'var(--acbg)',tx:'var(--actx)',label:'Low'},
 medium:{bg:'var(--infbg)',tx:'var(--inftx)',label:'Medium'},
@@ -204,34 +175,25 @@ high:{bg:'var(--wnbg)',tx:'var(--wntx)',label:'High'},
 urgent:{bg:'var(--dnbg)',tx:'var(--dntx)',label:'Urgent'}
 };
 
-var columns=[
-{id:1,name:'To Do',color:'var(--dn)',position:0},
-{id:2,name:'In Progress',color:'var(--wn)',position:1},
-{id:3,name:'Review',color:'var(--inf)',position:2},
-{id:4,name:'Done',color:'var(--ac)',position:3}
-];
-
-var tasks=[
-{id:1,title:'Notion template tutorial',description:'Record first Notion template video and publish to YouTube',columnId:1,position:0,priority:'high',label:'Content creation',labelColor:'var(--inf)',dueDate:'2026-04-06',projectId:1,projectName:'Notion template'},
-{id:2,title:'Email newsletter draft',description:'Write weekly email content for subscribers about productivity tips',columnId:1,position:1,priority:'medium',label:'Content creation',labelColor:'var(--inf)',dueDate:'2026-04-08',projectId:2,projectName:'Content creation'},
-{id:3,title:'Design landing page mockup',description:'Create a Figma mockup for the Notion template sales page',columnId:1,position:2,priority:'low',label:'Design',labelColor:'var(--pu)',dueDate:'2026-04-12',projectId:1,projectName:'Notion template'},
-{id:4,title:'Research competitor templates',description:'Analyze top 10 Notion templates on Gumroad for pricing and features',columnId:1,position:3,priority:'medium',label:'Research',labelColor:'var(--wn)',dueDate:'2026-04-09',projectId:1,projectName:'Notion template'},
-{id:5,title:'Learn Framer basics',description:'Complete Framer crash course chapters 1-4',columnId:2,position:0,priority:'medium',label:'Learning',labelColor:'var(--ac)',dueDate:'2026-04-10',projectId:4,projectName:'Learn Framer'},
-{id:6,title:'Edit CapCut intro video',description:'Add transitions, music and captions to the intro clip',columnId:2,position:1,priority:'high',label:'Content creation',labelColor:'var(--inf)',dueDate:'2026-04-05',projectId:3,projectName:'CapCut + Notion'},
-{id:7,title:'Fix IFS posting control',description:'Debug the posting control module validation errors',columnId:2,position:2,priority:'urgent',label:'Bug',labelColor:'var(--dn)',dueDate:'2026-04-04',projectId:null,projectName:null},
-{id:8,title:'Study ASP.NET middleware',description:'Read through middleware pipeline docs and create sample project',columnId:3,position:0,priority:'medium',label:'Learning',labelColor:'var(--ac)',dueDate:'2026-04-07',projectId:null,projectName:null},
-{id:9,title:'Review invoice module',description:'Code review the invoice generation module for edge cases',columnId:3,position:1,priority:'high',label:'Review',labelColor:'var(--inf)',dueDate:'2026-04-08',projectId:null,projectName:null},
-{id:10,title:'Framer 2nd video script',description:'Write script for the second Framer tutorial covering animations',columnId:1,position:4,priority:'low',label:'Content creation',labelColor:'var(--inf)',dueDate:'2026-04-14',projectId:4,projectName:'Learn Framer'},
-{id:11,title:'Set up email automation',description:'Configure Mailchimp drip campaign for new subscribers',columnId:4,position:0,priority:'medium',label:'Content creation',labelColor:'var(--inf)',dueDate:'2026-04-01',projectId:2,projectName:'Content creation'},
-{id:12,title:'FERRO workout plan',description:'Create weekly workout schedule and track sets/reps',columnId:4,position:1,priority:'low',label:'Personal',labelColor:'var(--pu)',dueDate:'2026-03-30',projectId:null,projectName:null},
-{id:13,title:'Content calendar April',description:'Plan all content for April across platforms',columnId:4,position:2,priority:'high',label:'Content creation',labelColor:'var(--inf)',dueDate:'2026-03-28',projectId:2,projectName:'Content creation'},
-{id:14,title:'CapCut advanced editing',description:'Learn keyframing and speed ramp techniques in CapCut',columnId:2,position:3,priority:'low',label:'Learning',labelColor:'var(--ac)',dueDate:'2026-04-11',projectId:3,projectName:'CapCut + Notion'}
-];
+var COL_COLORS={1:'var(--dn)',2:'var(--wn)',3:'var(--inf)',4:'var(--ac)'};
 
 var currentView='kanban';
 var currentFilter='all';
+var showAllUsers=false;
 
-function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function getColumns(){return TaskStore.getColumns();}
+function getTasks(){
+var uid=showAllUsers?undefined:TaskStore.getCurrentUser();
+return TaskStore.getAll(uid);
+}
+
+/* Pre-select column from query param (e.g. from "+" button in a column) */
+(function(){
+var p=new URLSearchParams(window.location.search);
+var col=p.get('col');
+if(col){/* used by edit page back-link */}
+})();
+
 function parseDate(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
 function daysDiff(a,b){return Math.round((a-b)/(1000*60*60*24))}
 
@@ -247,20 +209,25 @@ return{text:d.getDate()+' '+months[d.getMonth()],cls:''};
 }
 
 function getFiltered(){
-var t=tasks.slice();
-if(currentFilter==='completed')return t.filter(function(x){return x.columnId===4});
+var uid=showAllUsers?undefined:TaskStore.getCurrentUser();
+var t;
+if(currentFilter==='today'){
+t=TaskStore.getDueToday(uid);
+}else if(currentFilter==='completed'){
+t=TaskStore.getCompleted(uid);
+}else{
+t=TaskStore.getAll(uid);
 if(currentFilter==='priority'){
 var order={urgent:0,high:1,medium:2,low:3};
 t.sort(function(a,b){return(order[a.priority]||9)-(order[b.priority]||9)});
-}
-if(currentFilter==='dueDate'){
+}else if(currentFilter==='dueDate'){
 t.sort(function(a,b){
 if(!a.dueDate)return 1;if(!b.dueDate)return -1;
 return a.dueDate.localeCompare(b.dueDate);
 });
-}
-if(currentFilter==='project'){
+}else if(currentFilter==='project'){
 t.sort(function(a,b){return(a.projectName||'zzz').localeCompare(b.projectName||'zzz')});
+}
 }
 return t;
 }
@@ -268,16 +235,21 @@ return t;
 function cardHtml(t){
 var p=PRIORITY_MAP[t.priority]||PRIORITY_MAP.medium;
 var due=formatDue(t.dueDate);
+var lc=t.labelColor&&t.labelColor.indexOf('var(')===-1?t.labelColor:'#378ADD';
 var h='<div class="kb-card" data-task-id="'+t.id+'">';
 h+='<div class="kb-card-tags">';
 h+='<span class="kb-tag" style="background:'+p.bg+';color:'+p.tx+'">'+p.label+'</span>';
-if(t.label)h+='<span class="kb-tag" style="background:color-mix(in srgb,'+t.labelColor+' 15%,transparent);color:'+t.labelColor+'">'+t.label+'</span>';
+if(t.label)h+='<span class="kb-tag" style="background:color-mix(in srgb,'+lc+' 15%,transparent);color:'+lc+'">'+t.label+'</span>';
 h+='</div>';
 h+='<div class="kb-card-title">'+t.title+'</div>';
 if(t.description)h+='<div class="kb-card-desc">'+t.description+'</div>';
 h+='<div class="kb-card-footer">';
 if(t.dueDate)h+='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="'+due.cls+'">'+due.text+'</span>';
 if(t.projectName)h+='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="project-link">'+t.projectName+'</span>';
+h+='<span style="margin-left:auto;display:flex;gap:3px">';
+h+='<a href="vault_task_edit.html?id='+t.id+'" class="act-btn" style="text-decoration:none;color:inherit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a>';
+h+='<button class="act-btn delete kb-delete-btn" data-id="'+t.id+'" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+h+='</span>';
 h+='</div></div>';
 return h;
 }
@@ -285,25 +257,39 @@ return h;
 function renderKanban(){
 var board=document.getElementById('kanban-board');
 var filtered=getFiltered();
+var columns=getColumns();
 var html='';
 columns.forEach(function(col){
+var colColor=COL_COLORS[col.id]||col.color;
 var colTasks=filtered.filter(function(t){return t.columnId===col.id}).sort(function(a,b){return a.position-b.position});
 html+='<div class="kb-col" data-col-id="'+col.id+'">';
-html+='<div class="kb-col-hdr"><div class="kb-col-dot" style="background:'+col.color+'"></div><div class="kb-col-name">'+col.name+'</div><div class="kb-col-count">'+colTasks.length+'</div><button class="kb-col-add" onclick="window.location.href=\'vault_task_new.html\'">+</button></div>';
+html+='<div class="kb-col-hdr"><div class="kb-col-dot" style="background:'+colColor+'"></div><div class="kb-col-name">'+col.name+'</div><div class="kb-col-count">'+colTasks.length+'</div><button class="kb-col-add" onclick="window.location.href=\'vault_task_new.html?col='+col.id+'\'">+</button></div>';
 html+='<div class="kb-col-body">';
 colTasks.forEach(function(t){html+=cardHtml(t)});
 html+='</div>';
-html+='<div class="kb-add-btn" onclick="window.location.href=\'vault_task_new.html\'">+ Add task</div>';
+html+='<div class="kb-add-btn" onclick="window.location.href=\'vault_task_new.html?col='+col.id+'\'">+ Add task</div>';
 html+='</div>';
 });
-html+='<div class="kb-add-col">+ Add column</div>';
+html+='<div class="kb-add-col" onclick="window.location.href=\'vault_task_new.html\'">+ Add column</div>';
 board.innerHTML=html;
 initSortable();
+/* Delete buttons */
+board.querySelectorAll('.kb-delete-btn').forEach(function(btn){
+btn.addEventListener('click',function(e){
+e.stopPropagation();
+var id=parseInt(btn.getAttribute('data-id'));
+if(confirm('Delete this task?')){
+TaskStore['delete'](id);
+renderKanban();renderSidebarStats();
+}
+});
+});
 }
 
 function renderList(){
 var list=document.getElementById('task-list');
 var filtered=getFiltered();
+var columns=getColumns();
 var checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 var editSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
 var delSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
@@ -314,29 +300,40 @@ var p=PRIORITY_MAP[t.priority]||PRIORITY_MAP.medium;
 var due=formatDue(t.dueDate);
 var isDone=t.columnId===4;
 var col=columns.find(function(c){return c.id===t.columnId});
+var colColor=col?(COL_COLORS[col.id]||col.color):'var(--tx3)';
+var lc=t.labelColor&&t.labelColor.indexOf('var(')===-1?t.labelColor:'#378ADD';
 html+='<div class="tl-row">';
 html+='<div class="tl-check'+(isDone?' done':'')+'" data-task-id="'+t.id+'">'+checkSvg+'</div>';
 html+='<div class="tl-title"'+(isDone?' style="text-decoration:line-through;opacity:.6"':'')+'>'+t.title+(t.description?'<span class="sub">'+t.description+'</span>':'')+'</div>';
-html+='<div class="tl-col"><div class="tl-col-dot" style="background:'+(col?col.color:'var(--tx3)')+'"></div>'+(col?col.name:'')+'</div>';
+html+='<div class="tl-col"><div class="tl-col-dot" style="background:'+colColor+'"></div>'+(col?col.name:'')+'</div>';
 html+='<span class="kb-tag" style="background:'+p.bg+';color:'+p.tx+'">'+p.label+'</span>';
-if(t.label)html+='<span class="kb-tag" style="background:color-mix(in srgb,'+t.labelColor+' 15%,transparent);color:'+t.labelColor+'">'+t.label+'</span>';
+if(t.label)html+='<span class="kb-tag" style="background:color-mix(in srgb,'+lc+' 15%,transparent);color:'+lc+'">'+t.label+'</span>';
 else html+='<div></div>';
 html+='<div class="'+due.cls+'">'+due.text+'</div>';
-html+='<div class="tl-actions"><button class="act-btn" title="Edit">'+editSvg+'</button><button class="act-btn delete" title="Delete">'+delSvg+'</button></div>';
+html+='<div class="tl-actions"><a href="vault_task_edit.html?id='+t.id+'" class="act-btn" style="text-decoration:none;color:inherit" title="Edit">'+editSvg+'</a><button class="act-btn delete tl-delete-btn" data-id="'+t.id+'" title="Delete">'+delSvg+'</button></div>';
 html+='</div>';
 });
 list.innerHTML=html;
 
-/* list checkbox toggle */
+/* Checkbox: toggle done */
 list.querySelectorAll('.tl-check').forEach(function(el){
 el.addEventListener('click',function(){
 var id=parseInt(el.getAttribute('data-task-id'));
-tasks=tasks.map(function(t){
-if(t.id===id)return Object.assign({},t,{columnId:t.columnId===4?1:4});
-return t;
+var t=TaskStore.get(id);
+if(!t)return;
+TaskStore.update(id,{columnId:t.columnId===4?1:4});
+renderList();renderSidebarStats();
 });
-renderList();
-renderSidebarStats();
+});
+
+/* Delete */
+list.querySelectorAll('.tl-delete-btn').forEach(function(btn){
+btn.addEventListener('click',function(){
+var id=parseInt(btn.getAttribute('data-id'));
+if(confirm('Delete this task?')){
+TaskStore['delete'](id);
+renderList();renderSidebarStats();
+}
 });
 });
 }
@@ -352,13 +349,10 @@ chosenClass:'sortable-chosen',
 onEnd:function(evt){
 var taskId=parseInt(evt.item.getAttribute('data-task-id'));
 var newColId=parseInt(evt.to.closest('.kb-col').getAttribute('data-col-id'));
-var newPos=evt.newIndex;
-tasks=tasks.map(function(t){
-if(t.id===taskId)return Object.assign({},t,{columnId:newColId,position:newPos});
-return t;
-});
-reindexColumn(parseInt(evt.from.closest('.kb-col').getAttribute('data-col-id')));
-reindexColumn(newColId);
+var fromColId=parseInt(evt.from.closest('.kb-col').getAttribute('data-col-id'));
+TaskStore.update(taskId,{columnId:newColId});
+reindexColumn(fromColId);
+if(fromColId!==newColId)reindexColumn(newColId);
 renderSidebarStats();
 }
 });
@@ -370,29 +364,27 @@ var body=document.querySelector('.kb-col[data-col-id="'+colId+'"] .kb-col-body')
 if(!body)return;
 var cards=body.querySelectorAll('.kb-card');
 cards.forEach(function(card,i){
-var id=parseInt(card.getAttribute('data-task-id'));
-tasks=tasks.map(function(t){
-if(t.id===id)return Object.assign({},t,{position:i});
-return t;
+TaskStore.update(parseInt(card.getAttribute('data-task-id')),{position:i});
 });
-});
-/* update column count */
-var count=body.querySelectorAll('.kb-card').length;
 var hdr=body.closest('.kb-col').querySelector('.kb-col-count');
-if(hdr)hdr.textContent=count;
+if(hdr)hdr.textContent=cards.length;
 }
 
 function renderSidebarStats(){
 var el=document.getElementById('sidebar-stats');
+var uid=showAllUsers?undefined:TaskStore.getCurrentUser();
+var allTasks=TaskStore.getAll(uid);
+var columns=getColumns();
 var html='';
 columns.forEach(function(col){
-var count=tasks.filter(function(t){return t.columnId===col.id}).length;
-html+='<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:'+col.color+'"></div>'+col.name+'</div><div class="hstat-row">'+count+' task'+(count!==1?'s':'')+'</div></div>';
+var count=allTasks.filter(function(t){return t.columnId===col.id}).length;
+var colColor=COL_COLORS[col.id]||col.color;
+html+='<div class="hstat"><div class="hstat-name"><div class="hstat-dot" style="background:'+colColor+'"></div>'+col.name+'</div><div class="hstat-row">'+count+' task'+(count!==1?'s':'')+'</div></div>';
 });
-var overdue=tasks.filter(function(t){return t.columnId!==4&&t.dueDate&&parseDate(t.dueDate)<TODAY}).length;
-var dueWeek=tasks.filter(function(t){if(t.columnId===4||!t.dueDate)return false;var d=parseDate(t.dueDate);var diff=daysDiff(d,TODAY);return diff>=0&&diff<=7}).length;
-var total=tasks.length;
-var done=tasks.filter(function(t){return t.columnId===4}).length;
+var overdue=TaskStore.getOverdue(uid).length;
+var dueWeek=TaskStore.getDueToday(uid).length+TaskStore.getUpcoming(uid,7).length;
+var total=allTasks.length;
+var done=allTasks.filter(function(t){return t.columnId===4}).length;
 var rate=total>0?Math.round(done/total*100):0;
 html+='<div class="hstat"><div class="hstat-name" style="margin-top:4px"><div class="hstat-dot" style="background:var(--dn)"></div>Summary</div>';
 html+='<div class="hstat-row'+(overdue>0?' bad':'')+'">Overdue: '+overdue+'</div>';
@@ -428,3 +420,4 @@ renderKanban();
 renderSidebarStats();
 })();
 </script>
+<script src="vault-mobile.js"></script>

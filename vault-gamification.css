@@ -1,0 +1,348 @@
+/* ============================================
+   VAULT GAMIFICATION SYSTEM
+   Level badges, XP bars, badge cards,
+   toasts, badge grid
+   ============================================ */
+
+/* === LEVEL BADGE === */
+.gm-level-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1D9E75, #7F77DD);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.gm-level-badge.sm {
+  width: 22px;
+  height: 22px;
+  font-size: 9px;
+}
+.gm-level-badge.lg {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+/* === XP BAR === */
+.gm-xp-bar {
+  height: 4px;
+  background: var(--bg3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.gm-xp-bar.lg {
+  height: 8px;
+  border-radius: 4px;
+}
+.gm-xp-fill {
+  height: 100%;
+  background: var(--ac);
+  border-radius: inherit;
+  transition: width .4s ease;
+}
+
+/* === SIDEBAR GAMIFICATION WIDGET === */
+.gm-sidebar-widget {
+  background: var(--card);
+  border: 1px solid var(--cardb);
+  border-radius: 8px;
+  padding: 10px 11px;
+}
+.gm-sidebar-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.gm-sidebar-info {
+  flex: 1;
+  min-width: 0;
+}
+.gm-sidebar-level {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx);
+}
+.gm-sidebar-xp {
+  font-size: 9px;
+  color: var(--tx3);
+  margin-top: 1px;
+}
+.gm-sidebar-link {
+  display: block;
+  font-size: 9px;
+  color: var(--tx3);
+  margin-top: 6px;
+  text-decoration: none;
+  text-align: right;
+}
+.gm-sidebar-link:hover {
+  color: var(--actx);
+}
+
+/* === BADGE CARD === */
+.gm-badge-card {
+  background: var(--card);
+  border: 1px solid var(--cardb);
+  border-radius: 10px;
+  padding: 16px 14px;
+  text-align: center;
+  transition: border-color .2s, transform .2s;
+}
+.gm-badge-card:hover {
+  border-color: var(--tx3);
+  transform: translateY(-2px);
+}
+.gm-badge-card.locked {
+  opacity: .4;
+  filter: grayscale(1);
+}
+.gm-badge-card.locked:hover {
+  opacity: .55;
+  filter: grayscale(.7);
+  transform: none;
+}
+.gm-badge-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-size: 22px;
+}
+.gm-badge-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.gm-badge-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx);
+  margin-bottom: 4px;
+}
+.gm-badge-desc {
+  font-size: 10px;
+  color: var(--tx3);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.gm-badge-date {
+  font-size: 9px;
+  color: var(--tx3);
+  font-style: italic;
+}
+
+/* === BADGE GRID === */
+.gm-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .gm-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .gm-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* === TOAST NOTIFICATION === */
+.gm-toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+@media (max-width: 700px) {
+  .gm-toast-container {
+    bottom: 76px; /* above bottom nav */
+    right: 12px;
+    left: 12px;
+  }
+}
+.gm-toast {
+  background: var(--bg2);
+  border: 1px solid var(--cardb);
+  border-left: 3px solid var(--ac);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--tx);
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  pointer-events: auto;
+  animation: gm-toast-in .3s ease forwards;
+  max-width: 320px;
+  margin-left: auto;
+}
+.gm-toast.dismissing {
+  animation: gm-toast-out .25s ease forwards;
+}
+.gm-toast-xp {
+  font-weight: 700;
+  color: var(--actx);
+  white-space: nowrap;
+}
+.gm-toast-msg {
+  flex: 1;
+  min-width: 0;
+}
+
+@keyframes gm-toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes gm-toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(12px); }
+}
+
+/* === XP HISTORY TIMELINE === */
+.gm-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.gm-tl-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bd);
+  font-size: 11px;
+}
+.gm-tl-entry:last-child {
+  border-bottom: none;
+}
+.gm-tl-date {
+  font-size: 10px;
+  color: var(--tx3);
+  min-width: 90px;
+}
+.gm-tl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.gm-tl-action {
+  flex: 1;
+  color: var(--tx2);
+}
+.gm-tl-xp {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.gm-tl-xp.habit { color: var(--actx); }
+.gm-tl-xp.task { color: var(--inftx); }
+.gm-tl-xp.maint { color: var(--wntx); }
+.gm-tl-xp.streak { color: var(--putx); }
+
+/* === STAT CARDS (achievements page) === */
+.gm-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.gm-stat-card {
+  background: var(--card);
+  border: 1px solid var(--cardb);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.gm-stat-num {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.gm-stat-label {
+  font-size: 9px;
+  color: var(--tx3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+@media (max-width: 700px) {
+  .gm-stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* === LEVEL BANNER (achievements page) === */
+.gm-level-banner {
+  background: var(--card);
+  border: 1px solid var(--cardb);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.gm-level-banner-info {
+  flex: 1;
+}
+.gm-level-banner-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.gm-level-banner-sub {
+  font-size: 11px;
+  color: var(--tx3);
+  margin-bottom: 8px;
+}
+.gm-level-banner .gm-xp-bar {
+  height: 8px;
+  border-radius: 4px;
+}
+@media (max-width: 700px) {
+  .gm-level-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* === FILTER TABS for badges === */
+.gm-filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 11px;
+}
+.gm-filter-tab {
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: var(--tx3);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .2s;
+}
+.gm-filter-tab:hover {
+  color: var(--tx);
+  background: var(--bg3);
+}
+.gm-filter-tab.active {
+  background: var(--tx);
+  color: var(--bg);
+  font-weight: 600;
+}

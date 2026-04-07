@@ -1,0 +1,302 @@
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user"><div class="topbar-av">J</div><div class="gm-level-badge sm">8</div>Jos&eacute;</div>
+<button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Level &amp; XP</div>
+<div id="gm-sidebar-container"></div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<a href="vault_templates.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+<a href="vault_achievements.html" class="lnav-item" style="color:var(--actx)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:1"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+</div>
+</div>
+
+<div class="right">
+
+<!-- Level Banner -->
+<div class="gm-level-banner">
+<div class="gm-level-badge lg">8</div>
+<div class="gm-level-banner-info">
+<div class="gm-level-banner-title">Level 8</div>
+<div class="gm-level-banner-sub">2,780 XP total &middot; 280 XP to Level 9</div>
+<div class="gm-xp-bar lg"><div class="gm-xp-fill" style="width:54%"></div></div>
+</div>
+</div>
+
+<!-- Stat Cards -->
+<div class="gm-stat-row">
+<div class="gm-stat-card"><div class="gm-stat-num" style="color:var(--actx)">2,780</div><div class="gm-stat-label">Total XP</div></div>
+<div class="gm-stat-card"><div class="gm-stat-num" style="color:var(--putx)">8</div><div class="gm-stat-label">Current Level</div></div>
+<div class="gm-stat-card"><div class="gm-stat-num" style="color:var(--inftx)">7/18</div><div class="gm-stat-label">Badges Unlocked</div></div>
+<div class="gm-stat-card"><div class="gm-stat-num" style="color:var(--wntx)">7 days</div><div class="gm-stat-label">Longest Streak</div></div>
+</div>
+
+<!-- Badges Section -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Badges</div>
+
+<div class="gm-filter-tabs" id="badge-filter-tabs">
+<span class="gm-filter-tab active" data-filter="all">All (18)</span>
+<span class="gm-filter-tab" data-filter="unlocked">Unlocked (7)</span>
+<span class="gm-filter-tab" data-filter="locked">Locked (11)</span>
+</div>
+
+<div class="gm-grid" id="badge-grid">
+<!-- Unlocked badges -->
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--acbg)">&#x2B50;</div>
+<div class="gm-badge-name">First Step</div>
+<div class="gm-badge-desc">Complete your first habit</div>
+<div class="gm-badge-date">Unlocked Mar 1, 2026</div>
+</div>
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--wnbg)">&#x1F525;</div>
+<div class="gm-badge-name">On a Roll</div>
+<div class="gm-badge-desc">3-day streak on any habit</div>
+<div class="gm-badge-date">Unlocked Mar 4, 2026</div>
+</div>
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--infbg)">&#x1F4AA;</div>
+<div class="gm-badge-name">Week Warrior</div>
+<div class="gm-badge-desc">7-day streak on any habit</div>
+<div class="gm-badge-date">Unlocked Mar 10, 2026</div>
+</div>
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--acbg)">&#x2705;</div>
+<div class="gm-badge-name">Task Master</div>
+<div class="gm-badge-desc">Complete 10 tasks</div>
+<div class="gm-badge-date">Unlocked Mar 15, 2026</div>
+</div>
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--wnbg)">&#x1F3E0;</div>
+<div class="gm-badge-name">Home Hero</div>
+<div class="gm-badge-desc">Complete 5 maintenance items</div>
+<div class="gm-badge-date">Unlocked Mar 20, 2026</div>
+</div>
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--pubg)">&#x1F31F;</div>
+<div class="gm-badge-name">Rising Star</div>
+<div class="gm-badge-desc">Reach level 5</div>
+<div class="gm-badge-date">Unlocked Mar 22, 2026</div>
+</div>
+<div class="gm-badge-card" data-status="unlocked">
+<div class="gm-badge-icon" style="background:var(--acbg)">&#x1F3C6;</div>
+<div class="gm-badge-name">Perfect Day</div>
+<div class="gm-badge-desc">Complete all habits in one day</div>
+<div class="gm-badge-date">Unlocked Apr 1, 2026</div>
+</div>
+
+<!-- Locked badges -->
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--infbg)">&#x26A1;</div>
+<div class="gm-badge-name">Fortnight Force</div>
+<div class="gm-badge-desc">14-day streak on any habit</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--pubg)">&#x1F48E;</div>
+<div class="gm-badge-name">Monthly Master</div>
+<div class="gm-badge-desc">30-day streak on any habit</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--infbg)">&#x1F680;</div>
+<div class="gm-badge-name">Productivity Pro</div>
+<div class="gm-badge-desc">Complete 50 tasks</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--wnbg)">&#x1F451;</div>
+<div class="gm-badge-name">Century Club</div>
+<div class="gm-badge-desc">Complete 100 tasks</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--acbg)">&#x1F4CB;</div>
+<div class="gm-badge-name">Project Pioneer</div>
+<div class="gm-badge-desc">Complete your first project</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--infbg)">&#x1F4BC;</div>
+<div class="gm-badge-name">Project Manager</div>
+<div class="gm-badge-desc">Complete 5 projects</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--pubg)">&#x1F3AF;</div>
+<div class="gm-badge-name">Double Digits</div>
+<div class="gm-badge-desc">Reach level 10</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--wnbg)">&#x1F525;</div>
+<div class="gm-badge-name">Quarter Century</div>
+<div class="gm-badge-desc">Reach level 25</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--acbg)">&#x2728;</div>
+<div class="gm-badge-name">Zero Overdue</div>
+<div class="gm-badge-desc">Have 0 overdue maintenance items</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--infbg)">&#x1F4DD;</div>
+<div class="gm-badge-name">Template Fan</div>
+<div class="gm-badge-desc">Use your first template</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+<div class="gm-badge-card locked" data-status="locked">
+<div class="gm-badge-icon" style="background:var(--wnbg)">&#x1F4B0;</div>
+<div class="gm-badge-name">XP Collector</div>
+<div class="gm-badge-desc">Earn 5,000 total XP</div>
+<div class="gm-badge-date">Locked</div>
+</div>
+</div>
+</div>
+
+<!-- XP History Section -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>XP History</div>
+
+<div class="gm-timeline">
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 6, 2026</div>
+<div class="gm-tl-dot" style="background:var(--ac)"></div>
+<div class="gm-tl-action">Completed "Eat healthy"</div>
+<div class="gm-tl-xp habit">+10 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 6, 2026</div>
+<div class="gm-tl-dot" style="background:var(--ac)"></div>
+<div class="gm-tl-action">Completed "6hr deep work"</div>
+<div class="gm-tl-xp habit">+10 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 5, 2026</div>
+<div class="gm-tl-dot" style="background:var(--wn)"></div>
+<div class="gm-tl-action">Completed "Water plants"</div>
+<div class="gm-tl-xp maint">+15 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 5, 2026</div>
+<div class="gm-tl-dot" style="background:var(--ac)"></div>
+<div class="gm-tl-action">Completed 3 habits</div>
+<div class="gm-tl-xp habit">+30 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 4, 2026</div>
+<div class="gm-tl-dot" style="background:var(--inf)"></div>
+<div class="gm-tl-action">Moved "Set up email automation" to Done</div>
+<div class="gm-tl-xp task">+40 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 4, 2026</div>
+<div class="gm-tl-dot" style="background:var(--pu)"></div>
+<div class="gm-tl-action">7-day streak bonus</div>
+<div class="gm-tl-xp streak">+75 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 3, 2026</div>
+<div class="gm-tl-dot" style="background:var(--wn)"></div>
+<div class="gm-tl-action">Completed "Clean fridge"</div>
+<div class="gm-tl-xp maint">+15 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 3, 2026</div>
+<div class="gm-tl-dot" style="background:var(--ac)"></div>
+<div class="gm-tl-action">Completed 4 habits</div>
+<div class="gm-tl-xp habit">+40 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 2, 2026</div>
+<div class="gm-tl-dot" style="background:var(--inf)"></div>
+<div class="gm-tl-action">Moved "Content calendar April" to Done</div>
+<div class="gm-tl-xp task">+70 XP</div>
+</div>
+<div class="gm-tl-entry">
+<div class="gm-tl-date">Apr 1, 2026</div>
+<div class="gm-tl-dot" style="background:var(--pu)"></div>
+<div class="gm-tl-action">Perfect Day badge unlocked!</div>
+<div class="gm-tl-xp streak">+50 XP</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bnav"><div class="bnav-inner">
+<a href="vault_dashboard_v5_wide_scroll.html" class="bnav-item" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+<a href="vault_habits.html" class="bnav-item" data-nav="habits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_tasks.html" class="bnav-item" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_maintenance.html" class="bnav-item" data-nav="maint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+<div class="bnav-item" data-nav="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+</div></div>
+
+<!-- More Sheet -->
+<div class="mobile-sheet-backdrop" id="mobile-sheet-backdrop"></div>
+<div class="mobile-sheet" id="mobile-sheet">
+<div class="mobile-sheet-handle"></div>
+<div class="mobile-sheet-title">More</div>
+<a href="vault_projects.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_calendar.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<div class="mobile-sheet-sep"></div>
+<a href="vault_templates.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+<a href="vault_achievements.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+</div>
+
+<script src="vault-gamification.js"></script>
+<script src="vault-mobile.js"></script>
+</div>
+
+<script>
+(function(){
+  /* Badge filter tabs */
+  var tabs = document.querySelectorAll('#badge-filter-tabs .gm-filter-tab');
+  var cards = document.querySelectorAll('#badge-grid .gm-badge-card');
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var filter = tab.getAttribute('data-filter');
+
+      cards.forEach(function(card){
+        var status = card.getAttribute('data-status');
+        if(filter === 'all'){
+          card.style.display = '';
+        } else if(filter === 'unlocked'){
+          card.style.display = status === 'unlocked' ? '' : 'none';
+        } else if(filter === 'locked'){
+          card.style.display = status === 'locked' ? '' : 'none';
+        }
+      });
+    });
+  });
+})();
+</script>

@@ -1,0 +1,527 @@
+<link rel="stylesheet" href="vault-core.css">
+<style>
+/* User score cards */
+.household-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.user-card{background:var(--card);border:1px solid var(--cardb);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.user-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.user-card.jose::before{background:var(--ac)}
+.user-card.ana::before{background:var(--inf)}
+.uc-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.uc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0}
+.uc-name{font-size:14px;font-weight:700}
+.uc-status{font-size:10px;padding:2px 8px;border-radius:10px;margin-top:2px;display:inline-block;font-weight:600}
+.uc-status.on-track{background:var(--acbg);color:var(--actx)}
+.uc-status.behind{background:var(--wnbg);color:var(--wntx)}
+.uc-status.crushing{background:var(--done);color:var(--donetx)}
+.uc-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.uc-stat{text-align:center;padding:7px;background:var(--bg3);border-radius:7px}
+.uc-stat-val{font-size:18px;font-weight:700;margin-bottom:1px}
+.uc-stat-label{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px}
+.uc-score{margin-top:10px}
+.uc-score-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.uc-score-label{color:var(--tx3);flex:1}
+.uc-score-val{font-weight:600}
+.uc-score-bar{flex:2;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.uc-score-fill{height:100%;border-radius:3px;transition:width .5s}
+
+/* Versus divider */
+.vs-divider{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--tx3);margin-bottom:16px;gap:12px}
+.vs-divider::before,.vs-divider::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* Habit battle — today */
+.battle-grid{display:grid;gap:6px}
+.battle-row{display:grid;grid-template-columns:1fr auto auto auto 1fr;gap:8px;align-items:center;font-size:11px;padding:5px 0;border-bottom:1px solid var(--bd)}
+.battle-row:last-child{border:none}
+.battle-hdr{font-size:9px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.battle-name{text-align:center;color:var(--tx2);font-size:10px}
+.battle-cell{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.battle-cell.done-jose{background:var(--acbg);border:1px solid var(--ac)}
+.battle-cell.done-ana{background:var(--infbg);border:1px solid var(--inf)}
+.battle-cell.miss{background:var(--bg3);border:1px solid transparent}
+.battle-cell svg{width:12px;height:12px}
+.battle-bar-left,.battle-bar-right{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.battle-bar-left .fill{height:100%;background:var(--ac);border-radius:3px;float:right}
+.battle-bar-right .fill{height:100%;background:var(--inf);border-radius:3px}
+
+/* Streak compare */
+.streak-table{width:100%}
+.streak-row{display:grid;grid-template-columns:1fr 60px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);align-items:center;font-size:11px}
+.streak-row:last-child{border:none}
+.streak-val{font-weight:700;font-size:13px}
+.streak-val.jose{color:var(--actx)}
+.streak-val.ana{color:var(--inftx)}
+.streak-habit{text-align:center;font-size:10px;color:var(--tx2)}
+.streak-bar-jose,.streak-bar-ana{height:5px;border-radius:3px}
+.streak-bar-jose{background:var(--ac);margin-left:auto}
+.streak-bar-ana{background:var(--inf)}
+.streak-cell-left{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.streak-cell-right{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.streak-winner{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600}
+.streak-winner.jose{background:var(--acbg);color:var(--actx)}
+.streak-winner.ana{background:var(--infbg);color:var(--inftx)}
+.streak-winner.tie{background:var(--bg3);color:var(--tx3)}
+
+/* Weekly habit checkerboard (dual) */
+.dual-checker{display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;margin-top:8px}
+.dc-hdr{font-size:9px;font-weight:700;color:var(--tx3);text-align:center;text-transform:uppercase}
+.dc-name{font-size:10px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:center}
+.dc-pair{display:flex;flex-direction:column;gap:2px}
+.dc-cell{height:14px;border-radius:3px}
+.dc-cell.done-jose{background:color-mix(in srgb,var(--ac) 60%,transparent)}
+.dc-cell.done-ana{background:color-mix(in srgb,var(--inf) 60%,transparent)}
+.dc-cell.miss{background:var(--bg3)}
+.dc-cell.future{background:var(--bg3);opacity:.25}
+.dc-legend{display:flex;gap:14px;font-size:9px;color:var(--tx3);margin-top:6px}
+.dc-legend-dot{width:10px;height:6px;border-radius:2px;display:inline-block;margin-right:4px}
+
+/* Motivational footer */
+.motive-banner{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-top:4px}
+.motive-icon{font-size:24px;flex-shrink:0}
+.motive-msg{font-size:12px;line-height:1.5}
+.motive-msg strong{display:block;font-size:13px;margin-bottom:2px}
+
+@media(max-width:700px){
+  .household-grid{grid-template-columns:1fr}
+  .dual-checker{grid-template-columns:80px repeat(7,1fr)}
+}
+</style>
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+
+<div>
+<div class="topbar">
+<div class="topbar-title">Vault</div>
+<div class="topbar-right">
+<div class="topbar-user" id="user-switcher"><div class="gm-level-badge sm">8</div><div class="topbar-av" id="user-av">J</div><span id="user-name">José</span></div>
+<button class="topbar-cog" id="cog-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+</div>
+
+<div class="layout">
+<div class="left">
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Household</div>
+<div class="lcard" id="sidebar-scores"></div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Today</div>
+<div id="sidebar-today" class="lcard" style="font-size:10px;color:var(--tx3)">Monday, 6 April 2026</div>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Navigation</div>
+<a href="vault_dashboard_v5_wide_scroll.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="vault_habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+<a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<a href="vault_accountability.html" class="lnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Accountability</a>
+</div>
+<div class="lblock">
+<div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Level & XP</div>
+<div id="gm-sidebar-container"></div>
+</div>
+</div>
+
+<div class="right">
+<div class="page-hdr">
+<h1>Accountability</h1>
+<div style="font-size:11px;color:var(--tx3)">Monday, 6 April 2026</div>
+</div>
+
+<!-- Household score cards -->
+<div class="household-grid" id="household-cards"></div>
+
+<div class="vs-divider">Today's Habit Battle</div>
+
+<!-- Today's habit completion: side by side -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits — Today</div>
+<div id="habit-battle"></div>
+</div>
+
+<!-- Streak leaderboard -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Streak Leaderboard</div>
+<div id="streak-table"></div>
+</div>
+
+<!-- Weekly checkerboard dual -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>This Week's Habits</div>
+<div id="weekly-checker"></div>
+</div>
+
+<!-- Task summary -->
+<div class="sec">
+<div class="sec-hdr"><svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks This Week</div>
+<div id="task-summary"></div>
+</div>
+
+<!-- Motivational message -->
+<div id="motive-banner"></div>
+
+</div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bnav"><div class="bnav-inner">
+<a href="vault_dashboard_v5_wide_scroll.html" class="bnav-item" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+<a href="vault_habits.html" class="bnav-item" data-nav="habits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+<a href="vault_tasks.html" class="bnav-item" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+<a href="vault_accountability.html" class="bnav-item active" data-nav="account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Together</a>
+<div class="bnav-item" data-nav="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+</div></div>
+
+<div class="mobile-sheet-backdrop" id="mobile-sheet-backdrop"></div>
+<div class="mobile-sheet" id="mobile-sheet">
+<div class="mobile-sheet-handle"></div>
+<div class="mobile-sheet-title">More</div>
+<a href="vault_maintenance.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+<a href="vault_calendar.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+<a href="vault_performance.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+<a href="vault_achievements.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+</div>
+
+</div>
+
+<script src="vault-gamification.js"></script>
+<script>
+(function(){
+
+var DAYS_SHORT=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var TODAY=new Date(2026,3,6);/* Monday 6 April 2026 */
+var checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+
+/* ── Demo data — two users ── */
+var data={
+jose:{
+color:'var(--ac)',
+colorHex:'#1D9E75',
+initial:'J',
+todayHabits:{done:4,total:6},
+todayTasks:{done:3},
+weekHabitPct:72,
+weekTasksDone:5,
+streak:14,
+habits:[
+{name:'6hr deep work',color:'#1D9E75',today:true,week:[1,1,1,0,1,0,0],streak:5},
+{name:'Eat healthy',color:'#378ADD',today:true,week:[1,1,0,1,1,0,0],streak:2},
+{name:'Reading',color:'#EF9F27',today:false,week:[1,0,1,0,1,0,0],streak:0},
+{name:'Workout',color:'#7F77DD',today:true,week:[0,1,0,0,1,0,0],streak:0},
+{name:'Drink water',color:'#378ADD',today:true,week:[1,1,1,0,1,0,0],streak:5},
+{name:'Study',color:'#EF9F27',today:false,week:[1,0,1,0,0,0,0],streak:0}
+],
+tasks:{completed:5,inProgress:3,todo:4,overdue:2}
+},
+ana:{
+color:'var(--inf)',
+colorHex:'#378ADD',
+initial:'M',
+todayHabits:{done:5,total:5},
+todayTasks:{done:2},
+weekHabitPct:81,
+weekTasksDone:8,
+streak:21,
+habits:[
+{name:'Morning walk',color:'#378ADD',today:true,week:[1,1,1,1,1,0,0],streak:21},
+{name:'Meditation',color:'#7F77DD',today:true,week:[1,1,0,1,1,0,0],streak:2},
+{name:'Journaling',color:'#EF9F27',today:true,week:[1,1,1,0,1,0,0],streak:3},
+{name:'No sugar',color:'#E24B4A',today:true,week:[1,1,1,1,1,0,0],streak:12},
+{name:'Stretch',color:'#1D9E75',today:false,week:[1,0,1,0,0,0,0],streak:0}
+],
+tasks:{completed:8,inProgress:2,todo:3,overdue:0}
+}
+};
+
+/* ── Shared habit names for battle view ── */
+var sharedHabits=[
+{name:'Deep work / Focused time',jose:true,ana:false,jColor:'#1D9E75',aColor:null},
+{name:'Eat healthy / No sugar',jose:true,ana:true,jColor:'#378ADD',aColor:'#E24B4A'},
+{name:'Reading / Journaling',jose:false,ana:true,jColor:null,aColor:'#EF9F27'},
+{name:'Workout / Stretch',jose:true,ana:false,jColor:'#7F77DD',aColor:null},
+{name:'Drink water',jose:true,ana:false,jColor:'#378ADD',aColor:null},
+{name:'Morning routine',jose:false,ana:true,jColor:null,aColor:'#378ADD'}
+];
+
+/* ── Compute user status ── */
+function userStatus(u){
+if(u.weekHabitPct>=80&&u.streak>=7)return{cls:'crushing',label:'Crushing it'};
+if(u.weekHabitPct>=60)return{cls:'on-track',label:'On track'};
+return{cls:'behind',label:'Needs a push'};
+}
+
+/* ── Household score cards ── */
+function renderCards(){
+var html='';
+['jose','ana'].forEach(function(key){
+var u=data[key];
+var status=userStatus(u);
+var isJose=key==='jose';
+html+='<div class="user-card '+(isJose?'jose':'ana')+'">';
+html+='<div class="uc-header">';
+html+='<div class="uc-av" style="background:'+(isJose?'var(--ac)':'var(--inf)')+'">'+u.initial+'</div>';
+html+='<div><div class="uc-name">'+(isJose?'José':'Maura')+'</div><span class="uc-status '+status.cls+'">'+status.label+'</span></div>';
+html+='</div>';
+html+='<div class="uc-stats">';
+html+='<div class="uc-stat"><div class="uc-stat-val" style="color:'+(isJose?'var(--actx)':'var(--inftx)')+'">'+u.todayHabits.done+'/'+u.todayHabits.total+'</div><div class="uc-stat-label">Habits today</div></div>';
+html+='<div class="uc-stat"><div class="uc-stat-val" style="color:var(--wntx)">'+u.streak+'</div><div class="uc-stat-label">Day streak</div></div>';
+html+='<div class="uc-stat"><div class="uc-stat-val" style="color:var(--inftx)">'+u.weekTasksDone+'</div><div class="uc-stat-label">Tasks done</div></div>';
+html+='<div class="uc-stat"><div class="uc-stat-val" style="color:'+(isJose?'var(--actx)':'var(--inftx)')+'">'+u.weekHabitPct+'%</div><div class="uc-stat-label">Week habits</div></div>';
+html+='</div>';
+/* score bars */
+html+='<div class="uc-score" style="margin-top:10px">';
+var bars=[
+{label:'Habits',pct:u.weekHabitPct,color:isJose?'var(--ac)':'var(--inf)'},
+{label:'Tasks',pct:Math.min(Math.round(u.weekTasksDone/10*100),100),color:isJose?'var(--pu)':'var(--wn)'},
+{label:'Streak',pct:Math.min(Math.round(u.streak/30*100),100),color:'var(--wn)'}
+];
+bars.forEach(function(b){
+html+='<div class="uc-score-row" style="margin-bottom:4px">';
+html+='<span class="uc-score-label">'+b.label+'</span>';
+html+='<div class="uc-score-bar"><div class="uc-score-fill" style="width:'+b.pct+'%;background:'+b.color+'"></div></div>';
+html+='<span class="uc-score-val" style="color:'+b.color+';min-width:30px;text-align:right">'+b.pct+'%</span>';
+html+='</div>';
+});
+html+='</div>';
+html+='</div>';
+});
+document.getElementById('household-cards').innerHTML=html;
+}
+
+/* ── Sidebar scores ── */
+function renderSidebarScores(){
+var html='';
+['jose','ana'].forEach(function(key){
+var u=data[key];
+var isJose=key==='jose';
+var status=userStatus(u);
+html+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--bd)">';
+html+='<div style="width:24px;height:24px;border-radius:50%;background:'+(isJose?'var(--ac)':'var(--inf)')+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0">'+u.initial+'</div>';
+html+='<div style="flex:1;min-width:0">';
+html+='<div style="font-size:11px;font-weight:600">'+(isJose?'José':'Maura')+'</div>';
+html+='<div style="font-size:9px;color:var(--tx3)">'+u.streak+'d streak · '+u.weekHabitPct+'% habits</div>';
+html+='</div>';
+html+='<span style="font-size:8px;font-weight:600;padding:1px 5px;border-radius:3px;background:'+(status.cls==='crushing'?'var(--done)':status.cls==='on-track'?'var(--acbg)':'var(--wnbg)')+';color:'+(status.cls==='crushing'?'var(--donetx)':status.cls==='on-track'?'var(--actx)':'var(--wntx)')+'">'+status.label+'</span>';
+html+='</div>';
+});
+if(html.length){html=html.replace(/border-bottom:1px solid var\(--bd\)"><\/div>(?!.*border-bottom)/,'"></div>')}
+document.getElementById('sidebar-scores').innerHTML=html;
+}
+
+/* ── Habit battle today ── */
+function renderHabitBattle(){
+var jDone=data.jose.todayHabits.done,jTotal=data.jose.todayHabits.total;
+var aDone=data.ana.todayHabits.done,aTotal=data.ana.todayHabits.total;
+var jPct=Math.round(jDone/jTotal*100);
+var aPct=Math.round(aDone/aTotal*100);
+
+var html='<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:12px">';
+/* José side */
+html+='<div style="text-align:right">';
+html+='<div style="font-size:20px;font-weight:700;color:var(--actx)">'+jDone+'/'+jTotal+'</div>';
+html+='<div style="font-size:9px;color:var(--tx3)">habits done</div>';
+html+='<div style="height:8px;background:var(--bg3);border-radius:4px;margin-top:4px;overflow:hidden"><div style="height:100%;background:var(--ac);border-radius:4px;width:'+jPct+'%;float:right"></div></div>';
+html+='</div>';
+/* VS */
+html+='<div style="font-size:13px;font-weight:700;color:var(--tx3);text-align:center">VS</div>';
+/* Ana side */
+html+='<div>';
+html+='<div style="font-size:20px;font-weight:700;color:var(--inftx)">'+aDone+'/'+aTotal+'</div>';
+html+='<div style="font-size:9px;color:var(--tx3)">habits done</div>';
+html+='<div style="height:8px;background:var(--bg3);border-radius:4px;margin-top:4px;overflow:hidden"><div style="height:100%;background:var(--inf);border-radius:4px;width:'+aPct+'%"></div></div>';
+html+='</div>';
+html+='</div>';
+
+/* Per-habit rows */
+html+='<div class="battle-grid">';
+html+='<div class="battle-row battle-hdr"><div style="text-align:right;color:var(--actx)">José</div><div></div><div class="battle-name">Habit</div><div></div><div style="color:var(--inftx)">Maura</div></div>';
+
+sharedHabits.forEach(function(h){
+var jDoneCell=h.jose&&h.jColor;
+var aDoneCell=h.ana&&h.aColor;
+var jCls=jDoneCell?'done-jose':'miss';
+var aCls=aDoneCell?'done-ana':'miss';
+html+='<div class="battle-row">';
+html+='<div style="display:flex;justify-content:flex-end">';
+if(h.jose!==null){
+html+='<div class="battle-cell '+jCls+'" style="'+(jDoneCell?'border-color:'+h.jColor:'')+'">'+( jDoneCell?'<svg viewBox="0 0 24 24" fill="none" stroke="'+h.jColor+'" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'')+'</div>';
+}else{html+='<div class="battle-cell miss" style="opacity:.2"></div>';}
+html+='</div>';
+html+='<div></div>';
+html+='<div class="battle-name">'+h.name+'</div>';
+html+='<div></div>';
+html+='<div>';
+if(h.ana!==null){
+html+='<div class="battle-cell '+aCls+'" style="'+(aDoneCell?'border-color:'+h.aColor:'')+'">'+( aDoneCell?'<svg viewBox="0 0 24 24" fill="none" stroke="'+h.aColor+'" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'')+'</div>';
+}else{html+='<div class="battle-cell miss" style="opacity:.2"></div>';}
+html+='</div>';
+html+='</div>';
+});
+
+html+='</div>';
+document.getElementById('habit-battle').innerHTML=html;
+}
+
+/* ── Streak leaderboard ── */
+function renderStreaks(){
+/* Build combined habit list with streaks for both */
+var rows=[
+{name:'Deep work / Focus',j:5,a:0},
+{name:'Healthy eating',j:2,a:12},
+{name:'Reading / Journaling',j:3,a:3},
+{name:'Workout / Stretch',j:0,a:0},
+{name:'Drink water',j:5,a:0},
+{name:'Morning routine',j:0,a:21}
+];
+var maxStreak=rows.reduce(function(m,r){return Math.max(m,r.j,r.a)},1);
+var html='<div class="streak-table">';
+rows.forEach(function(r){
+var jWins=r.j>r.a;
+var aWins=r.a>r.j;
+var tie=r.j===r.a;
+var jBarW=Math.round(r.j/maxStreak*100);
+var aBarW=Math.round(r.a/maxStreak*100);
+html+='<div class="streak-row">';
+html+='<div class="streak-cell-left">';
+html+='<div class="streak-val jose">'+r.j+'<span style="font-size:9px;font-weight:400;color:var(--tx3)"> days</span></div>';
+html+='<div style="width:'+jBarW+'%;max-width:100%;height:4px;background:var(--ac);border-radius:2px;min-width:2px"></div>';
+html+='</div>';
+html+='<div class="streak-habit">';
+html+='<div>'+r.name+'</div>';
+if(tie&&r.j>0){html+='<span class="streak-winner tie">Tied</span>';}
+else if(jWins){html+='<span class="streak-winner jose">José leads</span>';}
+else if(aWins){html+='<span class="streak-winner ana">Maura leads</span>';}
+else{html+='<span style="font-size:8px;color:var(--tx3)">No streak</span>';}
+html+='</div>';
+html+='<div class="streak-cell-right">';
+html+='<div class="streak-val ana">'+r.a+'<span style="font-size:9px;font-weight:400;color:var(--tx3)"> days</span></div>';
+html+='<div style="width:'+aBarW+'%;height:4px;background:var(--inf);border-radius:2px;min-width:2px"></div>';
+html+='</div>';
+html+='</div>';
+});
+html+='</div>';
+document.getElementById('streak-table').innerHTML=html;
+}
+
+/* ── Weekly dual checkerboard ── */
+function renderWeeklyChecker(){
+/* Shared habit rows for the week view */
+var weekRows=[
+{name:'Deep work / Focus',jose:[1,1,1,0,1,0,0],ana:[0,0,0,0,0,0,0]},
+{name:'Healthy eating',jose:[1,1,0,1,1,0,0],ana:[1,1,1,1,1,0,0]},
+{name:'Reading / Journaling',jose:[1,0,1,0,1,0,0],ana:[1,1,1,0,1,0,0]},
+{name:'Workout / Stretch',jose:[0,1,0,0,1,0,0],ana:[1,0,1,0,0,0,0]},
+{name:'Drink water',jose:[1,1,1,0,1,0,0],ana:[0,0,0,0,0,0,0]},
+{name:'Morning routine',jose:[0,0,0,0,0,0,0],ana:[1,1,1,1,1,0,0]}
+];
+var todayIdx=0;/* Monday = index 0, today is Monday Apr 6 */
+
+var html='<div class="dc-legend">';
+html+='<span><span class="dc-legend-dot" style="background:var(--ac)"></span>José</span>';
+html+='<span><span class="dc-legend-dot" style="background:var(--inf)"></span>Maura</span>';
+html+='</div>';
+html+='<div class="dual-checker">';
+/* header */
+html+='<div class="dc-hdr"></div>';
+DAYS_SHORT.forEach(function(d,i){
+html+='<div class="dc-hdr" style="'+(i===todayIdx?'color:var(--actx)':'')+'">'+d+'</div>';
+});
+/* rows */
+weekRows.forEach(function(row){
+html+='<div class="dc-name">'+row.name+'</div>';
+for(var i=0;i<7;i++){
+var isFuture=i>todayIdx;
+html+='<div class="dc-pair">';
+if(isFuture){
+html+='<div class="dc-cell future"></div>';
+html+='<div class="dc-cell future"></div>';
+}else{
+html+='<div class="dc-cell '+(row.jose[i]?'done-jose':'miss')+'"></div>';
+html+='<div class="dc-cell '+(row.ana[i]?'done-ana':'miss')+'"></div>';
+}
+html+='</div>';
+}
+});
+html+='</div>';
+document.getElementById('weekly-checker').innerHTML=html;
+}
+
+/* ── Task summary ── */
+function renderTaskSummary(){
+var j=data.jose.tasks,a=data.ana.tasks;
+var maxDone=Math.max(j.completed,a.completed,1);
+var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+
+['jose','ana'].forEach(function(key){
+var u=data[key];
+var t=u.tasks;
+var isJose=key==='jose';
+html+='<div class="lcard">';
+html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">';
+html+='<div style="width:20px;height:20px;border-radius:50%;background:'+(isJose?'var(--ac)':'var(--inf)')+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700">'+u.initial+'</div>';
+html+='<div style="font-size:12px;font-weight:600">'+(isJose?'José':'Maura')+'</div>';
+html+='</div>';
+var rows=[
+{label:'Completed',val:t.completed,color:isJose?'var(--ac)':'var(--inf)'},
+{label:'In progress',val:t.inProgress,color:'var(--wn)'},
+{label:'To do',val:t.todo,color:'var(--tx3)'},
+{label:'Overdue',val:t.overdue,color:'var(--dn)'}
+];
+rows.forEach(function(r){
+html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:11px">';
+html+='<div style="width:6px;height:6px;border-radius:50%;background:'+r.color+';flex-shrink:0"></div>';
+html+='<span style="flex:1;color:var(--tx2)">'+r.label+'</span>';
+html+='<span style="font-weight:600;color:'+r.color+'">'+r.val+'</span>';
+html+='</div>';
+});
+html+='</div>';
+});
+
+html+='</div>';
+document.getElementById('task-summary').innerHTML=html;
+}
+
+/* ── Motivational banner ── */
+function renderMotive(){
+var j=userStatus(data.jose),a=userStatus(data.ana);
+var msgs={
+'crushing,crushing':{icon:'🔥',title:'You\'re both crushing it!',msg:'Incredible week — both of you are ahead of your goals. Keep the momentum going!'},
+'crushing,on-track':{icon:'⚡',title:'José is crushing it, Maura is on track!',msg:'José, keep the streak alive! Maura, you\'re close to crushing mode — push a bit harder today.'},
+'on-track,crushing':{icon:'⚡',title:'Maura is crushing it, José is on track!',msg:'Maura, incredible streak! José, you\'re solid — a strong finish to the week will do it.'},
+'on-track,on-track':{icon:'💪',title:'You\'re both on track.',msg:'Solid progress from both sides. Stay consistent and finish the week strong together!'},
+'crushing,behind':{icon:'🎯',title:'José is crushing it — Maura needs a push.',msg:'José, great work! Maura, today is a perfect day to catch up. Start with one habit and build from there.'},
+'behind,crushing':{icon:'🎯',title:'Maura is crushing it — José needs a push.',msg:'Maura, fantastic job! José, you\'ve got this. Don\'t let the streak slip — one focused session now.'},
+'on-track,behind':{icon:'💡',title:'Maura needs a push today.',msg:'José, you\'re on track — nice. Maura, a couple of completions today will get you back in the game!'},
+'behind,on-track':{icon:'💡',title:'José needs a push today.',msg:'Maura, you\'re solid. José, one productive session today will turn things around. You know what to do.'},
+'behind,behind':{icon:'📍',title:'Both behind — fresh start today.',msg:'Yesterday is done. Today counts. Pick one habit each and check it off before 10am.'}
+};
+var key=j.cls+','+a.cls;
+var m=msgs[key]||msgs['on-track,on-track'];
+var html='<div class="motive-banner">';
+html+='<div class="motive-icon">'+m.icon+'</div>';
+html+='<div class="motive-msg"><strong>'+m.title+'</strong>'+m.msg+'</div>';
+html+='</div>';
+document.getElementById('motive-banner').innerHTML=html;
+}
+
+/* ── User switcher (cosmetic) ── */
+var isJose=true;
+document.getElementById('user-switcher').addEventListener('click',function(){
+isJose=!isJose;
+document.getElementById('user-av').textContent=isJose?'J':'M';
+document.getElementById('user-av').style.background=isJose?'var(--ac)':'var(--inf)';
+document.getElementById('user-name').textContent=isJose?'José':'Maura';
+});
+
+/* ── Render all ── */
+renderCards();
+renderSidebarScores();
+renderHabitBattle();
+renderStreaks();
+renderWeeklyChecker();
+renderTaskSummary();
+renderMotive();
+
+})();
+</script>
+<script src="vault-mobile.js"></script>
