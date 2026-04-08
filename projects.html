@@ -38,15 +38,134 @@
   function pageApp() {
     return {
       view: 'grid',
-      projects: [
-        { id:1, name:'FERRO', desc:'Fitness tracking & accountability system', status:'Active', color:'var(--ac)', pct:45, total:18, open:10, done:8, daysLeft:62, deadline:'30 Jun 2026', label:'Personal' },
-        { id:2, name:'Vault App', desc:'Household productivity web application', status:'Active', color:'var(--inf)', pct:30, total:22, open:15, done:7, daysLeft:90, deadline:'5 Jul 2026', label:'Dev' },
-        { id:3, name:'House Reno', desc:'Home renovation and improvement planning', status:'Planning', color:'var(--wn)', pct:15, total:12, open:10, done:2, daysLeft:120, deadline:'1 Aug 2026', label:'Home' },
-        { id:4, name:'Learning ASP.NET', desc:'Study roadmap for ASP.NET Core MVC', status:'Active', color:'var(--pu)', pct:60, total:10, open:4, done:6, daysLeft:30, deadline:'6 May 2026', label:'Study' },
-      ],
+      loading: true,
+      error: null,
+      projects: [],
+      showForm: false,
+      editId: null,
+      form: { name: '', description: '', status: 'Active', color: '#1D9E75', deadline: '' },
+      statusFilter: 'all',
+
+      get filtered() {
+        if (this.statusFilter === 'all') return this.projects;
+        return this.projects.filter(p => p.status === this.statusFilter);
+      },
+
+      async init() {
+        await this.fetchProjects();
+      },
+
+      async fetchProjects() {
+        this.loading = true;
+        this.error = null;
+        try {
+          const res = await fetch('/api/projects');
+          if (!res.ok) throw new Error('Failed to load projects: ' + res.status);
+          const data = await res.json();
+          this.projects = data.map(p => ({
+            id: p.Id,
+            name: p.Name,
+            desc: p.Description,
+            status: p.Status,
+            color: p.Color || 'var(--ac)',
+            pct: p.Pct ?? 0,
+            total: p.TotalTasks ?? 0,
+            open: p.OpenTasks ?? 0,
+            done: p.DoneTasks ?? 0,
+            daysLeft: p.DaysLeft ?? 0,
+            deadline: p.Deadline
+              ? new Date(p.Deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+              : '---',
+            label: p.Label || p.Status,
+          }));
+        } catch (err) {
+          this.error = err.message;
+          console.error('[projects] fetchProjects:', err);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      openAddForm() {
+        this.editId = null;
+        this.form = { name: '', description: '', status: 'Active', color: '#1D9E75', deadline: '' };
+        this.showForm = true;
+      },
+
+      openEditForm(p) {
+        this.editId = p.id;
+        this.form = { name: p.name, description: p.desc, status: p.status, color: p.color, deadline: p.deadline };
+        this.showForm = true;
+      },
+
+      async saveProject() {
+        if (!this.form.name.trim()) return;
+        try {
+          const res = await fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: this.form.name,
+              description: this.form.description,
+              status: this.form.status,
+              color: this.form.color,
+              deadline: this.form.deadline || null,
+            }),
+          });
+          if (!res.ok) throw new Error('Failed to create project: ' + res.status);
+          this.showForm = false;
+          await this.fetchProjects();
+        } catch (err) {
+          this.error = err.message;
+          console.error('[projects] saveProject:', err);
+        }
+      },
+
+      async updateProject(id) {
+        try {
+          const res = await fetch('/api/projects/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: this.form.name,
+              description: this.form.description,
+              status: this.form.status,
+              color: this.form.color,
+              deadline: this.form.deadline || null,
+            }),
+          });
+          if (!res.ok) throw new Error('Failed to update project: ' + res.status);
+          this.showForm = false;
+          this.editId = null;
+          await this.fetchProjects();
+        } catch (err) {
+          this.error = err.message;
+          console.error('[projects] updateProject:', err);
+        }
+      },
+
+      async deleteProject(id) {
+        if (!confirm('Delete this project?')) return;
+        try {
+          const res = await fetch('/api/projects/' + id, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to delete project: ' + res.status);
+          await this.fetchProjects();
+        } catch (err) {
+          this.error = err.message;
+          console.error('[projects] deleteProject:', err);
+        }
+      },
+
+      async submitForm() {
+        if (this.editId) {
+          await this.updateProject(this.editId);
+        } else {
+          await this.saveProject();
+        }
+      },
     }
   }
-  </script>
+    </script>
 <script defer src="https://unpkg.com/htmx.org@1.9.10"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 </body></html>

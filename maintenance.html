@@ -147,41 +147,166 @@
 function pageApp() {
   return {
     filter: 'all',
-    items: [
-      { id:1, name:'Car oil change',      icon:'🚗', interval:'Every 180 days', lastDone:'1 Oct 2025', nextDue:'30 Mar 2026', status:'overdue', daysOverdue:7,  daysLeft:0,  justDone:false },
-      { id:2, name:'Water plants',         icon:'🌿', interval:'Every 3 days',   lastDone:'3 Apr 2026', nextDue:'6 Apr 2026',  status:'soon',    daysOverdue:0,  daysLeft:0,  justDone:false },
-      { id:3, name:'Replace toothbrush',   icon:'🪥', interval:'Every 90 days',  lastDone:'5 Jan 2026', nextDue:'5 Apr 2026',  status:'soon',    daysOverdue:0,  daysLeft:0,  justDone:false },
-      { id:4, name:'HVAC filter',          icon:'💨', interval:'Every 90 days',  lastDone:'6 Jan 2026', nextDue:'6 Apr 2026',  status:'ok',      daysOverdue:0,  daysLeft:30, justDone:false },
-      { id:5, name:'Smoke detector check', icon:'🔥', interval:'Every 180 days', lastDone:'6 Oct 2025', nextDue:'5 Apr 2026',  status:'ok',      daysOverdue:0,  daysLeft:60, justDone:false },
-      { id:6, name:'Car tire pressure',    icon:'🚗', interval:'Every 30 days',  lastDone:'8 Mar 2026', nextDue:'8 Apr 2026',  status:'ok',      daysOverdue:0,  daysLeft:2,  justDone:false },
-    ],
-    completionLog: [
-      { id:1, icon:'🌿', name:'Water plants',       user:'José', date:'3 Apr 2026' },
-      { id:2, icon:'🪥', name:'Replace toothbrush', user:'Maura',       date:'5 Jan 2026' },
-      { id:3, icon:'💨', name:'HVAC filter',        user:'José', date:'6 Jan 2026' },
-      { id:4, icon:'🚗', name:'Car tire pressure',  user:'José', date:'8 Mar 2026' },
-      { id:5, icon:'🔥', name:'Smoke detector',     user:'Maura',       date:'6 Oct 2025' },
-    ],
+    loading: true,
+    error: null,
+    items: [],
+    completionLog: [],
+
+    // Form state
+    showForm: false,
+    editId: null,
+    form: { name: '', category: '', intervalDays: 30 },
+
     get filteredItems() {
       if (this.filter === 'all') return this.items;
-      const f = this.filter;
-      return this.items.filter(i => i.status === f);
+      return this.items.filter(i => i.status === this.filter);
     },
-    markDone(id) {
+
+    async init() {
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal && this.closeModal(); });
+      await this.fetchItems();
+    },
+
+    async fetchItems() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const res = await fetch('/api/maintenance');
+        if (!res.ok) throw new Error('Failed to load maintenance items: ' + res.status);
+        const data = await res.json();
+        this.items = data.map(i => ({
+          id: i.Id,
+          name: i.Name,
+          icon: i.Icon || '⚙',
+          category: i.Category || '',
+          interval: 'Every ' + i.IntervalDays + ' days',
+          intervalDays: i.IntervalDays,
+          lastDone: i.LastCompletedAt
+            ? new Date(i.LastCompletedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            : 'Never',
+          nextDue: i.NextDueAt
+            ? new Date(i.NextDueAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            : '---',
+          status: i.Status || 'ok',
+          daysOverdue: i.Status === 'overdue' ? Math.abs(i.DaysUntilDue || 0) : 0,
+          daysLeft: i.DaysUntilDue > 0 ? i.DaysUntilDue : 0,
+          overduePercent: i.OverduePercent ?? 0,
+          justDone: false,
+        }));
+        // Build recent completion log from items that have been completed
+        this.completionLog = data
+          .filter(i => i.LastCompletedAt)
+          .sort((a, b) => new Date(b.LastCompletedAt) - new Date(a.LastCompletedAt))
+          .slice(0, 5)
+          .map(i => ({
+            id: i.Id,
+            icon: i.Icon || '⚙',
+            name: i.Name,
+            date: new Date(i.LastCompletedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+          }));
+      } catch (err) {
+        this.error = err.message;
+        console.error('[maintenance] fetchItems:', err);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async markDone(id) {
       const item = this.items.find(i => i.id === id);
       if (!item) return;
-      item.justDone = true;
-      this.completionLog.unshift({ id: Date.now(), icon: item.icon, name: item.name, user: 'José', date: '7 Apr 2026' });
-      if (this.completionLog.length > 5) this.completionLog = this.completionLog.slice(0, 5);
-      const self = this;
-      setTimeout(() => {
-        const idx = self.items.findIndex(i => i.id === id);
-        if (idx !== -1) {
-          const updated = { ...item, status: 'ok', justDone: false, daysLeft: 30, nextDue: 'Apr 2026+' };
-          self.items = [...self.items.slice(0, idx), updated, ...self.items.slice(idx + 1)];
-        }
-      }, 600);
-    }
+      // Optimistic UI
+      const idx = this.items.findIndex(i => i.id === id);
+      this.items = [
+        ...this.items.slice(0, idx),
+        { ...item, justDone: true },
+        ...this.items.slice(idx + 1),
+      ];
+      try {
+        const res = await fetch('/api/maintenance/' + id + '/complete', { method: 'POST' });
+        if (!res.ok) throw new Error('Failed to mark done: ' + res.status);
+        await this.fetchItems();
+      } catch (err) {
+        this.error = err.message;
+        console.error('[maintenance] markDone:', err);
+        // Revert optimistic update
+        await this.fetchItems();
+      }
+    },
+
+    openAddForm() {
+      this.editId = null;
+      this.form = { name: '', category: '', intervalDays: 30 };
+      this.showForm = true;
+    },
+
+    openEditForm(item) {
+      this.editId = item.id;
+      this.form = { name: item.name, category: item.category, intervalDays: item.intervalDays };
+      this.showForm = true;
+    },
+
+    async saveItem() {
+      if (!this.form.name.trim()) return;
+      try {
+        const res = await fetch('/api/maintenance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: this.form.name,
+            category: this.form.category,
+            intervalDays: Number(this.form.intervalDays),
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to create item: ' + res.status);
+        this.showForm = false;
+        await this.fetchItems();
+      } catch (err) {
+        this.error = err.message;
+        console.error('[maintenance] saveItem:', err);
+      }
+    },
+
+    async updateItem(id) {
+      try {
+        const res = await fetch('/api/maintenance/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: this.form.name,
+            category: this.form.category,
+            intervalDays: Number(this.form.intervalDays),
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to update item: ' + res.status);
+        this.showForm = false;
+        this.editId = null;
+        await this.fetchItems();
+      } catch (err) {
+        this.error = err.message;
+        console.error('[maintenance] updateItem:', err);
+      }
+    },
+
+    async deleteItem(id) {
+      if (!confirm('Delete this maintenance item?')) return;
+      try {
+        const res = await fetch('/api/maintenance/' + id, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete item: ' + res.status);
+        await this.fetchItems();
+      } catch (err) {
+        this.error = err.message;
+        console.error('[maintenance] deleteItem:', err);
+      }
+    },
+
+    async submitForm() {
+      if (this.editId) {
+        await this.updateItem(this.editId);
+      } else {
+        await this.saveItem();
+      }
+    },
   };
 }
 </script>

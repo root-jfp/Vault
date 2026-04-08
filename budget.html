@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault &#8212; Budget</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={corePlugins:{preflight:false}}</script>
+<style>
+[x-cloak]{display:none!important}
+.filter-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.ftab{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);cursor:pointer;transition:all .15s}
+.ftab.active{background:var(--acbg);color:var(--actx);border-color:var(--ac)}
+.ftab:hover:not(.active){background:var(--bg3);color:var(--tx)}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin-bottom:10px;margin-top:20px}
+.tx-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 14px;margin-bottom:6px;cursor:pointer;transition:border-color .15s}
+.tx-row:hover{border-color:var(--bd)}
+.tx-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tx-meta{flex:1;min-width:0}
+.tx-desc{font-size:12px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-cat-tag{font-size:9px;padding:1px 6px;border-radius:3px;background:var(--bg3);color:var(--tx3);margin-top:2px;display:inline-block}
+.tx-date{font-size:10px;color:var(--tx3);white-space:nowrap}
+.tx-amount{font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap}
+</style>
+</head>
+<body x-data="pageApp()" x-cloak>
+
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>Jos&#233;
+      </a>
+      <button class="topbar-cog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="17" height="17"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <aside class="lnav">
+      <div class="lnav-block">
+        <a href="index.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a href="habits.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Habits
+        </a>
+        <a href="maintenance.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Maintenance
+        </a>
+        <a href="tasks.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Tasks
+        </a>
+        <a href="projects.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Projects
+        </a>
+        <a href="calendar.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Calendar
+        </a>
+        <a href="performance.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>
+          Performance
+        </a>
+        <a href="budget.html" class="lnav-item active" style="color:var(--actx)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><path d="M12 8v-.5M12 16v.5M9.5 10.5a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5M12 16h.01"/><path d="M9 11.5c0-1.657 1.343-3 3-3s3 1.343 3 3c0 1.5-2 2.5-3 3.5"/></svg>
+          Budget
+        </a>
+        <a href="notes.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Notes
+        </a>
+        <a href="shopping.html" class="lnav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Shopping
+        </a>
+      </div>
+
+      <div class="gm-sidebar-widget">
+        <div class="gm-sw-header">
+          <div class="gm-level-badge">8</div>
+          <div>
+            <div style="font-size:11px;font-weight:600">Level 8 &middot; Consistent</div>
+            <div style="font-size:9px;color:var(--tx3)">2,340 / 3,000 XP</div>
+          </div>
+        </div>
+        <div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">660 XP to Level 9</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">&#128176; Budget</h1>
+          <div class="page-sub">Household spending &mdash; April 2026</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn-primary" @click="openAddExpenseModal()">+ Add Expense</button>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs">
+        <button class="ftab" :class="{active:activeFilter==='all'}" @click="activeFilter='all'">All</button>
+        <button class="ftab" :class="{active:activeFilter==='Groceries'}" @click="activeFilter='Groceries'">Groceries</button>
+        <button class="ftab" :class="{active:activeFilter==='Transport'}" @click="activeFilter='Transport'">Transport</button>
+        <button class="ftab" :class="{active:activeFilter==='Dining out'}" @click="activeFilter='Dining out'">Dining</button>
+        <button class="ftab" :class="{active:activeFilter==='Utilities'}" @click="activeFilter='Utilities'">Utilities</button>
+        <button class="ftab" :class="{active:activeFilter==='other'}" @click="activeFilter='other'">Other</button>
+      </div>
+
+      <!-- Section 1: Overview -->
+      <div class="section-label" style="margin-top:0">Overview</div>
+      <div style="display:flex;gap:20px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="38" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="var(--ac)" stroke-width="10"
+            stroke-dasharray="167 239" stroke-dashoffset="-60" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+          <text x="50" y="46" text-anchor="middle" font-size="11" font-weight="700" fill="var(--tx)">70%</text>
+          <text x="50" y="57" text-anchor="middle" font-size="7" fill="var(--tx3)">used</text>
+        </svg>
+        <div style="flex:1;min-width:180px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:700">&#8364;1,400</div>
+              <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Spent</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:700">&#8364;2,000</div>
+              <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Budget</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:var(--actx)">&#8364;600</div>
+              <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Left</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Categories -->
+      <div class="section-label">Categories</div>
+      <template x-for="cat in filteredCategories" :key="cat.id">
+        <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 14px;margin-bottom:6px;cursor:pointer;transition:border-color .15s" @click="openCatModal(cat)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0" :style="`background:${cat.color}`"></div>
+            <span style="font-size:12px;font-weight:600;flex:1" x-text="cat.name"></span>
+            <span style="font-size:10px;color:var(--tx3)" x-text="`\u20AC${cat.spent} / \u20AC${cat.budget}`"></span>
+            <span x-show="cat.spent > cat.budget" style="font-size:8px;background:var(--dnbg);color:var(--dntx);padding:1px 5px;border-radius:3px">OVER</span>
+            <span x-show="cat.spent <= cat.budget" style="font-size:8px;background:var(--acbg);color:var(--actx);padding:1px 5px;border-radius:3px" x-text="`\u20AC${cat.budget - cat.spent} left`"></span>
+          </div>
+          <div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden">
+            <div :style="`width:${Math.min(cat.spent/cat.budget*100,100)}%;background:${cat.spent>cat.budget?'var(--dn)':cat.color};height:100%;border-radius:3px;transition:width .3s`"></div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Section 3: Recent Transactions -->
+      <div class="section-label">Recent Transactions</div>
+      <template x-for="tx in filteredTransactions" :key="tx.id">
+        <div class="tx-row" @click="openTxModal(tx)">
+          <div class="tx-date" x-text="tx.date"></div>
+          <div class="tx-dot" :style="`background:${tx.catColor}`"></div>
+          <div class="tx-meta">
+            <div class="tx-desc" x-text="tx.desc"></div>
+            <div class="tx-cat-tag" x-text="tx.cat"></div>
+          </div>
+          <div class="tx-amount" x-text="`\u20AC${tx.amount.toFixed(2)}`"></div>
+        </div>
+      </template>
+      <div x-show="filteredTransactions.length===0" style="text-align:center;color:var(--tx3);font-size:12px;padding:24px 0">No transactions in this category.</div>
+
+    </main>
+  </div>
+
+  <nav class="bnav">
+    <div class="bnav-inner">
+      <a href="index.html" class="bnav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="habits.html" class="bnav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Habits</span>
+      </a>
+      <a href="tasks.html" class="bnav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <span>Tasks</span>
+      </a>
+      <a href="maintenance.html" class="bnav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span>Maint.</span>
+      </a>
+      <div class="bnav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        <span>More</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Modal -->
+  <div class="vm-overlay" id="vault-modal" @click.self="closeModal()">
+    <div class="vm-dialog">
+      <div class="vm-header">
+        <div class="vm-hdot" id="vm-dot"></div>
+        <div class="vm-hgroup">
+          <div class="vm-htitle" id="vm-title"></div>
+          <div class="vm-hsub" id="vm-sub"></div>
+        </div>
+        <button class="vm-close" @click="closeModal()">&times;</button>
+      </div>
+      <div class="vm-body" id="vm-body"></div>
+      <div class="vm-footer" id="vm-footer"></div>
+    </div>
+  </div>
+
+  <script>
+  function pageApp() {
+    return {
+      activeFilter: 'all',
+      loading: true,
+      error: null,
+      categories: [],
+      transactions: [],
+      summary: { totalBudget: 0, totalSpent: 0, totalRemaining: 0 },
+
+      get filteredCategories() {
+        if (this.activeFilter === 'all') return this.categories;
+        if (this.activeFilter === 'other') {
+          const named = ['Groceries', 'Transport', 'Dining out', 'Utilities'];
+          return this.categories.filter(c => !named.includes(c.name));
+        }
+        return this.categories.filter(c => c.name === this.activeFilter);
+      },
+
+      get filteredTransactions() {
+        if (this.activeFilter === 'all') return this.transactions;
+        if (this.activeFilter === 'other') {
+          const named = ['Groceries', 'Transport', 'Dining out', 'Utilities'];
+          return this.transactions.filter(t => !named.includes(t.cat));
+        }
+        return this.transactions.filter(t => t.cat === this.activeFilter);
+      },
+
+      async init() {
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal(); });
+        await this.fetchAll();
+      },
+
+      async fetchAll() {
+        this.loading = true;
+        this.error = null;
+        try {
+          const [catRes, txRes, sumRes] = await Promise.all([
+            fetch('/api/budget/categories'),
+            fetch('/api/budget/transactions'),
+            fetch('/api/budget/summary'),
+          ]);
+          if (!catRes.ok) throw new Error('Failed to load categories: ' + catRes.status);
+          if (!txRes.ok) throw new Error('Failed to load transactions: ' + txRes.status);
+          if (!sumRes.ok) throw new Error('Failed to load summary: ' + sumRes.status);
+          const [cats, txs, sum] = await Promise.all([catRes.json(), txRes.json(), sumRes.json()]);
+          this.categories = cats.map(c => ({
+            id: c.Id, name: c.Name, budget: c.MonthlyLimit, spent: c.Spent,
+            remaining: c.Remaining, pct: c.Pct, isOver: c.IsOver,
+            color: c.Color || 'var(--ac)', icon: c.Icon || '',
+          }));
+          this.transactions = txs.map(t => ({
+            id: t.Id, desc: t.Description, amount: t.Amount,
+            date: t.Date ? new Date(t.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '---',
+            cat: t.CategoryName || '',
+            catId: t.CategoryId,
+            catColor: t.CategoryColor || 'var(--tx3)',
+          }));
+          this.summary = { totalBudget: sum.TotalBudget || 0, totalSpent: sum.TotalSpent || 0, totalRemaining: sum.TotalRemaining || 0 };
+        } catch (err) {
+          this.error = err.message;
+          console.error('[budget] fetchAll:', err);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      async addTransaction(desc, amount, categoryId, date) {
+        try {
+          const res = await fetch('/api/budget/transactions', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: desc, amount: parseFloat(amount), categoryId: parseInt(categoryId), date }),
+          });
+          if (!res.ok) throw new Error('Failed to add transaction: ' + res.status);
+          this.closeModal();
+          await this.fetchAll();
+        } catch (err) {
+          this.error = err.message;
+          console.error('[budget] addTransaction:', err);
+        }
+      },
+
+      async addCategory(name, monthlyLimit, color) {
+        try {
+          const res = await fetch('/api/budget/categories', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, monthlyLimit: parseFloat(monthlyLimit), color }),
+          });
+          if (!res.ok) throw new Error('Failed to add category: ' + res.status);
+          this.closeModal();
+          await this.fetchAll();
+        } catch (err) {
+          this.error = err.message;
+          console.error('[budget] addCategory:', err);
+        }
+      },
+
+      async deleteTransaction(id) {
+        if (!confirm('Delete this transaction?')) return;
+        try {
+          const res = await fetch('/api/budget/transactions/' + id, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to delete transaction: ' + res.status);
+          await this.fetchAll();
+        } catch (err) {
+          this.error = err.message;
+          console.error('[budget] deleteTransaction:', err);
+        }
+      },
+            openModal({ title, sub, color, body, footer }) {
+        document.getElementById('vm-dot').style.background   = color  || 'var(--tx3)';
+        document.getElementById('vm-title').textContent      = title  || '';
+        document.getElementById('vm-sub').textContent        = sub    || '';
+        document.getElementById('vm-body').innerHTML         = body   || '';
+        document.getElementById('vm-footer').innerHTML       = footer || '';
+        document.getElementById('vault-modal').classList.add('open');
+      },
+
+      closeModal() {
+        document.getElementById('vault-modal').classList.remove('open');
+      },
+
+      openCatModal(cat) {
+        const txs    = this.transactions.filter(t => t.cat === cat.name).slice(0, 3);
+        const pct    = Math.min(cat.spent / cat.budget * 100, 100);
+        const over   = cat.spent > cat.budget;
+        const txRows = txs.map(t =>
+          `<div style="display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--bd)">
+            <span style="color:var(--tx2)">${t.date} &middot; ${t.desc}</span>
+            <span style="color:var(--tx)">\u20AC${t.amount.toFixed(2)}</span>
+          </div>`
+        ).join('');
+
+        const body = `
+          <div class="vm-section">
+            <div class="vm-label">Budget</div>
+            <div class="vm-value" style="font-size:18px;font-weight:700">\u20AC${cat.budget}</div>
+          </div>
+          <div class="vm-section">
+            <div class="vm-label">Spent</div>
+            <div class="vm-value" style="font-size:18px;font-weight:700;color:${over ? 'var(--dntx)' : 'var(--tx)'}">
+              ${over ? '&#9888; ' : ''}\u20AC${cat.spent}
+            </div>
+            <div class="vm-progress">
+              <div class="vm-progress-fill" style="width:${pct}%;background:${over ? 'var(--dn)' : cat.color}"></div>
+            </div>
+          </div>
+          <div class="vm-divider"></div>
+          <div class="vm-section">
+            <div class="vm-label">Recent transactions</div>
+            ${txRows || '<div style="font-size:11px;color:var(--tx3)">No transactions</div>'}
+          </div>`;
+
+        const footer = `
+          <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit Budget</button>
+          <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Close</button>`;
+
+        this.openModal({ title: cat.name, sub: 'Category \u00b7 April 2026', color: cat.color, body, footer });
+      },
+
+      openTxModal(tx) {
+        const body = `
+          <div class="vm-section">
+            <div class="vm-label">Amount</div>
+            <div class="vm-value" style="font-size:22px;font-weight:700">\u20AC${tx.amount.toFixed(2)}</div>
+          </div>
+          <div class="vm-section">
+            <div class="vm-row">
+              <div class="vm-col">
+                <div class="vm-label">Category</div>
+                <div class="vm-value" style="color:${tx.catColor}">${tx.cat}</div>
+              </div>
+              <div class="vm-col">
+                <div class="vm-label">Date</div>
+                <div class="vm-value">${tx.date}</div>
+              </div>
+            </div>
+          </div>
+          <div class="vm-section">
+            <div class="vm-label">Notes</div>
+            <div class="vm-value" style="color:var(--tx3)">No notes</div>
+          </div>`;
+
+        const footer = `
+          <button class="vm-btn danger" onclick="document.getElementById('vault-modal').classList.remove('open')">Delete</button>
+          <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit</button>
+          <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Close</button>`;
+
+        this.openModal({ title: tx.desc, sub: 'Transaction', color: tx.catColor, body, footer });
+      },
+
+      openAddExpenseModal() {
+        const catOptions = this.categories.map(c =>
+          `<option value="${c.name}">${c.name}</option>`
+        ).join('');
+
+        const body = `
+          <div class="vm-section">
+            <div class="vm-label">Description</div>
+            <input id="ae-desc" type="text" placeholder="e.g. Continente groceries"
+              style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div class="vm-section">
+            <div class="vm-row">
+              <div class="vm-col">
+                <div class="vm-label">Amount (\u20AC)</div>
+                <input id="ae-amount" type="number" step="0.01" min="0" placeholder="0.00"
+                  style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:12px;outline:none;box-sizing:border-box"/>
+              </div>
+              <div class="vm-col">
+                <div class="vm-label">Category</div>
+                <select id="ae-cat"
+                  style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:12px;outline:none;box-sizing:border-box">
+                  ${catOptions}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="vm-section">
+            <div class="vm-label">Date</div>
+            <input id="ae-date" type="text" placeholder="e.g. Apr 7"
+              style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:12px;outline:none;box-sizing:border-box"/>
+          </div>`;
+
+        const footer = `
+          <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Cancel</button>
+          <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Save</button>`;
+
+        this.openModal({ title: 'Add Expense', sub: 'New transaction', color: 'var(--ac)', body, footer });
+      },
+    };
+  }
+  </script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+
+</body>
+</html>
