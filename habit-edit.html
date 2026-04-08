@@ -7,8 +7,6 @@
 <link rel="stylesheet" href="vault-core.css">
 <link rel="stylesheet" href="vault-gamification.css">
 <link rel="stylesheet" href="vault-mobile.css">
-<script src="vault-userdata.js" onerror="void(0)"></script>
-<script>(function(){var s=localStorage.getItem('vault_habits');if(s){try{window.__vaultHabits=JSON.parse(s);}catch(e){}}})()</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { corePlugins: { preflight: false } }</script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
@@ -161,11 +159,11 @@
       <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dntx);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Danger Zone</div>
       <p style="font-size:.875rem;color:var(--tx2);margin:0 0 1rem">Archiving hides the habit without losing history. Deleting is permanent and cannot be undone.</p>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-        <button class="btn-secondary" style="border-color:var(--wn);color:var(--wntx)" hx-post="/api/habits/1/archive" hx-confirm="Archive this habit?">
+        <button class="btn-secondary" style="border-color:var(--wn);color:var(--wntx)" @click="archiveHabit()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
           Archive Habit
         </button>
-        <button class="btn-secondary" style="border-color:var(--dn);color:var(--dntx)" hx-delete="/api/habits/1" hx-confirm="Delete this habit and all its data? This cannot be undone." hx-target="body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete Habit</button>
+        <button class="btn-secondary" style="border-color:var(--dn);color:var(--dntx)" @click="deleteHabit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete Habit</button>
       </div>
     </div>
   </div>
@@ -186,7 +184,6 @@ function pageApp() {
       name: "",
       type: "boolean",
       freq: "Daily",
-      color: "#1D9E75",
       icon: "",
       goal: "",
       uom: "",
@@ -195,7 +192,10 @@ function pageApp() {
       weeklyGoal: 7,
       notes: "",
     },
+    habitId: null,
     saved: false,
+    saving: false,
+    error: null,
     selectedColor: "#1D9E75",
     days: [0,1,2,3,4,5,6],
     toggleDay(d) {
@@ -203,45 +203,68 @@ function pageApp() {
       if (idx === -1) { this.days.push(d); }
       else if (this.days.length > 1) { this.days.splice(idx, 1); }
     },
-    selectColor(c) { this.selectedColor = c; this.form.color = c; },
-    saveForm() {
-      if (!this.form.name) return;
+    selectColor(c) { this.selectedColor = c; },
+    async init() {
       const id = parseInt(new URLSearchParams(window.location.search).get('id'));
-      if (id && window.__vaultHabits) {
-        const idx = window.__vaultHabits.findIndex(x => x.id === id);
-        if (idx !== -1) {
-          window.__vaultHabits[idx] = Object.assign({}, window.__vaultHabits[idx], {
-            name:       this.form.name,
-            type:       this.form.type,
-            freq:       this.form.freq,
-            color:      this.form.color,
-            target:     parseFloat(this.form.goal) || 0,
-            unit:       this.form.uom || '',
-            increment:  parseFloat(this.form.increment) || 1,
-            weekGoal:   parseInt(this.form.weeklyGoal) || 7,
-            daysOfWeek: this.days.sort((a,b)=>a-b).join(','),
-          });
-          localStorage.setItem('vault_habits', JSON.stringify(window.__vaultHabits));
+      if (!id) return;
+      this.habitId = id;
+      try {
+        const res = await fetch(`/api/habits/${id}`);
+        if (res.ok) {
+          const h = await res.json();
+          this.form.name = h.name;
+          this.form.type = h.type;
+          this.form.freq = h.freq;
+          this.form.goal = h.goal || '';
+          this.form.uom = h.uom || '';
+          this.form.increment = h.increment || 1;
+          this.form.startDate = h.startDate || '';
+          this.form.weeklyGoal = h.weeklyGoal || 7;
+          this.form.notes = h.notes || '';
+          this.selectedColor = h.color;
+          this.days = h.daysOfWeek ? h.daysOfWeek.split(',').map(Number) : [0,1,2,3,4,5,6];
         }
-      }
-      this.saved = true;
-      setTimeout(() => this.saved = false, 3000);
+      } catch(e) { this.error = 'Failed to load habit'; }
     },
-    init() {
-      const id = parseInt(new URLSearchParams(window.location.search).get('id'));
-      if (!id || !window.__vaultHabits) return;
-      const h = window.__vaultHabits.find(x => x.id === id);
-      if (!h) return;
-      this.form.name      = h.name;
-      this.form.type      = h.type === 'quant' ? 'quant' : 'boolean';
-      this.form.freq      = h.freq;
-      this.form.color     = h.color;
-      this.form.goal      = h.target || '';
-      this.form.uom       = h.unit  || '';
-      this.form.increment = h.increment || '';
-      this.form.weeklyGoal = h.weekGoal || 7;
-      this.selectedColor  = h.color;
-      this.days = h.daysOfWeek ? h.daysOfWeek.split(',').map(Number) : [0,1,2,3,4,5,6];
+    async saveForm() {
+      if (!this.form.name || !this.habitId) return;
+      this.saving = true;
+      this.error = null;
+      try {
+        const res = await fetch(`/api/habits/${this.habitId}`, {
+          method: 'PUT',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name: this.form.name,
+            type: this.form.type,
+            freq: this.form.freq,
+            color: this.selectedColor,
+            icon: this.form.icon || null,
+            goal: parseFloat(this.form.goal) || 0,
+            uom: this.form.uom || null,
+            increment: parseInt(this.form.increment) || 1,
+            startDate: this.form.startDate || null,
+            weeklyGoal: parseInt(this.form.weeklyGoal) || 7,
+            notes: this.form.notes || null,
+            daysOfWeek: this.days.sort((a,b)=>a-b).join(','),
+          })
+        });
+        if (res.ok) { this.saved = true; setTimeout(() => { window.location.href = 'habits.html'; }, 1000); }
+        else { this.error = 'Failed to update habit'; }
+      } catch(e) { this.error = 'Network error'; }
+      this.saving = false;
+    },
+    async archiveHabit() {
+      if (!this.habitId) return;
+      if (!confirm('Archive this habit?')) return;
+      await fetch(`/api/habits/${this.habitId}/archive`, { method: 'POST' });
+      window.location.href = 'habits.html';
+    },
+    async deleteHabit() {
+      if (!this.habitId) return;
+      if (!confirm('Delete this habit permanently?')) return;
+      await fetch(`/api/habits/${this.habitId}`, { method: 'DELETE' });
+      window.location.href = 'habits.html';
     },
   };
 }

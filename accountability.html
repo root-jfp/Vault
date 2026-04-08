@@ -65,7 +65,10 @@
     <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item">&#9650; Performance</a><a href="accountability.html" class="lnav-item active" style="color:var(--actx)">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
   <div class="right">
       <div class="page-hdr"><div class="page-title">Accountability</div></div>
-      <div class="period-tabs">
+      
+      <div x-show="loading" style="text-align:center;padding:40px 0;color:var(--tx3);font-size:12px"><div style="font-size:20px;margin-bottom:8px">⧗</div>Loading...</div>
+      <div x-show="error" style="background:var(--dnbg);border:1px solid var(--dn);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--dntx)" x-text="error"></div>
+      <div class="period-tabs" x-show="!loading">
         <button class="period-tab" :class="{active:period==='week'}" @click="period='week'">Week</button>
         <button class="period-tab" :class="{active:period==='month'}" @click="period='month'">Month</button>
         <button class="period-tab" :class="{active:period==='alltime'}" @click="period='alltime'">All Time</button>
@@ -126,27 +129,134 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 <script>
-function pageApp(){
+function pageApp() {
   return {
-    period: 'week',
-    players: [
-      { id:1, name:'José', initial:'J', color:'var(--ac)', level:8, rank:'Expert', xp:340, habitsDone:5, habitsTotal:6, tasksDone:3, streak:12, maintDone:2, leader:true },
-      { id:2, name:'Maura', initial:'A', color:'var(--inf)', level:6, rank:'Skilled', xp:210, habitsDone:4, habitsTotal:6, tasksDone:1, streak:7, maintDone:1, leader:false }
-    ],
-    challenges: [
-      { id:1, name:'7-Day Habit Streak', meta:'Both complete all habits 7 days in a row', icon:'&#x1F525;', color:'var(--dn)', scoreA:'12d', scoreB:'7d' },
-      { id:2, name:'Task Sprint', meta:'Most tasks closed this week', icon:'&#x26A1;', color:'var(--wn)', scoreA:'3', scoreB:'1' },
-      { id:3, name:'Morning Routine', meta:'Longest morning habit streak', icon:'&#x1F305;', color:'var(--inf)', scoreA:'8d', scoreB:'5d' },
-      { id:4, name:'Maintenance Hero', meta:'Most maintenance items this month', icon:'&#x1F527;', color:'var(--pu)', scoreA:'4', scoreB:'3' }
-    ],
-    history: [
-      { week:'Mar 31 — Apr 6', winner:'José wins', score:'340 vs 210 XP' },
-      { week:'Mar 24 — Mar 30', winner:'José wins', score:'290 vs 260 XP' },
-      { week:'Mar 17 — Mar 23', winner:'Maura wins', score:'220 vs 310 XP' },
-      { week:'Mar 10 — Mar 16', winner:'José wins', score:'380 vs 190 XP' },
-      { week:'Mar 3 — Mar 9', winner:'Tied', score:'250 vs 250 XP' }
-    ]
+    loading: true, error: null,
+    period: "week",
+    players: [],
+    challenges: [],
+    xpHistory: [],
+
+    init: async function() {
+      var self = this;
+      await self.fetchAll();
+      this.$watch("period", function() { self.fetchLeaderboard(); });
+    },
+
+    fetchAll: async function() {
+      await Promise.all([
+        this.fetchLeaderboard(),
+        this.fetchChallenges(),
+        this.fetchXpHistory(),
+      ]);
+    },
+
+    fetchLeaderboard: async function() {
+      this.loading = true; this.error = null;
+      try {
+        var res = await fetch("/api/gamification/leaderboard?period=" + this.period);
+        if (!res.ok) throw new Error("Failed to load leaderboard (" + res.status + ")");
+        var data = await res.json();
+        var list = Array.isArray(data) ? data : (data.data || []);
+        this.players = this._normPlayers(list);
+      } catch (err) { this.error = err.message; console.error("[accountability] fetchLeaderboard:", err); }
+      finally { this.loading = false; }
+    },
+    fetchChallenges: async function() {
+      try {
+        var res = await fetch("/api/gamification/challenges");
+        if (!res.ok) throw new Error("Failed to load challenges (" + res.status + ")");
+        var data = await res.json();
+        var list = Array.isArray(data) ? data : (data.data || []);
+        var self = this;
+        this.challenges = list.map(function(c) { return self._normChallenge(c); });
+      } catch (err) { console.error("[accountability] fetchChallenges:", err); }
+    },
+
+    fetchXpHistory: async function() {
+      try {
+        var res = await fetch("/api/gamification/xp-history?days=30");
+        if (!res.ok) throw new Error("Failed to load XP history (" + res.status + ")");
+        var data = await res.json();
+        this.xpHistory = Array.isArray(data) ? data : (data.data || []);
+      } catch (err) { console.error("[accountability] fetchXpHistory:", err); }
+    },
+
+    _normPlayers: function(list) {
+      var colors = ["var(--ac)", "var(--inf)", "var(--pu)", "var(--wn)"];
+      var initials = ["J", "A"];
+      var sorted = list.slice().sort(function(a,b) { return (b.XP||b.xp||0)-(a.XP||a.xp||0); });
+      return sorted.map(function(p, i) {
+        var xp = p.XP != null ? p.XP : (p.xp || 0);
+        var xpInLevel = p.XpInLevel != null ? p.XpInLevel : (p.xpInLevel != null ? p.xpInLevel : (p.XpInLevel || 0));
+        var xpToNext = p.XpToNextLevel != null ? p.XpToNextLevel : (p.xpToNextLevel || 500);
+        var name = p.Name != null ? p.Name : (p.name || ("Player" + (i+1)));
+        return {
+          id:         p.UserId != null ? p.UserId : (p.userId || p.id || i+1),
+          name:       name,
+          initial:    name.charAt(0).toUpperCase(),
+          color:      colors[i % colors.length],
+          level:      p.Level != null ? p.Level : (p.level || 1),
+          rank:       p.LevelName != null ? p.LevelName : (p.levelName || "Member"),
+          xp:         xp,
+          habitsDone: p.HabitsCompleted != null ? p.HabitsCompleted : (p.habitsCompleted || 0),
+          habitsTotal: 6,
+          tasksDone:  p.TasksDone != null ? p.TasksDone : (p.tasksDone || 0),
+          streak:     0,
+          maintDone:  p.ChoresDone != null ? p.ChoresDone : (p.choresDone || 0),
+          xpInLevel:  xpInLevel,
+          xpToNext:   xpToNext,
+          leader:     i === 0,
+        };
+      });
+    },
+    _normChallenge: function(c) {
+      return {
+        id:          c.Id          != null ? c.Id          : c.id,
+        name:        c.Title       != null ? c.Title       : (c.title || c.name || ""),
+        meta:        c.Description != null ? c.Description : (c.description || ""),
+        icon:        c.Icon        != null ? c.Icon        : (c.icon || "💥"),
+        color:       "var(--wn)",
+        scoreA:      c.JoseProgress  != null ? String(c.JoseProgress)  : (c.joseProgress  != null ? String(c.joseProgress)  : "0"),
+        scoreB:      c.AnaProgress   != null ? String(c.AnaProgress)   : (c.anaProgress   != null ? String(c.anaProgress)   : "0"),
+        startDate:   c.StartDate     != null ? c.StartDate     : (c.startDate || ""),
+        endDate:     c.EndDate       != null ? c.EndDate       : (c.endDate || ""),
+      };
+    },
+
+    get history() {
+      var hist = [];
+      var weekLen = 7 * 24 * 60 * 60 * 1000;
+      var now = Date.now();
+      for (var i = 0; i < Math.min(this.xpHistory.length, 5); i++) {
+        var h = this.xpHistory[i];
+        hist.push({
+          week:   h.WeekLabel || h.weekLabel || h.week || "Week " + (i+1),
+          winner: h.Winner    || h.winner    || "—",
+          score:  h.Score     || h.score     || "",
+        });
+      }
+      return hist;
+    },
+
+    createChallenge: async function(payload) {
+      try {
+        var res = await fetch("/api/gamification/challenges", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Failed to create challenge (" + res.status + ")");
+        await this.fetchChallenges();
+      } catch (err) { alert("Error creating challenge: " + err.message); }
+    },
+
+    deleteChallenge: async function(id) {
+      if (!confirm("Delete this challenge?")) return;
+      try {
+        var res = await fetch("/api/gamification/challenges/" + id, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete challenge (" + res.status + ")");
+        await this.fetchChallenges();
+      } catch (err) { alert("Error deleting challenge: " + err.message); }
+    },
   };
 }
+
 </script>
 </html>

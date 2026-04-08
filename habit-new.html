@@ -45,6 +45,7 @@
       <h1 style="margin:0;font-size:1.5rem;font-weight:700;color:var(--tx)">New Habit</h1>
     </div>
 <template x-if="saved"><div style="background:var(--acbg);border:1px solid var(--ac);color:var(--actx);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habit saved successfully!</div></template>
+<template x-if="error"><div style="background:var(--dnbg);border:1px solid var(--dn);color:var(--dntx);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem" x-text="error"></div></template>
     <form @submit.prevent="saveForm()">
       <div class="form-layout">
         <div class="form-card">
@@ -103,7 +104,7 @@
           </div>
           <div class="form-actions">
             <a href="habits.html" class="btn-secondary" style="text-decoration:none">Cancel</a>
-            <button type="submit" class="btn-primary" :disabled="!form.name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Create Habit</button>
+            <button type="submit" class="btn-primary" :disabled="!form.name || saving"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span x-text="saving ? 'Saving...' : 'Create Habit'"></span></button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:1rem">
@@ -157,7 +158,6 @@ function pageApp() {
       name: "",
       type: "boolean",
       freq: "Daily",
-      color: "#1D9E75",
       icon: "",
       goal: "",
       uom: "",
@@ -167,6 +167,8 @@ function pageApp() {
       notes: "",
     },
     saved: false,
+    saving: false,
+    error: null,
     selectedColor: "#1D9E75",
     days: [0,1,2,3,4,5,6],
     toggleDay(d) {
@@ -174,12 +176,34 @@ function pageApp() {
       if (idx === -1) { this.days.push(d); }
       else if (this.days.length > 1) { this.days.splice(idx, 1); }
     },
-    selectColor(c) { this.selectedColor = c; this.form.color = c; },
-    saveForm() {
+    selectColor(c) { this.selectedColor = c; },
+    async saveForm() {
       if (!this.form.name) return;
-      const daysOfWeek = this.days.sort((a,b)=>a-b).join(',');
-      this.saved = true;
-      setTimeout(() => this.saved = false, 3000);
+      this.saving = true;
+      this.error = null;
+      try {
+        const res = await fetch('/api/habits', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name: this.form.name,
+            type: this.form.type,
+            freq: this.form.freq,
+            color: this.selectedColor,
+            icon: this.form.icon || null,
+            goal: parseFloat(this.form.goal) || 0,
+            uom: this.form.uom || null,
+            increment: parseInt(this.form.increment) || 1,
+            startDate: this.form.startDate || null,
+            weeklyGoal: parseInt(this.form.weeklyGoal) || 7,
+            notes: this.form.notes || null,
+            daysOfWeek: this.days.sort((a,b)=>a-b).join(','),
+          })
+        });
+        if (res.ok) { this.saved = true; setTimeout(() => { window.location.href = 'habits.html'; }, 1000); }
+        else { this.error = 'Failed to save habit'; }
+      } catch(e) { this.error = 'Network error'; }
+      this.saving = false;
     },
   };
 }

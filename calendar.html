@@ -68,7 +68,10 @@
           <button class="view-tab" :class="{ active: view === 'month' }" @click="view = 'month'">Month</button>
         </div>
       </div>
-      <div class="cal-hdr">
+      
+      <div x-show="loading" style="text-align:center;padding:40px 0;color:var(--tx3);font-size:12px"><div style="font-size:20px;margin-bottom:8px">⧗</div>Loading...</div>
+      <div x-show="error" style="background:var(--dnbg);border:1px solid var(--dn);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--dntx)" x-text="error"></div>
+      <div class="cal-hdr" x-show="!loading">
         <div class="cal-nav">
           <button class="cal-nav-btn" @click="prevPeriod()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -80,7 +83,7 @@
         <div class="cal-month-title" x-text="periodTitle"></div>
         <button class="view-tab" @click="goToday()" style="margin-left:auto;padding:4px 10px;font-size:10px">Today</button>
       </div>
-      <div x-show="view === 'week'">
+      <div x-show="!loading && view === 'week'">
         <div class="wk-grid">
           <div class="wk-hdr-corner"></div>
           <template x-for="(day, di) in weekDays" :key="di">
@@ -105,7 +108,7 @@
           </template>
         </div>
       </div>
-      <div x-show="view === 'month'">
+      <div x-show="!loading && view === 'month'">
         <div class="mo-grid">
           <div class="mo-dh">Mon</div><div class="mo-dh">Tue</div><div class="mo-dh">Wed</div>
           <div class="mo-dh">Thu</div><div class="mo-dh">Fri</div><div class="mo-dh">Sat</div><div class="mo-dh">Sun</div>
@@ -136,72 +139,168 @@
 <script>
 function pageApp() {
   return {
-    view: 'week',
-    offset: 0,
-    events: [
-      { id:1, day:6,  title:'FERRO workout',    color:'var(--inf)', time:'14:00'   },
-      { id:2, day:6,  title:'Car oil change',    color:'var(--dn)',  time:'All day', overdue:true },
-      { id:3, day:7,  title:'Read 30min',         color:'var(--wn)', time:'Evening' },
-      { id:4, day:9,  title:'FERRO workout',     color:'var(--inf)', time:'14:00'   },
-      { id:5, day:10, title:'Water plants',       color:'var(--ac)',  time:'Morning' },
-      { id:6, day:11, title:'FERRO workout',     color:'var(--inf)', time:'14:00'   },
-      { id:7, day:15, title:'Mãe birthday', color:'var(--pu)',  time:'All day' },
-      { id:8, day:20, title:'Project review',    color:'var(--wn)', time:'10:00'   },
-      { id:9, day:25, title:'FERRO workout',     color:'var(--inf)', time:'14:00'   },
-    ],
+    loading: true, error: null,
+    view: "month",
+    currentYear: new Date().getFullYear(),
+    currentMonth: new Date().getMonth(),
+    events: [],
     timeSlots: [
-      {label:'08:00',hour:8},{label:'09:00',hour:9},{label:'10:00',hour:10},
-      {label:'11:00',hour:11},{label:'12:00',hour:12},{label:'13:00',hour:13},
-      {label:'14:00',hour:14},{label:'15:00',hour:15},{label:'16:00',hour:16},
-      {label:'17:00',hour:17},{label:'18:00',hour:18},{label:'19:00',hour:19},
-      {label:'20:00',hour:20},{label:'21:00',hour:21},
+      {label:"08:00",hour:8},{label:"09:00",hour:9},{label:"10:00",hour:10},
+      {label:"11:00",hour:11},{label:"12:00",hour:12},{label:"13:00",hour:13},
+      {label:"14:00",hour:14},{label:"15:00",hour:15},{label:"16:00",hour:16},
+      {label:"17:00",hour:17},{label:"18:00",hour:18},{label:"19:00",hour:19},
+      {label:"20:00",hour:20},{label:"21:00",hour:21},
     ],
-    get weekStartDay() { return 6 + (this.offset * 7); },
+    _norm: function(ev) {
+      return {
+        id:           ev.Id           != null ? ev.Id           : ev.id,
+        title:        ev.Title        != null ? ev.Title        : (ev.title || ""),
+        date:         ev.Date         != null ? ev.Date         : (ev.date || ""),
+        startTime:    ev.StartTime    != null ? ev.StartTime    : (ev.startTime || ev.time || ""),
+        endTime:      ev.EndTime      != null ? ev.EndTime      : (ev.endTime || ""),
+        color:        ev.Color        != null ? ev.Color        : (ev.color || "var(--ac)"),
+        description:  ev.Description  != null ? ev.Description  : (ev.description || ""),
+        linkedModule: ev.LinkedModule != null ? ev.LinkedModule : (ev.linkedModule || ""),
+        source:       ev.Source       != null ? ev.Source       : (ev.source || "manual"),
+        day:          null,
+        hour:         null,
+      };
+    },
+
+    _parseEvDate: function(ev) {
+      if (!ev.date) return ev;
+      var parts = ev.date.split("-");
+      var d = parts.length === 3 ? parseInt(parts[2], 10) : null;
+      var h = null;
+      if (ev.startTime && ev.startTime.includes(":")) h = parseInt(ev.startTime.split(":")[0], 10);
+      ev.day = d; ev.hour = h;
+      return ev;
+    },
+    init: async function() {
+      await this.fetchEvents();
+    },
+
+    get periodTitle() {
+      var months = ["January","February","March","April","May","June",
+                    "July","August","September","October","November","December"];
+      if (this.view === "month") return months[this.currentMonth] + " " + this.currentYear;
+      var d = new Date(this.currentYear, this.currentMonth, 1);
+      var dow = (d.getDay() + 6) % 7;
+      var monday = new Date(d); monday.setDate(d.getDate() - dow);
+      var sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+      var fmt = function(dt) { return months[dt.getMonth()].slice(0,3) + " " + dt.getDate(); };
+      return fmt(monday) + " – " + fmt(sunday) + ", " + sunday.getFullYear();
+    },
+
     get weekDays() {
-      const names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-      const s = this.weekStartDay;
-      return names.map((label, i) => {
-        const d = s + i;
-        return { label, num: d <= 30 ? d : d - 30, isToday: d === 6 && this.offset === 0, day: d <= 30 ? d : d - 30 };
+      var names = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+      var d = new Date(this.currentYear, this.currentMonth, 1);
+      var dow = (d.getDay() + 6) % 7;
+      var monday = new Date(d); monday.setDate(d.getDate() - dow);
+      var today = new Date();
+      return names.map(function(label, i) {
+        var day = new Date(monday); day.setDate(monday.getDate() + i);
+        var isToday = day.toDateString() === today.toDateString();
+        return { label: label, num: day.getDate(), isToday: isToday, dateStr: day.toISOString().slice(0,10) };
       });
     },
-    get periodTitle() {
-      if (this.view === 'week') {
-        const s = this.weekStartDay, e = s + 6;
-        if (s <= 30 && e <= 30) return 'Apr ' + s + ' – Apr ' + e + ', 2026';
-        if (s <= 30) return 'Apr ' + s + ' – May ' + (e-30) + ', 2026';
-        return 'May 2026';
-      }
-      const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      return months[(3 + this.offset + 12) % 12] + ' 2026';
-    },
     get monthCells() {
-      const cells = [];
-      for (let d = 1; d <= 30; d++) {
-        cells.push({ key:'a'+d, num:d, day:d, inMonth:true, isToday: d===6 && this.offset===0 });
+      var cells = [];
+      var firstDay = new Date(this.currentYear, this.currentMonth, 1);
+      var lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+      var today = new Date();
+      var startDow = (firstDay.getDay() + 6) % 7;
+      for (var pre = startDow - 1; pre >= 0; pre--) {
+        var d = new Date(firstDay); d.setDate(firstDay.getDate() - pre - 1);
+        cells.push({ key: "p" + d.getDate(), num: d.getDate(), day: null, inMonth: false, isToday: false, dateStr: d.toISOString().slice(0,10) });
       }
-      let nx=1; while (cells.length < 42) cells.push({key:'n'+(nx),num:nx++,day:0,inMonth:false,isToday:false});
+      for (var day = 1; day <= lastDay.getDate(); day++) {
+        var dt = new Date(this.currentYear, this.currentMonth, day);
+        cells.push({ key: "c" + day, num: day, day: day, inMonth: true, isToday: dt.toDateString() === today.toDateString(), dateStr: dt.toISOString().slice(0,10) });
+      }
+      var nx = 1;
+      while (cells.length < 42) {
+        var nd = new Date(lastDay); nd.setDate(lastDay.getDate() + nx);
+        cells.push({ key: "n" + nx, num: nx, day: null, inMonth: false, isToday: false, dateStr: nd.toISOString().slice(0,10) }); nx++;
+      }
       return cells;
     },
-    eventsForDay(day) {
-      if (!day) return [];
-      return this.events.filter(e => e.day === day);
+    fetchEvents: async function() {
+      this.loading = true; this.error = null;
+      try {
+        var from = new Date(this.currentYear, this.currentMonth, 1).toISOString().slice(0,10);
+        var to = new Date(this.currentYear, this.currentMonth + 1, 0).toISOString().slice(0,10);
+        var res = await fetch("/api/calendar?from=" + from + "&to=" + to);
+        if (!res.ok) throw new Error("Failed to load events (" + res.status + ")");
+        var data = await res.json();
+        var self = this;
+        this.events = (Array.isArray(data) ? data : (data.data || [])).map(function(ev) { return self._parseEvDate(self._norm(ev)); });
+      } catch (err) { this.error = err.message; console.error("[calendar] fetchEvents:", err); }
+      finally { this.loading = false; }
     },
-    eventsForSlot(dayObj, slot) {
+
+    eventsForDay: function(dateStr) {
+      if (!dateStr) return [];
+      return this.events.filter(function(ev) { return ev.date && ev.date.slice(0,10) === dateStr; });
+    },
+
+    eventsForSlot: function(dayObj, slot) {
       if (!dayObj) return [];
-      return this.events.filter(ev => {
-        if (ev.day !== dayObj.day) return false;
-        if ((ev.time === 'All day' || ev.overdue) && slot.hour === 8) return true;
-        if (ev.time === 'Morning' && slot.hour === 9) return true;
-        if (ev.time === 'Evening' && slot.hour === 19) return true;
-        if (ev.time && ev.time.includes(':')) return parseInt(ev.time) === slot.hour;
+      var dateStr = dayObj.dateStr;
+      return this.events.filter(function(ev) {
+        if (!ev.date || ev.date.slice(0,10) !== dateStr) return false;
+        if (!ev.startTime || ev.startTime === "All day") return slot.hour === 8;
+        if (ev.startTime === "Morning") return slot.hour === 9;
+        if (ev.startTime === "Evening") return slot.hour === 19;
+        if (ev.startTime.includes(":")) return parseInt(ev.startTime) === slot.hour;
         return false;
       });
     },
-    prevPeriod() { this.offset--; },
-    nextPeriod() { this.offset++; },
-    goToday()    { this.offset = 0; }
+    saveEvent: async function(payload) {
+      try {
+        var res = await fetch("/api/calendar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Failed to save event (" + res.status + ")");
+        await this.fetchEvents();
+      } catch (err) { alert("Error saving event: " + err.message); console.error("[calendar] saveEvent:", err); }
+    },
+
+    updateEvent: async function(id, payload) {
+      try {
+        var res = await fetch("/api/calendar/" + id, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Failed to update event (" + res.status + ")");
+        await this.fetchEvents();
+      } catch (err) { alert("Error updating event: " + err.message); console.error("[calendar] updateEvent:", err); }
+    },
+
+    deleteEvent: async function(id) {
+      if (!confirm("Delete this event?")) return;
+      try {
+        var res = await fetch("/api/calendar/" + id, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete event (" + res.status + ")");
+        await this.fetchEvents();
+      } catch (err) { alert("Error deleting event: " + err.message); console.error("[calendar] deleteEvent:", err); }
+    },
+
+    prevPeriod: function() {
+      if (this.currentMonth === 0) { this.currentMonth = 11; this.currentYear--; }
+      else this.currentMonth--;
+      this.fetchEvents();
+    },
+
+    nextPeriod: function() {
+      if (this.currentMonth === 11) { this.currentMonth = 0; this.currentYear++; }
+      else this.currentMonth++;
+      this.fetchEvents();
+    },
+
+    goToday: function() {
+      var now = new Date();
+      this.currentYear = now.getFullYear();
+      this.currentMonth = now.getMonth();
+      this.fetchEvents();
+    },
   };
 }
+
 </script>
 </html>

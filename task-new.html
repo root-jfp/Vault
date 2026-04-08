@@ -30,6 +30,7 @@
       <h1 style="margin:0;font-size:1.5rem;font-weight:700;color:var(--tx)">New Task</h1>
     </div>
 <div x-show="saved" x-transition style="background:var(--acbg);border:1px solid var(--ac);color:var(--actx);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Task saved successfully!</div>
+<template x-if="error"><div style="background:var(--dnbg);border:1px solid var(--dn);color:var(--dntx);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem" x-text="error"></div></template>
     <form @submit.prevent="saveForm()">
       <div class="form-layout">
         <div class="form-card">
@@ -43,12 +44,12 @@
             <textarea id="fdesc" class="form-input" rows="4" placeholder="Add more context or details..." x-model="form.description" style="resize:vertical;min-height:90px"></textarea>
           </div>
           <div class="form-row">
-            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Column / Status</label><select class="form-select" x-model="form.column"><option value="Backlog">Backlog</option><option value="To Do">To Do</option><option value="In Progress">In Progress</option><option value="Done">Done</option></select></div>
+            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Column / Status</label><select class="form-select" x-model="form.columnId"><template x-for="col in columns" :key="col.id"><option :value="col.id" x-text="col.name"></option></template></select></div>
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Priority</label><select class="form-select" x-model="form.priority"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
           </div>
           <div class="form-row">
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Due Date</label><input type="date" class="form-input" x-model="form.dueDate"></div>
-            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Project</label><select class="form-select" x-model="form.project"><option value="None">None</option><option value="FERRO">FERRO</option><option value="Vault App">Vault App</option><option value="House Reno">House Reno</option><option value="Learning ASP.NET">Learning ASP.NET</option></select></div>
+            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Project</label><select class="form-select" x-model="form.projectId"><option :value="null">None</option><template x-for="p in projects" :key="p.id"><option :value="p.id" x-text="p.name"></option></template></select></div>
           </div>
           <div class="form-row">
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Label <span style="color:var(--tx3);font-weight:400">(optional)</span></label><input type="text" class="form-input" placeholder="e.g. bug, feature, docs" x-model="form.label"></div>
@@ -56,7 +57,7 @@
           </div>
           <div class="form-actions">
             <a href="tasks.html" class="btn-secondary" style="text-decoration:none">Cancel</a>
-            <button type="submit" class="btn-primary" :disabled="!form.title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save Task</button>
+            <button type="submit" class="btn-primary" :disabled="!form.title || saving"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span x-text="saving ? 'Saving...' : 'Save Task'"></span></button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:1rem">
@@ -103,18 +104,45 @@
 <script>
 function pageApp() {
   return {
-    form: {
-      title: "",
-      description: "",
-      column: "Backlog",
-      priority: "Medium",
-      dueDate: "",
-      project: "None",
-      label: "",
-      user: "José",
-    },
+    form: { title: '', description: '', columnId: null, priority: 'med', dueDate: '', projectId: null, label: '', user: 'José' },
+    columns: [],
+    projects: [],
     saved: false,
-    saveForm() { if (!this.form.title) return; this.saved = true; setTimeout(() => this.saved = false, 3000); },
+    saving: false,
+    error: null,
+    async init() {
+      try {
+        const [colRes, projRes] = await Promise.all([
+          fetch('/api/tasks/columns'),
+          fetch('/api/projects')
+        ]);
+        if (colRes.ok) this.columns = (await colRes.json()).map(c => ({id: c.id, name: c.name}));
+        if (projRes.ok) this.projects = await projRes.json();
+        if (this.columns.length > 0) this.form.columnId = this.columns[1]?.id || this.columns[0].id;
+      } catch(e) {}
+    },
+    async saveForm() {
+      if (!this.form.title) return;
+      this.saving = true;
+      this.error = null;
+      try {
+        const res = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            title: this.form.title,
+            description: this.form.description || null,
+            priority: this.form.priority,
+            project: this.projects.find(p => p.id == this.form.projectId)?.name || null,
+            due: this.form.dueDate || null,
+            columnId: this.form.columnId || null,
+          })
+        });
+        if (res.ok) { this.saved = true; setTimeout(() => { window.location.href = 'tasks.html'; }, 1000); }
+        else { this.error = 'Failed to save task'; }
+      } catch(e) { this.error = 'Network error'; }
+      this.saving = false;
+    },
   };
 }
 </script>

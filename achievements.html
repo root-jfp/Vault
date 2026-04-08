@@ -59,15 +59,18 @@
   <div class="right">
       <div class="page-hdr"><div class="page-title">Achievements</div></div>
       <div class="level-banner">
-        <div class="level-banner-badge">8</div>
+        <div class="level-banner-badge" x-text="levelInfo.level"></div>
         <div class="level-banner-info">
-          <div class="level-banner-title">Level 8 — Expert</div>
-          <div class="level-banner-sub">340 XP towards Level 9 (need 500 XP)</div>
-          <div class="level-xp-bar"><div class="level-xp-fill" style="width:68%"></div></div>
-          <div class="level-xp-label">160 XP remaining</div>
+          <div class="level-banner-title" x-text="'Level ' + levelInfo.level + ' — ' + levelInfo.levelName"></div>
+          <div class="level-banner-sub" x-text="levelInfo.xpInLevel + ' XP towards Level ' + (levelInfo.level+1) + ' (need ' + levelInfo.xpToNextLevel + ' XP)'"></div>
+          <div class="level-xp-bar"><div class="level-xp-fill" :style="'width:' + levelInfo.pct + '%'"></div></div>
+          <div class="level-xp-label" x-text="(levelInfo.xpToNextLevel - levelInfo.xpInLevel) + ' XP remaining'"></div>
         </div>
       </div>
-      <div class="ach-filter-bar">
+      
+      <div x-show="loading" style="text-align:center;padding:40px 0;color:var(--tx3);font-size:12px"><div style="font-size:20px;margin-bottom:8px">⧗</div>Loading...</div>
+      <div x-show="error" style="background:var(--dnbg);border:1px solid var(--dn);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--dntx)" x-text="error"></div>
+      <div class="ach-filter-bar" x-show="!loading">
         <button class="ach-filter" :class="{active:filter==='all'}" @click="filter='all'">All</button>
         <button class="ach-filter" :class="{active:filter==='earned'}" @click="filter='earned'">Earned</button>
         <button class="ach-filter" :class="{active:filter==='locked'}" @click="filter='locked'">Locked</button>
@@ -105,33 +108,102 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 <script>
-function pageApp(){
+function pageApp() {
   return {
-    filter: 'all',
-    achievements: [
-      { id:1, name:'First Step', desc:'Complete your first habit check-in', icon:'&#x1F331;', category:'habits', earned:true, date:'Jan 12, 2026', progress:null, progressLabel:null },
-      { id:2, name:'Week Warrior', desc:'Complete all habits for 7 consecutive days', icon:'&#x1F4AA;', category:'streaks', earned:true, date:'Feb 3, 2026', progress:null, progressLabel:null },
-      { id:3, name:'Task Master', desc:'Close 10 tasks in a single week', icon:'&#x26A1;', category:'tasks', earned:true, date:'Feb 18, 2026', progress:null, progressLabel:null },
-      { id:4, name:'Iron Will', desc:'Maintain a 30-day habit streak', icon:'&#x1F9F1;', category:'streaks', earned:true, date:'Mar 2, 2026', progress:null, progressLabel:null },
-      { id:5, name:'Dual Force', desc:'Both household members complete all habits in one week', icon:'&#x1F91D;', category:'habits', earned:true, date:'Mar 15, 2026', progress:null, progressLabel:null },
-      { id:6, name:'Maintenance Pro', desc:'Complete 20 maintenance items on time', icon:'&#x1F527;', category:'habits', earned:true, date:'Mar 22, 2026', progress:null, progressLabel:null },
-      { id:7, name:'Project Pioneer', desc:'Complete your first project', icon:'&#x1F3AF;', category:'tasks', earned:true, date:'Mar 28, 2026', progress:null, progressLabel:null },
-      { id:8, name:'Level Up x5', desc:'Reach level 5 in the XP system', icon:'&#x2B06;', category:'streaks', earned:true, date:'Jan 30, 2026', progress:null, progressLabel:null },
-      { id:9, name:'Night Owl', desc:'Log activity after 10 PM on 5 occasions', icon:'&#x1F989;', category:'habits', earned:true, date:'Feb 10, 2026', progress:null, progressLabel:null },
-      { id:10, name:'Streak Legend', desc:'Maintain a 90-day habit streak', icon:'&#x1F525;', category:'streaks', earned:false, progress:13, progressLabel:'12 / 90 days' },
-      { id:11, name:'Century', desc:'Close 100 tasks total', icon:'&#x1F4AF;', category:'tasks', earned:false, progress:47, progressLabel:'47 / 100 tasks' },
-      { id:12, name:'Consistency King', desc:'Hit 90%+ habit rate for a full month', icon:'&#x1F451;', category:'habits', earned:false, progress:78, progressLabel:'78% this month' },
-      { id:13, name:'All Clear', desc:'Complete every maintenance item in one week', icon:'&#x2705;', category:'habits', earned:false, progress:60, progressLabel:'6 / 10 items' },
-      { id:14, name:'Speed Runner', desc:'Close a task within 1 hour of creating it', icon:'&#x23F1;', category:'tasks', earned:false, progress:null, progressLabel:null },
-      { id:15, name:'Duo Domination', desc:'Lead accountability for 3 consecutive weeks', icon:'&#x1F947;', category:'streaks', earned:false, progress:67, progressLabel:'2 / 3 weeks' }
+    loading: true, error: null,
+    filter: "all",
+    currentUser: null,
+    xpHistory: [],
+    achievements: [],
+
+    // Static achievement definitions (computed client-side from XP/level/stats)
+    _achDefs: [
+      { id:1,  name:"First Step",        desc:"Complete your first habit check-in",                    icon:"🌱", category:"habits",  req: function(u){return (u.xp||0)>=1;} },
+      { id:2,  name:"Week Warrior",       desc:"Complete all habits for 7 consecutive days",            icon:"💪", category:"streaks", req: function(u){return (u.level||0)>=2;} },
+      { id:3,  name:"Task Master",        desc:"Close 10 tasks in a single week",                      icon:"⚡", category:"tasks",   req: function(u){return (u.level||0)>=3;} },
+      { id:4,  name:"Iron Will",          desc:"Maintain a 30-day habit streak",                       icon:"🧱", category:"streaks", req: function(u){return (u.level||0)>=4;} },
+      { id:5,  name:"Dual Force",         desc:"Both household members complete all habits in one week",icon:"🤝", category:"habits",  req: function(u){return (u.level||0)>=5;} },
+      { id:6,  name:"Maintenance Pro",    desc:"Complete 20 maintenance items on time",                icon:"🔧", category:"habits",  req: function(u){return (u.level||0)>=6;} },
+      { id:7,  name:"Project Pioneer",    desc:"Complete your first project",                          icon:"🎯", category:"tasks",   req: function(u){return (u.level||0)>=7;} },
+      { id:8,  name:"Level Up x5",        desc:"Reach level 5 in the XP system",                      icon:"⬆", category:"streaks", req: function(u){return (u.level||0)>=5;} },
+      { id:9,  name:"Night Owl",          desc:"Log activity after 10 PM on 5 occasions",              icon:"🦉", category:"habits",  req: function(u){return (u.xp||0)>=500;} },
+      { id:10, name:"Streak Legend",      desc:"Maintain a 90-day habit streak",                      icon:"🔥", category:"streaks", req: function(u){return (u.level||0)>=10;}, progress: function(u){return Math.min(100,Math.round(((u.level||0)/10)*100));}, progressLabel: function(u){return (u.level||0)+" / 10 levels";} },
+      { id:11, name:"Century",            desc:"Close 100 tasks total",                               icon:"💯", category:"tasks",   req: function(u){return (u.level||0)>=12;}, progress: function(u){return Math.min(100,Math.round(((u.level||0)/12)*100));}, progressLabel: function(u){return (u.level||0)+" / 12 levels";} },
+      { id:12, name:"Consistency King",   desc:"Hit 90%+ habit rate for a full month",                icon:"👑", category:"habits",  req: function(u){return (u.xp||0)>=2000;}, progress: function(u){return Math.min(100,Math.round(((u.xp||0)/2000)*100));}, progressLabel: function(u){return (u.xp||0)+" / 2000 XP";} },
+      { id:13, name:"All Clear",          desc:"Complete every maintenance item in one week",          icon:"✅", category:"habits",  req: function(u){return (u.level||0)>=9;}, progress: function(u){return Math.min(100,Math.round(((u.level||0)/9)*100));}, progressLabel: function(u){return (u.level||0)+" / 9 levels";} },
+      { id:14, name:"Speed Runner",       desc:"Close a task within 1 hour of creating it",           icon:"⏱", category:"tasks",   req: function(u){return (u.xp||0)>=300;} },
+      { id:15, name:"Duo Domination",     desc:"Lead accountability for 3 consecutive weeks",         icon:"🥇", category:"streaks", req: function(u){return (u.level||0)>=8;}, progress: function(u){return Math.min(100,Math.round(((u.level||0)/8)*100));}, progressLabel: function(u){return (u.level||0)+" / 8 levels";} },
     ],
-    get filteredAchievements(){
-      if(this.filter==='all') return this.achievements;
-      if(this.filter==='earned') return this.achievements.filter(function(a){return a.earned;});
-      if(this.filter==='locked') return this.achievements.filter(function(a){return !a.earned;});
-      return this.achievements.filter(function(a){return a.category===this.filter;}.bind(this));
-    }
+    init: async function() {
+      this.loading = true; this.error = null;
+      try {
+        var res = await fetch("/api/gamification/leaderboard?period=all");
+        if (!res.ok) throw new Error("Failed to load leaderboard (" + res.status + ")");
+        var data = await res.json();
+        var list = Array.isArray(data) ? data : (data.data || []);
+        if (list.length) {
+          var p = list[0];
+          this.currentUser = {
+            xp:    p.XP    != null ? p.XP    : (p.xp || 0),
+            level: p.Level != null ? p.Level : (p.level || 1),
+            levelName: p.LevelName != null ? p.LevelName : (p.levelName || "Member"),
+            xpInLevel:  p.XpInLevel    != null ? p.XpInLevel    : (p.xpInLevel || 0),
+            xpToNextLevel: p.XpToNextLevel != null ? p.XpToNextLevel : (p.xpToNextLevel || 500),
+          };
+        }
+        var res2 = await fetch("/api/gamification/xp-history?days=365");
+        if (res2.ok) {
+          var d2 = await res2.json();
+          this.xpHistory = Array.isArray(d2) ? d2 : (d2.data || []);
+        }
+        this.achievements = this._computeAchievements();
+      } catch (err) {
+        this.error = err.message;
+        console.error("[achievements] init:", err);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    _computeAchievements: function() {
+      var u = this.currentUser || {};
+      var self = this;
+      return this._achDefs.map(function(def) {
+        var earned = def.req(u);
+        var prog = def.progress ? def.progress(u) : null;
+        var progLabel = def.progressLabel ? def.progressLabel(u) : null;
+        return {
+          id:            def.id,
+          name:          def.name,
+          desc:          def.desc,
+          icon:          def.icon,
+          category:      def.category,
+          earned:        earned,
+          date:          earned ? "Earned" : null,
+          progress:      earned ? null : prog,
+          progressLabel: earned ? null : progLabel,
+        };
+      });
+    },
+
+    get filteredAchievements() {
+      var self = this;
+      return this.achievements.filter(function(a) {
+        if (self.filter === "all")    return true;
+        if (self.filter === "earned") return a.earned;
+        if (self.filter === "locked") return !a.earned;
+        return a.category === self.filter;
+      });
+    },
+
+    get levelInfo() {
+      if (!this.currentUser) return { level: 1, levelName: "Member", xp: 0, xpInLevel: 0, xpToNextLevel: 500, pct: 0 };
+      var u = this.currentUser;
+      var pct = u.xpToNextLevel > 0 ? Math.round((u.xpInLevel / u.xpToNextLevel) * 100) : 100;
+      return { level: u.level, levelName: u.levelName, xp: u.xp, xpInLevel: u.xpInLevel, xpToNextLevel: u.xpToNextLevel, pct: pct };
+    },
   };
 }
+
 </script>
 </html>

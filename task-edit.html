@@ -30,6 +30,7 @@
       <h1 style="margin:0;font-size:1.5rem;font-weight:700;color:var(--tx)">Edit Task</h1>
     </div>
 <div x-show="saved" x-transition style="background:var(--acbg);border:1px solid var(--ac);color:var(--actx);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Task updated successfully!</div>
+<template x-if="error"><div style="background:var(--dnbg);border:1px solid var(--dn);color:var(--dntx);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem" x-text="error"></div></template>
     <form @submit.prevent="saveForm()" hx-patch="/api/tasks/1" hx-trigger="submit">
       <div class="form-layout">
         <div class="form-card">
@@ -43,12 +44,12 @@
             <textarea id="fdesc" class="form-input" rows="4" placeholder="Add more context or details..." x-model="form.description" style="resize:vertical;min-height:90px"></textarea>
           </div>
           <div class="form-row">
-            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Column / Status</label><select class="form-select" x-model="form.column"><option value="Backlog">Backlog</option><option value="To Do">To Do</option><option value="In Progress">In Progress</option><option value="Done">Done</option></select></div>
+            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Column / Status</label><select class="form-select" x-model="form.columnId"><template x-for="col in columns" :key="col.id"><option :value="col.id" x-text="col.name"></option></template></select></div>
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Priority</label><select class="form-select" x-model="form.priority"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
           </div>
           <div class="form-row">
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Due Date</label><input type="date" class="form-input" x-model="form.dueDate"></div>
-            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Project</label><select class="form-select" x-model="form.project"><option value="None">None</option><option value="FERRO">FERRO</option><option value="Vault App">Vault App</option><option value="House Reno">House Reno</option><option value="Learning ASP.NET">Learning ASP.NET</option></select></div>
+            <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Project</label><select class="form-select" x-model="form.project"><option :value="null">None</option><template x-for="p in projects" :key="p.id"><option :value="p.name" x-text="p.name"></option></template></select></div>
           </div>
           <div class="form-row">
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Label <span style="color:var(--tx3);font-weight:400">(optional)</span></label><input type="text" class="form-input" placeholder="e.g. bug, feature, docs" x-model="form.label"></div>
@@ -56,7 +57,7 @@
           </div>
           <div class="form-actions">
             <a href="tasks.html" class="btn-secondary" style="text-decoration:none">Cancel</a>
-            <button type="submit" class="btn-primary" :disabled="!form.title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save Changes</button>
+            <button type="submit" class="btn-primary" :disabled="!form.title || saving"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span x-text="saving ? 'Saving...' : 'Save Changes'"></span></button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:1rem">
@@ -92,7 +93,7 @@
     <div class="form-card" style="margin-top:1.5rem;border-color:var(--dn)">
       <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dntx);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Danger Zone</div>
       <p style="font-size:.875rem;color:var(--tx2);margin:0 0 1rem">Permanently delete this task. This action cannot be undone.</p>
-      <button class="btn-secondary" style="border-color:var(--dn);color:var(--dntx)" hx-delete="/api/tasks/1" hx-confirm="Are you sure? This cannot be undone." hx-target="body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete Task</button>
+      <button class="btn-secondary" style="border-color:var(--dn);color:var(--dntx)" @click="deleteTask()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete Task</button>
     </div>
   </div>
 </div>
@@ -108,18 +109,63 @@
 <script>
 function pageApp() {
   return {
-    form: {
-      title: "Fix IFS posting control",
-      description: "The IFS module has a bug in the posting control validation. Need to fix the date range check and update unit tests.",
-      column: "Backlog",
-      priority: "High",
-      dueDate: "2026-04-10",
-      project: "Vault App",
-      label: "bug",
-      user: "José",
-    },
+    form: { title: '', description: '', columnId: null, priority: 'med', dueDate: '', project: null, label: '', user: 'José' },
+    columns: [],
+    projects: [],
+    taskId: null,
     saved: false,
-    saveForm() { if (!this.form.title) return; this.saved = true; setTimeout(() => this.saved = false, 3000); },
+    saving: false,
+    error: null,
+    async init() {
+      this.taskId = parseInt(new URLSearchParams(window.location.search).get('id'));
+      if (!this.taskId) return;
+      try {
+        const [taskRes, colRes, projRes] = await Promise.all([
+          fetch(`/api/tasks/${this.taskId}`),
+          fetch('/api/tasks/columns'),
+          fetch('/api/projects')
+        ]);
+        if (colRes.ok) this.columns = (await colRes.json()).map(c => ({id: c.id, name: c.name}));
+        if (projRes.ok) this.projects = await projRes.json();
+        if (taskRes.ok) {
+          const t = await taskRes.json();
+          this.form.title = t.title;
+          this.form.description = t.description || '';
+          this.form.columnId = t.columnId;
+          this.form.priority = t.priority;
+          this.form.dueDate = t.due || '';
+          this.form.project = t.project || null;
+        }
+      } catch(e) { this.error = 'Failed to load task'; }
+    },
+    async saveForm() {
+      if (!this.form.title || !this.taskId) return;
+      this.saving = true;
+      this.error = null;
+      try {
+        const res = await fetch(`/api/tasks/${this.taskId}`, {
+          method: 'PUT',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            title: this.form.title,
+            description: this.form.description || null,
+            priority: this.form.priority,
+            project: this.form.project || null,
+            due: this.form.dueDate || null,
+            columnId: this.form.columnId || null,
+          })
+        });
+        if (res.ok) { this.saved = true; setTimeout(() => { window.location.href = 'tasks.html'; }, 1000); }
+        else { this.error = 'Failed to update task'; }
+      } catch(e) { this.error = 'Network error'; }
+      this.saving = false;
+    },
+    async deleteTask() {
+      if (!this.taskId) return;
+      if (!confirm('Delete this task?')) return;
+      await fetch(`/api/tasks/${this.taskId}`, { method: 'DELETE' });
+      window.location.href = 'tasks.html';
+    },
   };
 }
 </script>

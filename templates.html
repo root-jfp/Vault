@@ -54,7 +54,11 @@
         <div class="page-title">Templates</div>
         <span class="tpl-count" x-text="filteredTemplates.length+' templates'"></span>
       </div>
-      <div class="search-bar">
+      
+      <div x-show="loading" style="text-align:center;padding:40px 0;color:var(--tx3);font-size:12px"><div style="font-size:20px;margin-bottom:8px">⧗</div>Loading...</div>
+      <div x-show="error" style="background:var(--dnbg);border:1px solid var(--dn);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--dntx)" x-text="error"></div>
+            <div x-show="successMsg" style="background:var(--acbg);border:1px solid var(--ac);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--actx)" x-text="successMsg"></div>
+      <div class="search-bar" x-show="!loading">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" placeholder="Search templates..." x-model="search" autocomplete="off">
       </div>
@@ -76,7 +80,7 @@
               <span class="tpl-tag" :style="'background:'+t.color+'22;color:'+t.color" x-text="t.category"></span>
               <span class="tpl-tag" style="background:var(--bg3);color:var(--tx3)" x-text="t.items+' items'"></span>
             </div>
-            <button class="tpl-use-btn">Use template</button>
+            <button class="tpl-use-btn" @click.stop="applyTemplate(t.id || t.Id)">Use template</button>
           </div>
         </template>
       </div>
@@ -97,33 +101,81 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 <script>
-function pageApp(){
+function pageApp() {
   return {
-    search: '',
-    cat: 'all',
-    templates: [
-      { id:1, name:'Morning Routine', desc:'Daily morning habits: exercise, meditation, journaling, and breakfast tracking', icon:'&#x1F305;', category:'routines', color:'var(--wn)', items:5 },
-      { id:2, name:'Weekly Review', desc:'End-of-week task review, habit stats check, and next week planning', icon:'&#x1F4CB;', category:'tasks', color:'var(--inf)', items:8 },
-      { id:3, name:'Home Deep Clean', desc:'Full home maintenance checklist: all rooms, appliances, and outdoor areas', icon:'&#x1F9F9;', category:'maintenance', color:'var(--pu)', items:12 },
-      { id:4, name:'Fitness Program', desc:'6-week strength training habit with progressive overload tracking', icon:'&#x1F4AA;', category:'habits', color:'var(--dn)', items:6 },
-      { id:5, name:'Side Project Launch', desc:'Project template from idea to launch: tasks, milestones, and deliverables', icon:'&#x1F680;', category:'projects', color:'var(--ac)', items:15 },
-      { id:6, name:'Grocery Run', desc:'Weekly grocery shopping task list with categories and common items', icon:'&#x1F6D2;', category:'tasks', color:'var(--wn)', items:4 },
-      { id:7, name:'Seasonal Maintenance', desc:'Quarterly home maintenance: HVAC, gutters, smoke detectors, filters', icon:'&#x1F3E0;', category:'maintenance', color:'var(--inf)', items:9 },
-      { id:8, name:'Reading Habit', desc:'Daily reading habit with page goals and weekly summary', icon:'&#x1F4DA;', category:'habits', color:'var(--ac)', items:3 },
-      { id:9, name:'Budget Review', desc:'Monthly financial review tasks: expenses, savings, and goals check', icon:'&#x1F4B0;', category:'routines', color:'var(--pu)', items:7 },
-      { id:10, name:'Travel Prep', desc:'Pre-trip checklist: packing, bookings, pet care, and home securing', icon:'&#x1F9F3;', category:'tasks', color:'var(--dn)', items:11 },
-      { id:11, name:'Language Learning', desc:'Daily language practice habit with vocabulary, speaking, and listening goals', icon:'&#x1F5E3;', category:'habits', color:'var(--wn)', items:4 },
-      { id:12, name:'Car Maintenance', desc:'Recurring car care schedule: oil change, tires, fluids, and annual checks', icon:'&#x1F697;', category:'maintenance', color:'var(--inf)', items:6 }
-    ],
-    get filteredTemplates(){
-      var q=this.search.toLowerCase();
-      return this.templates.filter(function(t){
-        var matchCat=this.cat==='all'||t.category===this.cat;
-        var matchQ=!q||t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q);
-        return matchCat&&matchQ;
-      }.bind(this));
-    }
+    loading: true, error: null,
+    search: "",
+    cat: "all",
+    templates: [],
+    successMsg: null,
+
+    init: async function() {
+      await this.fetchTemplates();
+    },
+
+    fetchTemplates: async function() {
+      this.loading = true; this.error = null;
+      try {
+        var res = await fetch("/api/templates");
+        if (!res.ok) throw new Error("Failed to load templates (" + res.status + ")");
+        var data = await res.json();
+        var self = this;
+        this.templates = (Array.isArray(data) ? data : (data.data || [])).map(function(t) { return self._norm(t); });
+      } catch (err) { this.error = err.message; console.error("[templates] fetchTemplates:", err); }
+      finally { this.loading = false; }
+    },
+
+    _norm: function(t) {
+      return {
+        id:          t.Id          != null ? t.Id          : t.id,
+        name:        t.Name        != null ? t.Name        : (t.name || ""),
+        desc:        t.Description != null ? t.Description : (t.description || t.desc || ""),
+        category:    t.Category    != null ? t.Category    : (t.category || "tasks"),
+        icon:        t.Icon        != null ? t.Icon        : (t.icon || "📋"),
+        isBuiltIn:   t.IsBuiltIn   != null ? t.IsBuiltIn   : (t.isBuiltIn != null ? t.isBuiltIn : true),
+        createdAt:   t.CreatedAt   != null ? t.CreatedAt   : (t.createdAt || ""),
+        color:       t.Color       != null ? t.Color       : (t.color || "var(--ac)"),
+        items:       t.ItemCount   != null ? t.ItemCount   : (t.itemCount != null ? t.itemCount : (t.items || 0)),
+      };
+    },
+
+    get filteredTemplates() {
+      var q = this.search.toLowerCase(); var self = this;
+      return this.templates.filter(function(t) {
+        var matchCat = self.cat === "all" || t.category === self.cat;
+        var matchQ = !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q);
+        return matchCat && matchQ;
+      });
+    },
+
+    applyTemplate: async function(id) {
+      try {
+        var res = await fetch("/api/templates/" + id + "/apply", { method: "POST" });
+        if (!res.ok) throw new Error("Failed to apply template (" + res.status + ")");
+        this.successMsg = "Template applied successfully!";
+        var self = this;
+        setTimeout(function() { self.successMsg = null; }, 3000);
+      } catch (err) { alert("Error applying template: " + err.message); console.error("[templates] applyTemplate:", err); }
+    },
+
+    saveTemplate: async function(payload) {
+      try {
+        var res = await fetch("/api/templates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Failed to save template (" + res.status + ")");
+        await this.fetchTemplates();
+      } catch (err) { alert("Error saving template: " + err.message); console.error("[templates] saveTemplate:", err); }
+    },
+
+    deleteTemplate: async function(id) {
+      if (!confirm("Delete this template?")) return;
+      try {
+        var res = await fetch("/api/templates/" + id, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete template (" + res.status + ")");
+        await this.fetchTemplates();
+      } catch (err) { alert("Error deleting template: " + err.message); console.error("[templates] deleteTemplate:", err); }
+    },
   };
 }
+
 </script>
 </html>

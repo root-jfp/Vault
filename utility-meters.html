@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault &#8212; Utility Meters</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={corePlugins:{preflight:false}}</script>
+<style>
+.meter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.meter-card{background:var(--bg2);border:1px solid var(--bd);border-top-width:3px;border-radius:12px;padding:16px;cursor:pointer;transition:border-color .15s}
+.meter-card:hover{border-color:var(--bd)}
+.meter-icon{font-size:22px;margin-bottom:8px}
+.meter-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:10px}
+.meter-reading{font-size:32px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--tx)}
+.meter-unit{font-size:11px;color:var(--tx3);margin-top:2px}
+.meter-divider{height:1px;background:var(--bd);margin:10px 0}
+.meter-row{display:flex;justify-content:space-between;align-items:center;font-size:10px;margin-bottom:4px}
+.meter-label{color:var(--tx3)}
+.meter-val{font-weight:600;color:var(--tx)}
+.meter-diff.up{color:var(--dntx)}
+.meter-diff.down{color:var(--actx)}
+.meter-btn{margin-top:10px;width:100%;font-size:10px;padding:5px 0;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);cursor:pointer;transition:all .15s;font-weight:500}
+.meter-btn:hover{background:var(--bg2);color:var(--tx);border-color:var(--tx3)}
+.summary-table{width:100%;border-collapse:collapse;font-size:11px}
+.summary-table th{text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);padding:5px 8px;border-bottom:1px solid var(--bd)}
+.summary-table td{padding:7px 8px;border-bottom:1px solid var(--bd);color:var(--tx)}
+.summary-table tr:last-child td{border-bottom:none}
+.summary-table tr:hover td{background:var(--bg3)}
+.section-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin:20px 0 10px;display:flex;align-items:center;gap:5px}
+.section-hdr svg{width:13px;height:13px;flex-shrink:0}
+.annual-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.annual-card{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center}
+.annual-cost{font-size:20px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.annual-label{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.modal-hist-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+.modal-hist-table th{text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);padding:4px 8px;border-bottom:1px solid var(--bd)}
+.modal-hist-table td{padding:6px 8px;border-bottom:1px solid var(--bd);color:var(--tx)}
+.modal-hist-table tr:last-child td{border-bottom:none}
+.log-form{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
+.log-form label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin-bottom:2px;display:block}
+.log-form input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--tx);font-family:inherit;outline:none}
+.log-form input:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acbg)}
+[x-cloak]{display:none!important}
+@media(max-width:700px){.meter-grid,.annual-grid{grid-template-columns:1fr}.summary-table{font-size:10px}}
+</style>
+</head>
+<body x-data="pageApp()" x-cloak>
+
+<div class="topbar">
+  <div class="topbar-title">Vault</div>
+  <div class="topbar-right">
+    <a href="index.html" class="topbar-user" style="text-decoration:none">
+      <div class="gm-level-badge sm">8</div>
+      <div class="topbar-av" style="background:var(--ac)">J</div>
+      Jos&#233;
+    </a>
+    <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="17" height="17"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="lnav">
+    <div class="lnav-block">
+      <a href="index.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+      <a href="maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+      <a href="tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+      <a href="projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+      <a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+      <a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+      <a href="utility-meters.html" class="lnav-item active" style="color:var(--actx)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Utilities</a>
+    </div>
+    <div class="gm-sidebar-widget">
+      <div class="gm-sw-header">
+        <div class="gm-level-badge">8</div>
+        <div>
+          <div style="font-size:11px;font-weight:600">Level 8 &#183; Consistent</div>
+          <div style="font-size:9px;color:var(--tx3)">2,340 / 3,000 XP</div>
+        </div>
+      </div>
+      <div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div>
+      <div style="font-size:9px;color:var(--tx3);margin-top:4px">660 XP to Level 9</div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="16" height="16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Utility Meters</h1>
+        <div class="page-sub">Track electricity, gas and water consumption</div>
+      </div>
+    </div>
+
+    <!-- Loading / Error state -->
+    <div x-show="loading" style="text-align:center;padding:40px 0;color:var(--tx3);font-size:12px">
+      <div style="font-size:20px;margin-bottom:8px">⧗</div>
+      Loading...
+    </div>
+    <div x-show="error" style="background:var(--dnbg);border:1px solid var(--dn);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--dntx)" x-text="error"></div>
+
+    <!-- Meter Cards -->
+    <div class="meter-grid" x-show="!loading && !error">
+      <template x-for="m in meters" :key="m.id">
+        <div class="meter-card" :style="'border-top-color:'+m.color" @click="openMeterModal(m)">
+          <div class="meter-icon" x-text="m.icon"></div>
+          <div class="meter-name" x-text="m.name"></div>
+          <div class="meter-reading" x-text="m.current.toLocaleString()"></div>
+          <div class="meter-unit" x-text="m.unit"></div>
+          <div class="meter-divider"></div>
+          <div class="meter-row">
+            <span class="meter-label">This month</span>
+            <span class="meter-val" x-text="m.monthUsage + ' ' + m.unit"></span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-label">vs last month</span>
+            <span class="meter-diff" :class="m.monthUsage > m.lastMonthUsage ? 'up' : 'down'">
+              <span x-text="m.monthUsage > m.lastMonthUsage ? '▲' : '▼'"></span>
+              <span x-text="Math.abs(m.monthUsage - m.lastMonthUsage) + ' ' + m.unit"></span>
+            </span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-label">Est. bill</span>
+            <span class="meter-val" x-text="'€' + (m.monthUsage * m.ratePerUnit).toFixed(2)"></span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-label">Last reading</span>
+            <span class="meter-val" x-text="m.lastDate"></span>
+          </div>
+          <button class="meter-btn" @click.stop="openLogModal(m)">+ Log Reading</button>
+        </div>
+      </template>
+    </div>
+
+    <!-- Monthly Summary Table -->
+    <div class="section-hdr">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Last 6 Months — Usage
+    </div>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <template x-for="m in meters" :key="m.id">
+            <th x-text="m.icon + ' ' + m.name + ' (' + m.unit + ')'"></th>
+          </template>
+        </tr>
+      </thead>
+      <tbody>
+        <template x-for="(row, i) in summaryRows" :key="i">
+          <tr>
+            <td x-text="row.month"></td>
+            <template x-for="val in row.usages" :key="val.id">
+              <td x-text="val.usage"></td>
+            </template>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+
+    <!-- Annual Cost Estimate -->
+    <div class="section-hdr">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Annual Cost Estimate
+    </div>
+    <div class="annual-grid">
+      <template x-for="m in meters" :key="m.id">
+        <div class="annual-card">
+          <div style="font-size:16px;margin-bottom:4px" x-text="m.icon"></div>
+          <div class="annual-cost" x-text="'€' + annualCost(m)"></div>
+          <div class="annual-label" x-text="m.name"></div>
+          <div style="font-size:9px;color:var(--tx3);margin-top:4px" x-text="'~' + avgMonthUsage(m) + ' ' + m.unit + '/mo avg · €' + m.ratePerUnit.toFixed(2) + '/' + m.unit"></div>
+        </div>
+      </template>
+      <div class="annual-card" style="border-color:var(--bd)">
+        <div style="font-size:16px;margin-bottom:4px">&#128176;</div>
+        <div class="annual-cost" x-text="'€' + totalAnnualCost()"></div>
+        <div class="annual-label">Total Estimated</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">All utilities combined</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<nav class="bnav">
+  <div class="bnav-inner">
+    <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Home</span></a>
+    <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Habits</span></a>
+    <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Tasks</span></a>
+    <a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>Maint.</span></a>
+    <div class="bnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></div>
+  </div>
+</nav>
+
+<!-- Modal Overlay -->
+<div class="vm-overlay" :class="{open: modal.open}" @click.self="closeModal()">
+  <div class="vm-dialog">
+    <div class="vm-header">
+      <div class="vm-hdot" :style="'background:'+modal.color"></div>
+      <div class="vm-hgroup">
+        <div class="vm-htitle" x-text="modal.title"></div>
+        <div class="vm-hsub" x-text="modal.sub"></div>
+      </div>
+      <button class="vm-close" @click="closeModal()">&#215;</button>
+    </div>
+    <div class="vm-body" x-html="modal.body"></div>
+    <div class="vm-footer" x-html="modal.footer"></div>
+  </div>
+</div>
+
+<script>
+function pageApp() {
+  return {
+    loading: true, error: null, meters: [], meterHistory: {},
+    modal: { open: false, title: "", sub: "", color: "var(--ac)", body: "", footer: "" },
+    _norm: function(m) {
+      return {
+        id:             m.Id            != null ? m.Id            : m.id,
+        name:           m.Name          != null ? m.Name          : (m.name || ""),
+        icon:           m.Icon          != null ? m.Icon          : (m.icon || "⚡"),
+        color:          m.Color         != null ? m.Color         : (m.color || "var(--ac)"),
+        unit:           m.Unit          != null ? m.Unit          : (m.unit || ""),
+        current:        m.LatestReading != null ? m.LatestReading : (m.latestReading != null ? m.latestReading : (m.current || 0)),
+        monthUsage:     m.MonthlyUsage  != null ? m.MonthlyUsage  : (m.monthlyUsage != null ? m.monthlyUsage : (m.monthUsage || 0)),
+        lastMonthUsage: m.VsLastMonth   != null ? m.VsLastMonth   : (m.vsLastMonth != null ? m.vsLastMonth : (m.lastMonthUsage || 0)),
+        ratePerUnit:    m.TariffRate    != null ? m.TariffRate    : (m.tariffRate != null ? m.tariffRate : (m.ratePerUnit || 0)),
+        estimatedBill:  m.EstimatedBill != null ? m.EstimatedBill : (m.estimatedBill != null ? m.estimatedBill : null),
+        annualCostApi:  m.AnnualCost    != null ? m.AnnualCost    : (m.annualCost != null ? m.annualCost : null),
+        lastDate:       m.LastDate      != null ? m.LastDate      : (m.lastDate || ""),
+        meterType:      m.MeterType     != null ? m.MeterType     : (m.meterType || ""),
+      };
+    },
+    _normH: function(h) {
+      return {
+        id:          h.Id          != null ? h.Id          : h.id,
+        readingDate: h.ReadingDate != null ? h.ReadingDate : (h.readingDate || h.date || ""),
+        value:       h.Value       != null ? h.Value       : (h.value != null ? h.value : (h.reading || 0)),
+        usage:       h.Usage       != null ? h.Usage       : (h.usage || 0),
+        note:        h.Note        != null ? h.Note        : (h.note || ""),
+      };
+    },
+
+    init: async function() {
+      var self = this;
+      document.addEventListener("keydown", function(e) { if (e.key === "Escape") self.closeModal(); });
+      document.addEventListener("closeModal", function() { self.closeModal(); });
+      await self.fetchMeters();
+    },
+    fetchMeters: async function() {
+      this.loading = true; this.error = null;
+      try {
+        var res = await fetch("/api/meters");
+        if (!res.ok) throw new Error("Failed to load meters (" + res.status + ")");
+        var data = await res.json(); var self = this;
+        this.meters = (Array.isArray(data) ? data : (data.data || [])).map(function(m) { return self._norm(m); });
+      } catch (err) { this.error = err.message; console.error("[meters] fetchMeters:", err); }
+      finally { this.loading = false; }
+    },
+
+    fetchHistory: async function(meterId) {
+      try {
+        var res = await fetch("/api/meters/" + meterId + "/readings?months=6");
+        if (!res.ok) throw new Error("Failed to load history (" + res.status + ")");
+        var data = await res.json();
+        var list = Array.isArray(data) ? data : (data.data || []);
+        var self = this;
+        var updated = Object.assign({}, this.meterHistory);
+        updated[meterId] = list.map(function(h) { return self._normH(h); });
+        this.meterHistory = updated;
+      } catch (err) {
+        console.error("[meters] fetchHistory:", err);
+        var updated = Object.assign({}, this.meterHistory); updated[meterId] = [];
+        this.meterHistory = updated;
+      }
+    },
+    logReading: async function(meterId, value, date, note) {
+      try {
+        var res = await fetch("/api/meters/" + meterId + "/readings", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ readingDate: date, value: parseFloat(value), note: note || "" }),
+        });
+        if (!res.ok) throw new Error("Failed to log reading (" + res.status + ")");
+        await this.fetchMeters();
+        if (this.meterHistory[meterId]) await this.fetchHistory(meterId);
+        this.closeModal();
+      } catch (err) { alert("Error logging reading: " + err.message); console.error("[meters] logReading:", err); }
+    },
+
+    saveMeter: async function(payload) {
+      try {
+        var res = await fetch("/api/meters", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Failed to create meter (" + res.status + ")");
+        await this.fetchMeters(); this.closeModal();
+      } catch (err) { alert("Error saving meter: " + err.message); }
+    },
+
+    updateMeter: async function(id, payload) {
+      try {
+        var res = await fetch("/api/meters/" + id, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Failed to update meter (" + res.status + ")");
+        await this.fetchMeters(); this.closeModal();
+      } catch (err) { alert("Error updating meter: " + err.message); }
+    },
+
+    deleteMeter: async function(id) {
+      if (!confirm("Delete this meter and all its readings?")) return;
+      try {
+        var res = await fetch("/api/meters/" + id, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete meter (" + res.status + ")");
+        await this.fetchMeters(); this.closeModal();
+      } catch (err) { alert("Error deleting meter: " + err.message); }
+    },
+    get summaryRows() {
+      if (!this.meters.length) return [];
+      var firstHist = this.meterHistory[this.meters[0].id] || []; var self = this;
+      return firstHist.map(function(h, i) {
+        return { month: h.readingDate, usages: self.meters.map(function(m) {
+          var e = (self.meterHistory[m.id] || [])[i];
+          return { id: m.id, usage: e ? e.usage + " " + m.unit : "—" };
+        }) };
+      });
+    },
+
+    avgMonthUsage: function(m) {
+      var hist = this.meterHistory[m.id] || [];
+      if (!hist.length) return "—";
+      return (hist.reduce(function(s,h){return s+(h.usage||0);},0)/hist.length).toFixed(1);
+    },
+
+    annualCost: function(m) {
+      if (m.annualCostApi != null) return Number(m.annualCostApi).toFixed(2);
+      var hist = this.meterHistory[m.id] || [];
+      if (!hist.length) return ((m.monthUsage||0)*12*(m.ratePerUnit||0)).toFixed(2);
+      var avg = hist.reduce(function(s,h){return s+(h.usage||0);},0)/hist.length;
+      return (avg*12*(m.ratePerUnit||0)).toFixed(2);
+    },
+
+    totalAnnualCost: function() {
+      var self = this;
+      return this.meters.reduce(function(s,m){return s+parseFloat(self.annualCost(m));},0).toFixed(2);
+    },
+
+    openModal: function(opts) { this.modal = Object.assign({ open: true }, opts); },
+    closeModal: function() { this.modal = Object.assign({}, this.modal, { open: false }); },
+    openMeterModal: async function(m) {
+      if (!this.meterHistory[m.id]) await this.fetchHistory(m.id);
+      var hist = this.meterHistory[m.id] || [];
+      var diff = (m.monthUsage||0) - (m.lastMonthUsage||0);
+      var diffSign = diff > 0 ? "▲" : "▼";
+      var diffColor = diff > 0 ? "var(--dntx)" : "var(--actx)";
+      var estBill = m.estimatedBill != null ? Number(m.estimatedBill).toFixed(2) : ((m.monthUsage||0)*(m.ratePerUnit||0)).toFixed(2);
+      var annualEst = this.annualCost(m); var today = new Date().toISOString().slice(0,10);
+      var mid = m.id; var unit = m.unit; var rate = m.ratePerUnit||0;
+      var rows = hist.map(function(h) {
+        return "<tr><td>"+h.readingDate+"</td><td>"+Number(h.value).toLocaleString()+"</td><td>"+h.usage+"</td><td>€"+((h.usage||0)*rate).toFixed(2)+"</td></tr>";
+      }).join("");
+      var histSection = hist.length
+        ? "<div class=\"vm-label\">6-Month History</div><table class=\"modal-hist-table\"><thead><tr><th>Date</th><th>Reading</th><th>Usage ("+unit+")</th><th>Est. Cost</th></tr></thead><tbody>"+rows+"</tbody></table>"
+        : "<p style=\"font-size:11px;color:var(--tx3)\">No history available.</p>";
+      var body = "<div class=\"vm-stat-grid\" style=\"margin-bottom:12px\">"
+        +"<div class=\"vm-stat-card\"><div class=\"vm-stat-num\">"+Number(m.current).toLocaleString()+"</div><div class=\"vm-stat-lbl\">Current ("+unit+")</div></div>"
+        +"<div class=\"vm-stat-card\"><div class=\"vm-stat-num\">€"+estBill+"</div><div class=\"vm-stat-lbl\">Est. Bill</div></div>"
+        +"<div class=\"vm-stat-card\"><div class=\"vm-stat-num\" style=\"color:"+diffColor+"\">"+diffSign+Math.abs(diff)+"</div><div class=\"vm-stat-lbl\">vs Last Month</div></div>"
+        +"<div class=\"vm-stat-card\"><div class=\"vm-stat-num\">€"+annualEst+"</div><div class=\"vm-stat-lbl\">Est. Annual</div></div>"
+        +"</div>"+histSection
+        +"<div class=\"log-form\">"
+        +"<div><label>Log New Reading</label><input type=\"number\" placeholder=\"Enter reading ("+unit+")...\" id=\"mr-val-"+mid+"\"/></div>"
+        +"<div><label>Date</label><input type=\"date\" value=\""+today+"\" id=\"mr-date-"+mid+"\"/></div>"
+        +"<div><label>Notes (optional)</label><input type=\"text\" placeholder=\"Any notes...\" id=\"mr-note-"+mid+"\"/></div>"
+        +"</div>";
+      var footer = "<button class=\"vm-btn primary\" id=\"mr-save-"+mid+"\">Log Reading</button>"
+        +"<button class=\"vm-btn\" onclick=\"document.dispatchEvent(new Event('closeModal'))\">Close</button>"
+        +"<button class=\"vm-btn\" style=\"color:var(--dntx)\" id=\"mr-del-"+mid+"\">Delete Meter</button>";
+      this.openModal({ title: m.icon+" "+m.name, sub: "Unit: "+unit+"  ·  Rate: €"+Number(rate).toFixed(2)+"/"+unit, color: m.color, body: body, footer: footer });
+      var self = this;
+      setTimeout(function() {
+        var sb = document.getElementById("mr-save-"+mid);
+        if (sb) sb.addEventListener("click", function() {
+          var v=(document.getElementById("mr-val-"+mid)||{}).value||"";
+          var d=(document.getElementById("mr-date-"+mid)||{}).value||today;
+          var n=(document.getElementById("mr-note-"+mid)||{}).value||"";
+          if (!v){alert("Please enter a reading value");return;}
+          self.logReading(mid,v,d,n);
+        });
+        var db=document.getElementById("mr-del-"+mid);
+        if(db)db.addEventListener("click",function(){self.deleteMeter(mid);});
+      }, 60);
+    },
+    openLogModal: function(m) {
+      var today = new Date().toISOString().slice(0,10); var mid = m.id; var unit = m.unit;
+      var body = "<div class=\"log-form\">"
+        +"<div><label>New Reading ("+unit+")</label><input type=\"number\" placeholder=\"e.g. "+(Number(m.current)+10)+"\" id=\"ql-val-"+mid+"\"/></div>"
+        +"<div><label>Date</label><input type=\"date\" value=\""+today+"\" id=\"ql-date-"+mid+"\"/></div>"
+        +"<div><label>Notes</label><input type=\"text\" placeholder=\"Any notes...\" id=\"ql-note-"+mid+"\"/></div>"
+        +"</div>";
+      var footer = "<button class=\"vm-btn primary\" id=\"ql-save-"+mid+"\">Save Reading</button>"
+        +"<button class=\"vm-btn\" onclick=\"document.dispatchEvent(new Event('closeModal'))\">Cancel</button>";
+      this.openModal({ title: "Log Reading — "+m.icon+" "+m.name, sub: "Last: "+Number(m.current).toLocaleString()+" "+unit+(m.lastDate?" on "+m.lastDate:""), color: m.color, body: body, footer: footer });
+      var self = this;
+      setTimeout(function() {
+        var sb = document.getElementById("ql-save-"+mid);
+        if (sb) sb.addEventListener("click", function() {
+          var v=(document.getElementById("ql-val-"+mid)||{}).value||"";
+          var d=(document.getElementById("ql-date-"+mid)||{}).value||today;
+          var n=(document.getElementById("ql-note-"+mid)||{}).value||"";
+          if (!v){alert("Please enter a reading value");return;}
+          self.logReading(mid,v,d,n);
+        });
+      }, 60);
+    },
+  };
+}
+
+</script>
+</body>
+</html>

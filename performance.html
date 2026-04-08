@@ -65,7 +65,10 @@
     <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item active" style="color:var(--actx)">&#9650; Performance</a><a href="accountability.html" class="lnav-item">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
   <div class="right">
       <div class="page-hdr"><div class="page-title">Performance</div></div>
-      <div class="period-tabs">
+      
+      <div x-show="loading" style="text-align:center;padding:40px 0;color:var(--tx3);font-size:12px"><div style="font-size:20px;margin-bottom:8px">⧗</div>Loading...</div>
+      <div x-show="error" style="background:var(--dnbg);border:1px solid var(--dn);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--dntx)" x-text="error"></div>
+      <div class="period-tabs" x-show="!loading">
         <button class="period-tab" :class="{ active: period === 'week' }" @click="period = 'week'">Week</button>
         <button class="period-tab" :class="{ active: period === 'month' }" @click="period = 'month'">Month</button>
         <button class="period-tab" :class="{ active: period === 'quarter' }" @click="period = 'quarter'">Quarter</button>
@@ -164,29 +167,83 @@
 <script>
 function pageApp() {
   return {
-    period: 'week',
-    habitData: [
-      { name:'6hr deep work', color:'var(--ac)',  pct:86, streak:12, bestStreak:18, rate30:86 },
-      { name:'FERRO workout', color:'var(--inf)', pct:60, streak:5,  bestStreak:12, rate30:60 },
-      { name:'Read 30min',    color:'var(--wn)',  pct:72, streak:8,  bestStreak:22, rate30:72 },
-      { name:'Water 2L',      color:'var(--inf)', pct:65, streak:3,  bestStreak:9,  rate30:65 },
-      { name:'Meditate',      color:'var(--pu)',  pct:90, streak:15, bestStreak:30, rate30:90 },
-      { name:'Study',         color:'var(--wn)',  pct:70, streak:4,  bestStreak:15, rate30:70 },
-    ],
-    taskVelocity: [
-      { week:'W12', count:8 },
-      { week:'W13', count:5 },
-      { week:'W14', count:11 },
-      { week:'W15', count:3 },
-    ],
-    scores: [
-      { name:'José', score:340, badge:'8', winner:true  },
-      { name:'Maura',  score:210, badge:'5', winner:false },
-    ],
+    loading: true, error: null,
+    period: "week",
+    habitData: [],
+    taskVelocity: [],
+    scores: [],
+    summary: {},
+
+    init: async function() {
+      await this.fetchData();
+      var self = this;
+      this.$watch("period", function() { self.fetchData(); });
+    },
+
+    fetchData: async function() {
+      this.loading = true; this.error = null;
+      try {
+        var res = await fetch("/api/performance/summary?period=" + this.period);
+        if (!res.ok) throw new Error("Failed to load performance data (" + res.status + ")");
+        var data = await res.json();
+        this.summary = data.data || data;
+        this.habitData = this._buildHabitData(this.summary);
+        this.taskVelocity = this._buildVelocity(this.summary);
+        this.scores = this._buildScores(this.summary);
+      } catch (err) {
+        this.error = err.message;
+        console.error("[performance] fetchData:", err);
+      } finally {
+        this.loading = false;
+      }
+    },
+    _buildHabitData: function(s) {
+      if (s && s.HabitBreakdown) return s.HabitBreakdown.map(function(h) {
+        return {
+          name:       h.Name        != null ? h.Name        : (h.name || ""),
+          color:      h.Color       != null ? h.Color       : (h.color || "var(--ac)"),
+          pct:        h.Completion  != null ? h.Completion  : (h.completion || h.pct || 0),
+          streak:     h.Streak      != null ? h.Streak      : (h.streak || 0),
+          bestStreak: h.BestStreak  != null ? h.BestStreak  : (h.bestStreak || 0),
+          rate30:     h.Rate30      != null ? h.Rate30      : (h.rate30 || h.pct || 0),
+        };
+      });
+      if (s && s.habitBreakdown) return s.habitBreakdown.map(function(h) {
+        return { name: h.name||h.Name||"", color: h.color||h.Color||"var(--ac)",
+          pct: h.completion||h.Completion||h.pct||0, streak: h.streak||h.Streak||0,
+          bestStreak: h.bestStreak||h.BestStreak||0, rate30: h.rate30||h.Rate30||h.pct||0 };
+      });
+      return [
+        { name: "6hr deep work", color: "var(--ac)",  pct: s.HabitCompletionRate || s.habitCompletionRate || 0, streak: 0, bestStreak: 0, rate30: 0 },
+      ];
+    },
+
+    _buildVelocity: function(s) {
+      if (s && s.TaskVelocityHistory) return s.TaskVelocityHistory.map(function(w) {
+        return { week: w.Week||w.week||w.label||w.Label||"", count: w.Count||w.count||0 };
+      });
+      if (s && s.taskVelocityHistory) return s.taskVelocityHistory.map(function(w) {
+        return { week: w.week||w.label||"", count: w.count||0 };
+      });
+      return [ { week: "W1", count: s.TaskVelocity||s.taskVelocity||0 } ];
+    },
+
+    _buildScores: function(s) {
+      if (s && s.PlayerScores) return s.PlayerScores.map(function(p, i) {
+        return { name: p.Name||p.name||"Player"+(i+1), score: p.XP||p.xp||p.Score||p.score||0, badge: p.Level||p.level||1, winner: p.IsWinner||p.isWinner||false };
+      });
+      if (s && s.playerScores) return s.playerScores.map(function(p, i) {
+        return { name: p.name||"", score: p.xp||p.score||0, badge: p.level||1, winner: p.isWinner||false };
+      });
+      return [];
+    },
+
     get maxVelocity() {
-      return Math.max(...this.taskVelocity.map(w => w.count));
-    }
+      if (!this.taskVelocity.length) return 1;
+      return Math.max.apply(null, this.taskVelocity.map(function(w){return w.count;}));
+    },
   };
 }
+
 </script>
 </html>
