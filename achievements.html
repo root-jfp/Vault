@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Achievements</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { corePlugins: { preflight: false } }</script>
+<style>
+.ach-filter-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.ach-filter{font-size:11px;padding:4px 12px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s}
+.ach-filter:hover{background:var(--bg3);color:var(--tx2)}
+.ach-filter.active{background:var(--acbg);border-color:var(--ac);color:var(--actx);font-weight:600}
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:900px){.ach-grid{grid-template-columns:repeat(2,1fr)}}
+.ach-card{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:14px;position:relative;transition:border-color .2s}
+.ach-card.earned{border-color:var(--ac)}
+.ach-card.locked{opacity:.55}
+.ach-icon{font-size:28px;margin-bottom:8px;line-height:1}
+.ach-name{font-size:12px;font-weight:700;margin-bottom:3px}
+.ach-desc{font-size:10px;color:var(--tx3);line-height:1.4;margin-bottom:6px}
+.ach-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600}
+.ach-badge.earned{background:var(--acbg);color:var(--actx)}
+.ach-badge.locked{background:var(--bg3);color:var(--tx3)}
+.ach-date{font-size:9px;color:var(--tx3);margin-top:4px}
+.ach-prog{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:6px}
+.ach-prog-fill{height:100%;border-radius:2px;background:var(--ac);transition:width .4s}
+.ach-prog-label{font-size:9px;color:var(--tx3);margin-top:2px}
+.level-banner{background:linear-gradient(135deg,var(--acbg),var(--card));border:1px solid var(--ac);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.level-banner-badge{width:48px;height:48px;background:var(--ac);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0}
+.level-banner-info{flex:1}
+.level-banner-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.level-banner-sub{font-size:10px;color:var(--tx3);margin-bottom:6px}
+.level-xp-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.level-xp-fill{height:100%;background:var(--ac);border-radius:3px}
+.level-xp-label{font-size:9px;color:var(--tx3);margin-top:3px}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-title{font-size:18px;font-weight:700;color:var(--tx)}
+.ach-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin:14px 0 8px}
+</style>
+</head>
+<body x-data="pageApp()">
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>José
+      </a>
+      <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item">&#9650; Performance</a><a href="accountability.html" class="lnav-item">&#9786; Accountability</a><a href="achievements.html" class="lnav-item active" style="color:var(--actx)">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
+  <div class="right">
+      <div class="page-hdr"><div class="page-title">Achievements</div></div>
+      <div class="level-banner">
+        <div class="level-banner-badge">8</div>
+        <div class="level-banner-info">
+          <div class="level-banner-title">Level 8 — Expert</div>
+          <div class="level-banner-sub">340 XP towards Level 9 (need 500 XP)</div>
+          <div class="level-xp-bar"><div class="level-xp-fill" style="width:68%"></div></div>
+          <div class="level-xp-label">160 XP remaining</div>
+        </div>
+      </div>
+      <div class="ach-filter-bar">
+        <button class="ach-filter" :class="{active:filter==='all'}" @click="filter='all'">All</button>
+        <button class="ach-filter" :class="{active:filter==='earned'}" @click="filter='earned'">Earned</button>
+        <button class="ach-filter" :class="{active:filter==='locked'}" @click="filter='locked'">Locked</button>
+        <button class="ach-filter" :class="{active:filter==='habits'}" @click="filter='habits'">Habits</button>
+        <button class="ach-filter" :class="{active:filter==='tasks'}" @click="filter='tasks'">Tasks</button>
+        <button class="ach-filter" :class="{active:filter==='streaks'}" @click="filter='streaks'">Streaks</button>
+      </div>
+      <div class="ach-grid">
+        <template x-for="a in filteredAchievements" :key="a.id">
+          <div class="ach-card" :class="{earned: a.earned, locked: !a.earned}">
+            <div class="ach-icon" x-text="a.icon"></div>
+            <div class="ach-name" x-text="a.name"></div>
+            <div class="ach-desc" x-text="a.desc"></div>
+            <span class="ach-badge" :class="a.earned ? 'earned' : 'locked'" x-text="a.earned ? 'Earned' : 'Locked'"></span>
+            <div class="ach-date" x-show="a.earned && a.date" x-text="'Earned '+a.date"></div>
+            <template x-if="!a.earned && a.progress != null">
+              <div>
+                <div class="ach-prog"><div class="ach-prog-fill" :style="'width:'+a.progress+'%'"></div></div>
+                <div class="ach-prog-label" x-text="a.progressLabel"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+  <nav class="bnav"><div class="bnav-inner">
+    <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+    <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+    <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+    <a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+    <div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+  </div></nav>
+</body>
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script>
+function pageApp(){
+  return {
+    filter: 'all',
+    achievements: [
+      { id:1, name:'First Step', desc:'Complete your first habit check-in', icon:'&#x1F331;', category:'habits', earned:true, date:'Jan 12, 2026', progress:null, progressLabel:null },
+      { id:2, name:'Week Warrior', desc:'Complete all habits for 7 consecutive days', icon:'&#x1F4AA;', category:'streaks', earned:true, date:'Feb 3, 2026', progress:null, progressLabel:null },
+      { id:3, name:'Task Master', desc:'Close 10 tasks in a single week', icon:'&#x26A1;', category:'tasks', earned:true, date:'Feb 18, 2026', progress:null, progressLabel:null },
+      { id:4, name:'Iron Will', desc:'Maintain a 30-day habit streak', icon:'&#x1F9F1;', category:'streaks', earned:true, date:'Mar 2, 2026', progress:null, progressLabel:null },
+      { id:5, name:'Dual Force', desc:'Both household members complete all habits in one week', icon:'&#x1F91D;', category:'habits', earned:true, date:'Mar 15, 2026', progress:null, progressLabel:null },
+      { id:6, name:'Maintenance Pro', desc:'Complete 20 maintenance items on time', icon:'&#x1F527;', category:'habits', earned:true, date:'Mar 22, 2026', progress:null, progressLabel:null },
+      { id:7, name:'Project Pioneer', desc:'Complete your first project', icon:'&#x1F3AF;', category:'tasks', earned:true, date:'Mar 28, 2026', progress:null, progressLabel:null },
+      { id:8, name:'Level Up x5', desc:'Reach level 5 in the XP system', icon:'&#x2B06;', category:'streaks', earned:true, date:'Jan 30, 2026', progress:null, progressLabel:null },
+      { id:9, name:'Night Owl', desc:'Log activity after 10 PM on 5 occasions', icon:'&#x1F989;', category:'habits', earned:true, date:'Feb 10, 2026', progress:null, progressLabel:null },
+      { id:10, name:'Streak Legend', desc:'Maintain a 90-day habit streak', icon:'&#x1F525;', category:'streaks', earned:false, progress:13, progressLabel:'12 / 90 days' },
+      { id:11, name:'Century', desc:'Close 100 tasks total', icon:'&#x1F4AF;', category:'tasks', earned:false, progress:47, progressLabel:'47 / 100 tasks' },
+      { id:12, name:'Consistency King', desc:'Hit 90%+ habit rate for a full month', icon:'&#x1F451;', category:'habits', earned:false, progress:78, progressLabel:'78% this month' },
+      { id:13, name:'All Clear', desc:'Complete every maintenance item in one week', icon:'&#x2705;', category:'habits', earned:false, progress:60, progressLabel:'6 / 10 items' },
+      { id:14, name:'Speed Runner', desc:'Close a task within 1 hour of creating it', icon:'&#x23F1;', category:'tasks', earned:false, progress:null, progressLabel:null },
+      { id:15, name:'Duo Domination', desc:'Lead accountability for 3 consecutive weeks', icon:'&#x1F947;', category:'streaks', earned:false, progress:67, progressLabel:'2 / 3 weeks' }
+    ],
+    get filteredAchievements(){
+      if(this.filter==='all') return this.achievements;
+      if(this.filter==='earned') return this.achievements.filter(function(a){return a.earned;});
+      if(this.filter==='locked') return this.achievements.filter(function(a){return !a.earned;});
+      return this.achievements.filter(function(a){return a.category===this.filter;}.bind(this));
+    }
+  };
+}
+</script>
+</html>

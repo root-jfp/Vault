@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Accountability</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { corePlugins: { preflight: false } }</script>
+<style>
+.acc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.acc-card{background:var(--card);border:1px solid var(--cardb);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.acc-card.leader{border-color:var(--ac)}
+.acc-card-crown{position:absolute;top:10px;right:10px;font-size:16px}
+.acc-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
+.acc-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.acc-level{font-size:10px;color:var(--tx3);margin-bottom:8px}
+.acc-score{font-size:28px;font-weight:800;color:var(--ac);line-height:1}
+.acc-score-label{font-size:9px;color:var(--tx3);margin-top:2px;margin-bottom:10px}
+.acc-stat-row{display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid var(--bd)}
+.acc-stat-row:last-child{border-bottom:none}
+.acc-stat-label{color:var(--tx3)}
+.acc-stat-val{font-weight:600;color:var(--tx)}
+.acc-section{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:14px;margin-bottom:14px}
+.acc-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.acc-section-title svg{width:13px;height:13px;flex-shrink:0}
+.challenge-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:11px}
+.challenge-row:last-child{border-bottom:none}
+.challenge-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.challenge-name{flex:1;font-weight:600}
+.challenge-meta{font-size:9px;color:var(--tx3);margin-top:1px}
+.challenge-scores{display:flex;gap:8px;align-items:center}
+.challenge-score{text-align:center}
+.challenge-score-num{font-size:13px;font-weight:700}
+.challenge-score-who{font-size:8px;color:var(--tx3)}
+.challenge-vs{font-size:9px;color:var(--tx3)}
+.history-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd);font-size:10px}
+.history-row:last-child{border-bottom:none}
+.history-date{color:var(--tx3);min-width:70px}
+.history-winner{font-weight:600;color:var(--actx)}
+.history-score{color:var(--tx3);margin-left:auto}
+.period-tabs{display:flex;gap:6px;margin-bottom:14px}
+.period-tab{font-size:11px;padding:4px 12px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s}
+.period-tab:hover{background:var(--bg3);color:var(--tx2)}
+.period-tab.active{background:var(--acbg);border-color:var(--ac);color:var(--actx);font-weight:600}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-title{font-size:18px;font-weight:700;color:var(--tx)}
+</style>
+</head>
+<body x-data="pageApp()">
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>José
+      </a>
+      <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item">&#9650; Performance</a><a href="accountability.html" class="lnav-item active" style="color:var(--actx)">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
+  <div class="right">
+      <div class="page-hdr"><div class="page-title">Accountability</div></div>
+      <div class="period-tabs">
+        <button class="period-tab" :class="{active:period==='week'}" @click="period='week'">Week</button>
+        <button class="period-tab" :class="{active:period==='month'}" @click="period='month'">Month</button>
+        <button class="period-tab" :class="{active:period==='alltime'}" @click="period='alltime'">All Time</button>
+      </div>
+      <div class="acc-grid">
+        <template x-for="player in players" :key="player.id">
+          <div class="acc-card" :class="{leader: player.leader}">
+            <div class="acc-card-crown" x-show="player.leader">&#x1F3C6;</div>
+            <div class="acc-avatar" :style="'background:'+player.color"><span x-text="player.initial"></span></div>
+            <div class="acc-name" x-text="player.name"></div>
+            <div class="acc-level" x-text="'Level '+player.level+' — '+player.rank"></div>
+            <div class="acc-score" x-text="player.xp"></div>
+            <div class="acc-score-label">XP this week</div>
+            <div class="acc-stat-row"><span class="acc-stat-label">Habits done</span><span class="acc-stat-val" x-text="player.habitsDone+' / '+player.habitsTotal"></span></div>
+            <div class="acc-stat-row"><span class="acc-stat-label">Tasks closed</span><span class="acc-stat-val" x-text="player.tasksDone"></span></div>
+            <div class="acc-stat-row"><span class="acc-stat-label">Best streak</span><span class="acc-stat-val" x-text="player.streak+' days'"></span></div>
+            <div class="acc-stat-row"><span class="acc-stat-label">Maintenance done</span><span class="acc-stat-val" x-text="player.maintDone"></span></div>
+          </div>
+        </template>
+      </div>
+      <div class="acc-section">
+        <div class="acc-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Active Challenges</div>
+        <template x-for="c in challenges" :key="c.id">
+          <div class="challenge-row">
+            <div class="challenge-icon" :style="'background:'+c.color+'22'" x-text="c.icon"></div>
+            <div style="flex:1">
+              <div class="challenge-name" x-text="c.name"></div>
+              <div class="challenge-meta" x-text="c.meta"></div>
+            </div>
+            <div class="challenge-scores">
+              <div class="challenge-score"><div class="challenge-score-num" :style="'color:'+players[0].color" x-text="c.scoreA"></div><div class="challenge-score-who">José</div></div>
+              <div class="challenge-vs">vs</div>
+              <div class="challenge-score"><div class="challenge-score-num" :style="'color:'+players[1].color" x-text="c.scoreB"></div><div class="challenge-score-who">Maura</div></div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="acc-section">
+        <div class="acc-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Weekly History</div>
+        <template x-for="h in history" :key="h.week">
+          <div class="history-row">
+            <span class="history-date" x-text="h.week"></span>
+            <span class="history-winner" x-text="h.winner"></span>
+            <span class="history-score" x-text="h.score"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+  <nav class="bnav"><div class="bnav-inner">
+    <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+    <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+    <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+    <a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+    <div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+  </div></nav>
+</body>
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script>
+function pageApp(){
+  return {
+    period: 'week',
+    players: [
+      { id:1, name:'José', initial:'J', color:'var(--ac)', level:8, rank:'Expert', xp:340, habitsDone:5, habitsTotal:6, tasksDone:3, streak:12, maintDone:2, leader:true },
+      { id:2, name:'Maura', initial:'A', color:'var(--inf)', level:6, rank:'Skilled', xp:210, habitsDone:4, habitsTotal:6, tasksDone:1, streak:7, maintDone:1, leader:false }
+    ],
+    challenges: [
+      { id:1, name:'7-Day Habit Streak', meta:'Both complete all habits 7 days in a row', icon:'&#x1F525;', color:'var(--dn)', scoreA:'12d', scoreB:'7d' },
+      { id:2, name:'Task Sprint', meta:'Most tasks closed this week', icon:'&#x26A1;', color:'var(--wn)', scoreA:'3', scoreB:'1' },
+      { id:3, name:'Morning Routine', meta:'Longest morning habit streak', icon:'&#x1F305;', color:'var(--inf)', scoreA:'8d', scoreB:'5d' },
+      { id:4, name:'Maintenance Hero', meta:'Most maintenance items this month', icon:'&#x1F527;', color:'var(--pu)', scoreA:'4', scoreB:'3' }
+    ],
+    history: [
+      { week:'Mar 31 — Apr 6', winner:'José wins', score:'340 vs 210 XP' },
+      { week:'Mar 24 — Mar 30', winner:'José wins', score:'290 vs 260 XP' },
+      { week:'Mar 17 — Mar 23', winner:'Maura wins', score:'220 vs 310 XP' },
+      { week:'Mar 10 — Mar 16', winner:'José wins', score:'380 vs 190 XP' },
+      { week:'Mar 3 — Mar 9', winner:'Tied', score:'250 vs 250 XP' }
+    ]
+  };
+}
+</script>
+</html>

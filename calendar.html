@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Calendar</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { corePlugins: { preflight: false } }</script>
+<style>
+.cal-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.cal-nav{display:flex;gap:4px}
+.cal-nav-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-nav-btn:hover{background:var(--bg3);color:var(--tx)}
+.cal-nav-btn svg{width:14px;height:14px}
+.cal-month-title{font-size:16px;font-weight:700;color:var(--tx);min-width:160px}
+.view-tabs{display:flex;gap:4px}
+.view-tab{font-size:11px;padding:4px 12px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s}
+.view-tab:hover{background:var(--bg3);color:var(--tx2)}
+.view-tab.active{background:var(--acbg);border-color:var(--ac);color:var(--actx);font-weight:600}
+.wk-grid{display:grid;grid-template-columns:50px repeat(7,1fr);gap:0;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.wk-hdr{background:var(--bg2);padding:8px 4px;text-align:center;font-size:10px;font-weight:600;border-bottom:1px solid var(--bd);color:var(--tx2)}
+.wk-hdr.today{color:var(--actx)}
+.wk-hdr-corner{background:var(--bg2);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd)}
+.wk-time{background:var(--bg2);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:4px 6px;font-size:9px;color:var(--tx3);text-align:right}
+.wk-cell{border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);min-height:44px;padding:3px}
+.wk-cell.today{background:color-mix(in srgb,var(--ac) 4%,var(--bg))}
+.wk-ev{font-size:9px;border-radius:3px;padding:2px 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;cursor:pointer}
+.mo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mo-dh{font-size:10px;font-weight:600;color:var(--tx3);text-align:center;padding:4px 0}
+.mo-cell{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:6px;min-height:70px;cursor:pointer;transition:border-color .15s}
+.mo-cell:hover{border-color:var(--bd)}
+.mo-cell.today{border-color:var(--ac)}
+.mo-cell.other-month{opacity:.35}
+.mo-num{font-size:11px;font-weight:600;margin-bottom:4px;color:var(--tx2)}
+.mo-num.today-num{color:var(--actx)}
+.mo-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin:1px}
+.upcoming-list{display:flex;flex-direction:column;gap:5px}
+.upcoming-item{padding:8px 10px;background:var(--bg3);border-radius:7px;font-size:11px;border-left:3px solid transparent}
+.upcoming-item-title{font-weight:600;color:var(--tx);margin-bottom:1px}
+.upcoming-item-meta{font-size:10px;color:var(--tx3)}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.page-title{font-size:18px;font-weight:700;color:var(--tx)}
+.lblock-subtitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);margin-bottom:8px;margin-top:2px}
+</style>
+</head>
+<body x-data="pageApp()">
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>José
+      </a>
+      <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item active" style="color:var(--actx)">&#9776; Calendar</a><a href="performance.html" class="lnav-item">&#9650; Performance</a><a href="accountability.html" class="lnav-item">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
+  <div class="right">
+      <div class="page-hdr">
+        <div class="page-title">Calendar</div>
+        <div class="view-tabs">
+          <button class="view-tab" :class="{ active: view === 'week' }" @click="view = 'week'">Week</button>
+          <button class="view-tab" :class="{ active: view === 'month' }" @click="view = 'month'">Month</button>
+        </div>
+      </div>
+      <div class="cal-hdr">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" @click="prevPeriod()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="cal-nav-btn" @click="nextPeriod()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="cal-month-title" x-text="periodTitle"></div>
+        <button class="view-tab" @click="goToday()" style="margin-left:auto;padding:4px 10px;font-size:10px">Today</button>
+      </div>
+      <div x-show="view === 'week'">
+        <div class="wk-grid">
+          <div class="wk-hdr-corner"></div>
+          <template x-for="(day, di) in weekDays" :key="di">
+            <div class="wk-hdr" :class="{ today: day.isToday }">
+              <div x-text="day.label"></div>
+              <div style="font-size:14px;font-weight:700;margin-top:2px" x-text="day.num" :style="day.isToday ? 'color:var(--actx)' : ''"></div>
+            </div>
+          </template>
+          <template x-for="(slot, si) in timeSlots" :key="si">
+            <template x-for="col in 8" :key="col">
+              <template x-if="col === 1">
+                <div class="wk-time" x-text="slot.label"></div>
+              </template>
+              <template x-if="col > 1">
+                <div class="wk-cell" :class="{ today: weekDays[col-2] && weekDays[col-2].isToday }">
+                  <template x-for="ev in eventsForSlot(weekDays[col-2], slot)" :key="ev.id">
+                    <div class="wk-ev" :style="'background:' + ev.color" x-text="ev.title"></div>
+                  </template>
+                </div>
+              </template>
+            </template>
+          </template>
+        </div>
+      </div>
+      <div x-show="view === 'month'">
+        <div class="mo-grid">
+          <div class="mo-dh">Mon</div><div class="mo-dh">Tue</div><div class="mo-dh">Wed</div>
+          <div class="mo-dh">Thu</div><div class="mo-dh">Fri</div><div class="mo-dh">Sat</div><div class="mo-dh">Sun</div>
+          <template x-for="cell in monthCells" :key="cell.key">
+            <div class="mo-cell" :class="{ today: cell.isToday, 'other-month': !cell.inMonth }">
+              <div class="mo-num" :class="{ 'today-num': cell.isToday }" x-text="cell.num"></div>
+              <div>
+                <template x-for="ev in eventsForDay(cell.day)" :key="ev.id">
+                  <span class="mo-dot" :style="'background:' + ev.color" :title="ev.title"></span>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="bnav"><div class="bnav-inner">
+    <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+    <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+    <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+    <a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+    <div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+  </div></nav>
+</body>
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script>
+function pageApp() {
+  return {
+    view: 'week',
+    offset: 0,
+    events: [
+      { id:1, day:6,  title:'FERRO workout',    color:'var(--inf)', time:'14:00'   },
+      { id:2, day:6,  title:'Car oil change',    color:'var(--dn)',  time:'All day', overdue:true },
+      { id:3, day:7,  title:'Read 30min',         color:'var(--wn)', time:'Evening' },
+      { id:4, day:9,  title:'FERRO workout',     color:'var(--inf)', time:'14:00'   },
+      { id:5, day:10, title:'Water plants',       color:'var(--ac)',  time:'Morning' },
+      { id:6, day:11, title:'FERRO workout',     color:'var(--inf)', time:'14:00'   },
+      { id:7, day:15, title:'Mãe birthday', color:'var(--pu)',  time:'All day' },
+      { id:8, day:20, title:'Project review',    color:'var(--wn)', time:'10:00'   },
+      { id:9, day:25, title:'FERRO workout',     color:'var(--inf)', time:'14:00'   },
+    ],
+    timeSlots: [
+      {label:'08:00',hour:8},{label:'09:00',hour:9},{label:'10:00',hour:10},
+      {label:'11:00',hour:11},{label:'12:00',hour:12},{label:'13:00',hour:13},
+      {label:'14:00',hour:14},{label:'15:00',hour:15},{label:'16:00',hour:16},
+      {label:'17:00',hour:17},{label:'18:00',hour:18},{label:'19:00',hour:19},
+      {label:'20:00',hour:20},{label:'21:00',hour:21},
+    ],
+    get weekStartDay() { return 6 + (this.offset * 7); },
+    get weekDays() {
+      const names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      const s = this.weekStartDay;
+      return names.map((label, i) => {
+        const d = s + i;
+        return { label, num: d <= 30 ? d : d - 30, isToday: d === 6 && this.offset === 0, day: d <= 30 ? d : d - 30 };
+      });
+    },
+    get periodTitle() {
+      if (this.view === 'week') {
+        const s = this.weekStartDay, e = s + 6;
+        if (s <= 30 && e <= 30) return 'Apr ' + s + ' – Apr ' + e + ', 2026';
+        if (s <= 30) return 'Apr ' + s + ' – May ' + (e-30) + ', 2026';
+        return 'May 2026';
+      }
+      const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return months[(3 + this.offset + 12) % 12] + ' 2026';
+    },
+    get monthCells() {
+      const cells = [];
+      for (let d = 1; d <= 30; d++) {
+        cells.push({ key:'a'+d, num:d, day:d, inMonth:true, isToday: d===6 && this.offset===0 });
+      }
+      let nx=1; while (cells.length < 42) cells.push({key:'n'+(nx),num:nx++,day:0,inMonth:false,isToday:false});
+      return cells;
+    },
+    eventsForDay(day) {
+      if (!day) return [];
+      return this.events.filter(e => e.day === day);
+    },
+    eventsForSlot(dayObj, slot) {
+      if (!dayObj) return [];
+      return this.events.filter(ev => {
+        if (ev.day !== dayObj.day) return false;
+        if ((ev.time === 'All day' || ev.overdue) && slot.hour === 8) return true;
+        if (ev.time === 'Morning' && slot.hour === 9) return true;
+        if (ev.time === 'Evening' && slot.hour === 19) return true;
+        if (ev.time && ev.time.includes(':')) return parseInt(ev.time) === slot.hour;
+        return false;
+      });
+    },
+    prevPeriod() { this.offset--; },
+    nextPeriod() { this.offset++; },
+    goToday()    { this.offset = 0; }
+  };
+}
+</script>
+</html>

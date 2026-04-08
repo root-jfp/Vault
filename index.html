@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Dashboard</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-grid.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<link rel="stylesheet" href="vault-widgets.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { corePlugins: { preflight: false } }</script>
+<style>
+/* Dashboard-specific */
+.perf-date{font-size:10px;color:var(--tx3);margin-bottom:5px}
+.perf-section{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin:7px 0 3px;font-weight:600}
+.perf-item{font-size:11px;padding:2px 0;display:flex;align-items:center;gap:5px}
+.pdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.perf-footer{font-size:9px;color:var(--tx3);margin-top:6px;padding-top:5px;border-top:1px solid var(--bd)}
+.perf-footer div{padding:1px 0}
+.sec-new{margin-left:auto;font-size:10px;font-weight:500;color:var(--tx3);cursor:pointer;padding:2px 8px;border:1px solid var(--bd);border-radius:5px;text-transform:none;letter-spacing:0;text-decoration:none}
+.sec-new:hover{color:var(--tx);border-color:var(--tx3)}
+.hscroll-wrap{position:relative}
+.hscroll{display:flex;gap:10px;flex-wrap:wrap;padding:2px 0}
+.hcard{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1 1 150px;min-width:150px;max-width:185px}
+.hcard-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.hcard-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.hcard-name{font-size:12px;font-weight:600}
+.hcard-freq{font-size:9px;color:var(--tx3);margin-bottom:3px}
+.hm-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:4px 0}
+.hm-cal-hdr{font-size:7px;color:var(--tx3);text-align:center;padding:1px 0;font-weight:600}
+.hm-cal-cell{aspect-ratio:1;border-radius:3px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--tx3);font-weight:500;line-height:1}
+.hm-cal-cell.hm-empty{background:transparent;pointer-events:none}
+.hm-cal-cell.hm-l1{color:var(--tx3)}
+.hm-cal-cell.hm-l2{color:var(--tx2)}
+.hm-cal-cell.hm-l3{color:var(--tx);font-weight:600}
+.hm-cal-cell.hm-l4{color:var(--bg);font-weight:700}
+.hm-cal-cell.hm-today{outline:1.5px solid var(--tx2);outline-offset:-1px;font-weight:700}
+.hm-cal-cell.hm-future{opacity:.35}
+/* Quant stepper — inline, same row as freq text */
+.qty-stepper{display:flex;align-items:center;gap:2px}
+.qty-btn{width:14px;height:14px;border-radius:2px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;font-weight:700;padding:0;flex-shrink:0}
+.qty-btn:hover{background:var(--bg2);border-color:var(--tx3)}
+.qty-val{font-size:9px;font-weight:600;color:var(--tx);padding:0 2px;white-space:nowrap}
+.hcard-check{font-size:9px;color:var(--actx);margin-top:3px}
+.hcard-pbar{height:4px;background:var(--bg3);border-radius:2px;margin-top:4px;overflow:hidden}
+.hcard-pbar-fill{height:100%;border-radius:2px}
+.hcard-stats{font-size:8px;color:var(--tx3);margin-top:2px;display:flex;align-items:center;justify-content:space-between}
+.tcol{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:8px;flex:1 1 160px;min-width:160px;max-width:200px}
+.tcol-name{font-size:11px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.tdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.titem{font-size:10px;background:var(--bg3);border-radius:5px;padding:6px 8px;margin-bottom:4px}
+.pcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;flex:1 1 160px;min-width:160px;max-width:200px}
+.pcard-name{font-size:12px;font-weight:600;margin-bottom:2px;color:var(--inftx)}
+.pcard-desc{font-size:10px;color:var(--tx3);margin-bottom:5px}
+.pcard-row{font-size:10px;color:var(--tx3);padding:1px 0}
+.pcard-footer{font-size:10px;color:var(--tx3);margin-top:5px;padding-top:5px;border-top:1px solid var(--bd)}
+.tabs{display:flex;gap:6px;margin-bottom:8px;font-size:10px}
+.tab{padding:3px 10px;border-radius:5px;color:var(--tx3);cursor:pointer}
+.tab.active{background:var(--tx);color:var(--bg);font-weight:600}
+.ptabs{display:flex;gap:6px;margin-bottom:8px;font-size:10px;align-items:center}
+.ptab{padding:3px 8px;border-radius:4px;color:var(--tx3);cursor:pointer}
+.ptab.active{color:var(--tx);font-weight:600}
+.cal-tabs{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px}
+.cal-tab{padding:3px 8px;border-radius:4px;color:var(--tx3);cursor:pointer}
+.cal-tab.active{background:var(--bg3);color:var(--tx);font-weight:600}
+.cal-month{font-size:13px;font-weight:600;margin-bottom:6px}
+.wkgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wkh{font-size:10px;color:var(--tx3);text-align:center;padding:3px 0;font-weight:600}
+.wkday{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:6px;min-height:80px}
+.wkday-num{font-size:11px;font-weight:600;margin-bottom:4px}
+.wkday-num.today-num{color:var(--ac)}
+.wkday.today-col{border-color:var(--ac)}
+.wk-ev{font-size:9px;background:var(--bg3);border-radius:4px;padding:3px 5px;margin-bottom:3px}
+/* Configurator panel */
+.cfg-panel{position:fixed;left:0;top:49px;width:280px;height:calc(100vh - 49px);background:var(--bg2);border-right:1px solid var(--bd);z-index:300;display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.cfg-panel.open{transform:translateX(0)}
+.cfg-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:299;display:none}
+.cfg-backdrop.open{display:block}
+.cfg-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--bd)}
+.cfg-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.cfg-title svg{width:14px;height:14px}
+.cfg-close{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--tx3);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.cfg-close:hover{background:var(--bg3);color:var(--tx)}
+.cfg-body{flex:1;overflow-y:auto;padding:12px 16px}
+.cfg-section{margin-bottom:16px}
+.cfg-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:8px}
+.cfg-widget-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)}
+.cfg-widget-row:last-child{border-bottom:none}
+.cfg-widget-name{font-size:11px;flex:1}
+.cfg-toggle{width:32px;height:18px;border-radius:9px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s}
+.cfg-toggle-knob{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+/* Agenda widget */
+.agenda-slot{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd)}
+.agenda-slot:last-child{border-bottom:none}
+.agenda-time{font-size:9px;color:var(--tx3);min-width:40px;font-weight:500;padding-top:1px}
+.agenda-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.agenda-content{flex:1}
+.agenda-title{font-size:11px;font-weight:600}
+.agenda-meta{font-size:9px;color:var(--tx3)}
+/* Gamification widget */
+.gamify-player{flex:1;background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:10px;text-align:center}
+.gamify-player-name{font-size:11px;font-weight:600;margin-bottom:4px}
+.gamify-player-score{font-size:24px;font-weight:700;color:var(--ac)}
+.gamify-player-label{font-size:9px;color:var(--tx3)}
+.gamify-player.leading{border-color:var(--ac)}
+/* Sidebar gamification */
+.gm-sidebar-widget{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 11px}
+.gm-sidebar-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.gm-sidebar-info{flex:1;min-width:0}
+.gm-sidebar-level{font-size:11px;font-weight:600}
+.gm-sidebar-xp{font-size:9px;color:var(--tx3);margin-top:1px}
+.gm-sidebar-link{display:block;font-size:9px;color:var(--tx3);margin-top:6px;text-decoration:none;text-align:right}
+.gm-sidebar-link:hover{color:var(--actx)}
+.dhcard{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1 1 150px;min-width:150px;max-width:185px}
+.dhcard-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.dhcard-name{font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;flex:1}
+.hcheck{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.hcheck.done{background:var(--ac);border-color:var(--ac);color:#fff}
+</style>
+</head>
+<body x-data="pageApp()" x-cloak style="overflow:hidden">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title">Vault</div>
+  <div class="topbar-right">
+    <div class="topbar-user" @click="userMenuOpen=!userMenuOpen" style="position:relative">
+      <div class="gm-level-badge sm">8</div>
+      <div class="topbar-av" style="background:var(--ac)">J</div>
+      José
+    </div>
+    <button class="topbar-cog" @click="configuratorOpen=true" title="Grid settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item active" style="color:var(--actx)">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item">&#9650; Performance</a><a href="accountability.html" class="lnav-item">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
+  <div class="right">
+
+    <!-- 1. STREAK widget -->
+    <div class="sec" x-show="widgets.streak" data-widget="streak">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Habit streak &amp; goal tracking
+        <a href="habits.html" class="sec-new">Manage</a>
+        <a href="habit-new.html" class="sec-new">+ New</a>
+      </div>
+      <div class="hscroll-wrap">
+        <div class="hscroll">
+          <template x-for="h in habits" :key="h.id">
+            <div class="hcard" @click="openHabitModal(h)">
+              <div class="hcard-top">
+                <div class="hcard-dot" :style="`background:${h.color}`"></div>
+                <div class="hcard-name" x-text="h.name"></div>
+              </div>
+              <div class="hcard-freq" x-text="h.freq"></div>
+              <div class="hm-cal">
+                <div class="hm-cal-hdr">S</div><div class="hm-cal-hdr">M</div><div class="hm-cal-hdr">T</div><div class="hm-cal-hdr">W</div><div class="hm-cal-hdr">T</div><div class="hm-cal-hdr">F</div><div class="hm-cal-hdr">S</div>
+                <template x-for="(cell, i) in getCalMonth(h)" :key="i">
+                  <div class="hm-cal-cell"
+                       :class="[cell.empty?'hm-empty':'', cell.level>0?'hm-l'+cell.level:'', cell.isToday?'hm-today':'', cell.future?'hm-future':'']"
+                       :style="!cell.empty && cell.level > 0 ? `background:${h.hex}${['','55','88','BB',''][cell.level]}` : ''"
+                       x-text="cell.empty ? '' : cell.day"></div>
+                </template>
+              </div>
+              <div class="hcard-pbar"><div class="hcard-pbar-fill" :style="`width:${h.type==='quant' ? h.qty/h.target*100 : h.pct}%;background:${h.color}`"></div></div>
+              <div class="hcard-stats">
+                <span x-text="`${h.streak}d streak`"></span>
+                <span :style="`color:${h.color}`" x-text="h.type==='quant' ? `${h.qty}/${h.target}${h.unit}` : `${h.pct}%`"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. DAILY HABITS widget -->
+    <div class="sec" x-show="widgets.daily" data-widget="daily">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Daily habit tracking
+        <span class="sec-new" style="cursor:pointer">+ New</span>
+      </div>
+      <div class="hscroll">
+        <template x-for="h in habits" :key="h.id">
+          <div class="dhcard" :class="{'completed': h.type==='quant' ? h.qty>=h.target : h.done}" @click="openHabitModal(h)">
+            <div class="dhcard-top">
+              <!-- Bool: toggle checkbox -->
+              <div x-show="h.type!=='quant'" class="hcheck" :class="{'done': h.done}" @click.stop="toggleHabit(h)">
+                <svg x-show="h.done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <!-- Quant: check icon if target reached -->
+              <div x-show="h.type==='quant'" class="hcheck" :class="{'done': h.qty>=h.target}">
+                <svg x-show="h.qty>=h.target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="dhcard-name">
+                <div class="hcard-dot" :style="`background:${h.color}`"></div>
+                <span x-text="h.name"></span>
+              </div>
+            </div>
+            <!-- Freq row: always same height; stepper sits inline on the right for quant -->
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--tx3);margin-top:2px">
+              <span x-text="h.freq"></span>
+              <div x-show="h.type==='quant'" class="qty-stepper" @click.stop>
+                <button class="qty-btn" @click.stop="updateQty(h, -0.25)">−</button>
+                <span class="qty-val" x-text="`${h.qty}${h.unit}`"></span>
+                <button class="qty-btn" :style="`color:${h.color}`" @click.stop="updateQty(h, 0.25)">+</button>
+              </div>
+            </div>
+            <div class="hcard-pbar" style="margin-top:6px">
+              <div class="hcard-pbar-fill" :style="`width:${h.type==='quant' ? Math.min(h.qty/h.target*100,100) : (h.done?100:h.pct)}%;background:${h.color}`"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 3. TASKS widget -->
+    <div class="sec" x-show="widgets.tasks" data-widget="tasks">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Tasks
+        <a href="tasks.html" class="sec-new">Manage</a>
+        <a href="task-new.html" class="sec-new">+ New</a>
+      </div>
+      <div class="tabs">
+        <span class="tab" :class="{'active': taskTab==='today'}" @click="taskTab='today'">Today</span>
+        <span class="tab" :class="{'active': taskTab==='all'}" @click="taskTab='all'">All tasks</span>
+        <span class="tab" :class="{'active': taskTab==='done'}" @click="taskTab='done'">Completed</span>
+      </div>
+      <div class="hscroll">
+        <template x-for="col in filteredTaskCols" :key="col.id">
+          <div class="tcol">
+            <div class="tcol-name">
+              <div class="tdot" :style="`background:${col.color}`"></div>
+              <span x-text="col.name"></span>
+              <span style="margin-left:auto;font-size:9px;color:var(--tx3)" x-text="col.tasks.length"></span>
+            </div>
+            <template x-for="t in col.tasks" :key="t.id">
+              <div class="titem" @click="openTaskModal(t, col)">
+                <div x-text="t.title" style="margin-bottom:3px"></div>
+                <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">
+                  <span x-show="t.priority==='high'" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">HIGH</span>
+                  <span x-show="t.priority==='med'" style="font-size:7px;background:var(--wnbg);color:var(--wntx);padding:1px 4px;border-radius:2px">MED</span>
+                  <span x-show="t.priority==='low'" style="font-size:7px;background:var(--infbg);color:var(--inftx);padding:1px 4px;border-radius:2px">LOW</span>
+                  <span x-show="t.due && isOverdue(t.due)" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">Overdue</span>
+                  <span x-show="t.due && isDueToday(t.due)" style="font-size:7px;background:var(--acbg);color:var(--actx);padding:1px 4px;border-radius:2px">Today</span>
+                  <span style="font-size:8px;color:var(--tx3);margin-left:auto" x-text="t.project"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 4. PROJECTS widget -->
+    <div class="sec" x-show="widgets.projects" data-widget="projects">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Project manager
+        <a href="projects.html" class="sec-new">Manage</a>
+        <span class="sec-new" style="cursor:pointer">+ New</span>
+      </div>
+      <div class="hscroll">
+        <template x-for="p in projects" :key="p.id">
+          <div class="pcard" @click="openProjectModal(p)">
+            <div class="pcard-name" x-text="p.name"></div>
+            <div class="pcard-desc" x-text="p.desc"></div>
+            <div class="hcard-pbar"><div class="hcard-pbar-fill" :style="`width:${p.pct}%;background:${p.color}`"></div></div>
+            <div class="pcard-row" x-text="`${p.pct}% complete · ${p.open} tasks open`"></div>
+            <div class="pcard-footer" x-text="`${p.daysLeft} days remaining`" :style="`color:${p.daysLeft<7?'var(--dntx)':p.daysLeft<30?'var(--wntx)':'var(--tx3)'}`"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 5. CALENDAR widget -->
+    <div class="sec" x-show="widgets.calendar" data-widget="calendar">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Weekly &amp; monthly calendar
+        <a href="calendar.html" class="sec-new" style="margin-left:auto">Open</a>
+      </div>
+      <div class="cal-tabs">
+        <span class="cal-tab" :class="{'active':calTab==='week'}" @click="calTab='week'">This week</span>
+        <span class="cal-tab" :class="{'active':calTab==='month'}" @click="calTab='month'">This month</span>
+      </div>
+      <div class="cal-month">April 2026</div>
+      <div class="wkgrid">
+        <div class="wkh">Mon</div><div class="wkh">Tue</div><div class="wkh">Wed</div>
+        <div class="wkh">Thu</div><div class="wkh">Fri</div><div class="wkh">Sat</div><div class="wkh">Sun</div>
+        <template x-for="day in calWeek" :key="day.date">
+          <div class="wkday" :class="{'today-col': day.isToday}">
+            <div class="wkday-num" :class="{'today-num': day.isToday}" x-text="day.date"></div>
+            <template x-for="ev in day.events" :key="ev.title">
+              <div class="wk-ev" :style="`color:${ev.color}`" x-text="ev.title" @click.stop="openEventModal(ev, day)"></div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 6. WEATHER widget (hidden by default) -->
+    <div class="sec" x-show="widgets.weather" data-widget="weather">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        Weather
+      </div>
+      <div class="weather-main">
+        <div>
+          <div class="weather-temp" x-text="weather.temp + '°'"></div>
+          <div class="weather-cond" x-text="weather.cond"></div>
+          <div class="weather-loc" x-text="weather.loc"></div>
+        </div>
+        <svg class="weather-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      </div>
+      <div class="weather-badges">
+        <div class="weather-badge weather-badge-humidity">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          <span x-text="weather.humidity + '%'"></span>
+          <span class="weather-badge-lbl">Humidity</span>
+        </div>
+        <div class="weather-badge weather-badge-wind">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+          <span x-text="weather.wind + ' km/h ' + weather.windDir"></span>
+          <span class="weather-badge-lbl">Wind</span>
+        </div>
+      </div>
+      <div class="weather-forecast weather-forecast-responsive">
+        <template x-for="d in weather.forecast" :key="d.day">
+          <div class="weather-day">
+            <div class="weather-day-name" x-text="d.day"></div>
+            <div class="weather-day-icon">
+              <template x-if="d.icon==='sun'"><svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="1.8" width="20" height="20"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg></template>
+              <template x-if="d.icon==='rain'"><svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="1.8" width="20" height="20"><line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/><line x1="12" y1="15" x2="12" y2="23"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg></template>
+              <template x-if="d.icon==='cloud-sun'"><svg viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="1.8" width="20" height="20"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></template>
+              <template x-if="d.icon==='wind'"><svg viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="1.8" width="20" height="20"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg></template>
+            </div>
+            <div class="weather-day-temp" x-text="d.high + '°'"></div>
+            <div class="weather-day-low" x-text="d.low + '°'"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 7. QUICK ACTIONS widget (hidden by default) -->
+    <div class="sec" x-show="widgets['quick-actions']" data-widget="quick-actions">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Quick actions
+      </div>
+      <div class="quick-actions-strip">
+        <a href="task-new.html" class="qa-action" style="text-decoration:none;color:inherit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New task
+        </a>
+        <a href="habit-new.html" class="qa-action" style="text-decoration:none;color:inherit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> New habit
+        </a>
+        <button class="qa-action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Log maintenance
+        </button>
+        <button class="qa-action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Add event
+        </button>
+      </div>
+    </div>
+
+    <!-- 8. DAILY AGENDA widget (hidden) -->
+    <div class="sec" x-show="widgets['daily-agenda']" data-widget="daily-agenda">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Daily agenda — Monday 6 Apr
+      </div>
+      <div class="agenda-slot"><div class="agenda-time">09:00</div><div class="agenda-dot" style="background:var(--inf)"></div><div class="agenda-content"><div class="agenda-title">Study ASP.NET middleware</div><div class="agenda-meta">Task · FERRO project</div></div></div>
+      <div class="agenda-slot"><div class="agenda-time">11:00</div><div class="agenda-dot" style="background:var(--ac)"></div><div class="agenda-content"><div class="agenda-title">Fix IFS posting control</div><div class="agenda-meta">Task · Vault App</div></div></div>
+      <div class="agenda-slot"><div class="agenda-time">14:00</div><div class="agenda-dot" style="background:var(--pu)"></div><div class="agenda-content"><div class="agenda-title">FERRO workout session</div><div class="agenda-meta">Habit · 3x week</div></div></div>
+      <div class="agenda-slot"><div class="agenda-time">19:00</div><div class="agenda-dot" style="background:var(--wn)"></div><div class="agenda-content"><div class="agenda-title">Read 30 min</div><div class="agenda-meta">Habit · Daily</div></div></div>
+    </div>
+
+    <!-- 9. STREAK GAMIFICATION widget (hidden) -->
+    <div class="sec" x-show="widgets['streak-gamification']" data-widget="streak-gamification">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Streak &amp; gamification
+        <a href="achievements.html" class="sec-new">View all</a>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:12px">
+        <div class="gamify-player leading">
+          <div class="gamify-player-name">José</div>
+          <div class="gamify-player-score">340</div>
+          <div class="gamify-player-label">XP this week</div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:10px;color:var(--tx3);font-weight:600">VS</div>
+        <div class="gamify-player">
+          <div class="gamify-player-name">Maura</div>
+          <div class="gamify-player-score">210</div>
+          <div class="gamify-player-label">XP this week</div>
+        </div>
+      </div>
+      <div class="gamify-streaks" style="display:flex;gap:8px">
+        <template x-for="h in habits.slice(0,3)" :key="h.id">
+          <div class="gamify-streak" style="background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1">
+            <div class="gamify-streak-name" x-text="h.name"></div>
+            <div class="gamify-streak-val" x-text="h.streak"></div>
+            <div class="gamify-streak-unit">day streak</div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 10. WATER/HEALTH widget (hidden) -->
+    <div class="sec" x-show="widgets['water-health']" data-widget="water-health">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        Water &amp; health
+        <a href="water-health.html" class="sec-new">Manage</a>
+      </div>
+      <div class="water-main">
+        <div class="water-ring">
+          <svg viewBox="0 0 80 80"><circle class="water-ring-bg" cx="40" cy="40" r="34" stroke-dasharray="214" stroke-dashoffset="0"/><circle class="water-ring-fill" cx="40" cy="40" r="34" stroke-dasharray="214" stroke-dashoffset="75"/></svg>
+          <div class="water-ring-text"><span class="water-ring-pct">65%</span><span class="water-ring-label">today</span></div>
+        </div>
+        <div class="water-info">
+          <div class="water-amount">1.3 L</div>
+          <div class="water-goal">Goal: 2.0 L</div>
+          <div class="water-glasses">
+            <template x-for="n in 8" :key="n">
+              <div class="water-glass" :class="{'filled': n<=5}">
+                <svg x-show="n<=5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. FITNESS/WEIGHT widget (hidden) -->
+    <div class="sec" x-show="widgets['fitness-weight']" data-widget="fitness-weight">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Fitness &amp; weight
+        <a href="water-health.html" class="sec-new">Manage</a>
+      </div>
+      <div class="fitness-main">
+        <div class="fitness-current">
+          <div class="fitness-weight">82.4</div>
+          <div class="fitness-unit">kg</div>
+          <div class="fitness-goal">Goal: 78 kg</div>
+        </div>
+        <div class="fitness-chart">
+          <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--ac)" stroke-width="2" points="0,50 40,45 80,42 120,40 160,38 200,35"/>
+          </svg>
+        </div>
+      </div>
+      <div class="fitness-delta">
+        <div class="fitness-delta-card">
+          <div class="fitness-delta-val negative">-0.8</div>
+          <div class="fitness-delta-label">This week</div>
+        </div>
+        <div class="fitness-delta-card">
+          <div class="fitness-delta-val negative">-2.1</div>
+          <div class="fitness-delta-label">This month</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. BIRTHDAYS widget (hidden) -->
+    <div class="sec" x-show="widgets.birthdays" data-widget="birthdays">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Birthdays
+        <a href="birthdays.html" class="sec-new">Manage</a>
+      </div>
+      <div class="birthday-list">
+        <div class="birthday-card"><div class="birthday-avatar" style="background:var(--wn)">M</div><div class="birthday-info"><div class="birthday-name">Mãe</div><div class="birthday-date">15 April</div></div><div class="birthday-days soon">9d</div></div>
+        <div class="birthday-card"><div class="birthday-avatar" style="background:var(--inf)">R</div><div class="birthday-info"><div class="birthday-name">Ricardo</div><div class="birthday-date">28 April</div></div><div class="birthday-days upcoming">22d</div></div>
+      </div>
+    </div>
+
+    <!-- 13. BUDGET widget (hidden) -->
+    <div class="sec" x-show="widgets.budget" data-widget="budget">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Budget
+        <a href="budget.html" class="sec-new">Manage</a>
+      </div>
+      <div class="budget-main">
+        <div class="budget-ring">
+          <svg viewBox="0 0 80 80"><circle class="budget-ring-bg" cx="40" cy="40" r="34" stroke-dasharray="214" stroke-dashoffset="0"/><circle class="budget-ring-fill" cx="40" cy="40" r="34" stroke-dasharray="214" stroke-dashoffset="64"/></svg>
+          <div class="budget-ring-text"><span class="budget-ring-pct">70%</span><span class="budget-ring-label">spent</span></div>
+        </div>
+        <div class="budget-summary">
+          <div class="budget-spent">€1,400</div>
+          <div class="budget-total">of €2,000 budget</div>
+          <div class="budget-remaining ok">€600 remaining</div>
+        </div>
+      </div>
+      <div class="budget-cats">
+        <div class="budget-cat"><div class="budget-cat-name">Groceries</div><div class="budget-cat-bar"><div class="budget-cat-fill" style="width:75%;background:var(--ac)"></div></div><div class="budget-cat-amt">€450</div></div>
+        <div class="budget-cat"><div class="budget-cat-name">Transport</div><div class="budget-cat-bar"><div class="budget-cat-fill" style="width:40%;background:var(--inf)"></div></div><div class="budget-cat-amt">€120</div></div>
+        <div class="budget-cat overspent"><div class="budget-cat-name">Dining out</div><div class="budget-cat-bar"><div class="budget-cat-fill" style="width:110%;background:var(--dn)"></div></div><div class="budget-cat-amt">€330</div></div>
+      </div>
+    </div>
+
+    <!-- 14. NOTES widget (hidden) -->
+    <div class="sec" x-show="widgets.notes" data-widget="notes">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Notes
+        <a href="notes.html" class="sec-new">Manage</a>
+      </div>
+      <div class="notes-list">
+        <div class="note-card pinned"><div class="note-icons"><svg class="note-icon pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24z"/></svg></div><div class="note-title">FERRO project goals</div><div class="note-preview">Q2 targets: 80kg squat, 100kg deadlift, consistent 3x/week training schedule...</div><div class="note-date">2 Apr</div></div>
+        <div class="note-card"><div class="note-title">ASP.NET resources</div><div class="note-preview">Middleware pipeline, DI container, Razor views, EF Core migrations — check official docs for each.</div><div class="note-date">5 Apr</div></div>
+        <div class="note-card starred"><div class="note-icons"><svg class="note-icon star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="note-title">House reno priorities</div><div class="note-preview">1. Kitchen tiles 2. Bathroom repaint 3. Living room shelves</div><div class="note-date">1 Apr</div></div>
+      </div>
+    </div>
+
+    <!-- 15. SHOPPING widget (hidden) -->
+    <div class="sec" x-show="widgets.shopping" data-widget="shopping">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Shopping list
+        <a href="shopping.html" class="sec-new">Manage</a>
+      </div>
+      <div class="shopping-cats">
+        <div class="shopping-cat-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Groceries</div>
+        <div class="shopping-items">
+          <div class="shopping-item"><div class="shopping-check done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>Leite<div class="shopping-qty">2x</div></div>
+          <div class="shopping-item"><div class="shopping-check"></div>Pão<div class="shopping-qty">1x</div><span class="shopping-recurring">recurring</span></div>
+          <div class="shopping-item"><div class="shopping-check"></div>Frango<div class="shopping-qty">500g</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16. MEAL PLANNER widget (hidden) -->
+    <div class="sec" x-show="widgets['meal-planner']" data-widget="meal-planner">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Meal planner
+        <a href="meal-planner.html" class="sec-new">Manage</a>
+      </div>
+      <div class="meal-grid">
+        <div class="meal-label"></div>
+        <div class="meal-header">Mon</div><div class="meal-header">Tue</div><div class="meal-header">Wed</div><div class="meal-header">Thu</div><div class="meal-header">Fri</div><div class="meal-header">Sat</div><div class="meal-header">Sun</div>
+        <div class="meal-label">Lunch</div>
+        <div class="meal-cell today">Salada</div><div class="meal-cell">Sopa</div><div class="meal-cell">Frango</div><div class="meal-cell empty">—</div><div class="meal-cell">Pizza</div><div class="meal-cell">Bacalhau</div><div class="meal-cell empty">—</div>
+        <div class="meal-label">Dinner</div>
+        <div class="meal-cell today">Massa</div><div class="meal-cell">Carne</div><div class="meal-cell empty">—</div><div class="meal-cell">Sushi</div><div class="meal-cell empty">—</div><div class="meal-cell">Grelhado</div><div class="meal-cell">Ramen</div>
+      </div>
+    </div>
+
+    <!-- 17. INVENTORY widget (hidden) -->
+    <div class="sec" x-show="widgets['inventory-pantry']" data-widget="inventory-pantry">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        Inventory &amp; pantry
+        <a href="inventory-pantry.html" class="sec-new">Manage</a>
+      </div>
+      <div class="inventory-list">
+        <div class="inventory-card"><div class="inventory-name">Arroz <span class="inventory-stock high">High</span></div><div class="inventory-detail">5 kg in stock</div></div>
+        <div class="inventory-card"><div class="inventory-name">Azeite <span class="inventory-stock medium">Medium</span></div><div class="inventory-detail">1 bottle</div></div>
+        <div class="inventory-card"><div class="inventory-name">Leite <span class="inventory-stock low">Low</span></div><div class="inventory-detail">1 carton</div><div class="inventory-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Order soon</div></div>
+        <div class="inventory-card"><div class="inventory-name">Café <span class="inventory-stock critical">Critical</span></div><div class="inventory-detail">Last pack</div><div class="inventory-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Order now!</div></div>
+      </div>
+    </div>
+
+    <!-- 18. CHORE ROTATION widget (hidden) -->
+    <div class="sec" x-show="widgets['chore-rotation']" data-widget="chore-rotation">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.67"/></svg>
+        Chore rotation
+        <a href="chore-rotation.html" class="sec-new">Manage</a>
+      </div>
+      <div class="chore-list">
+        <div class="chore-row"><div class="chore-name">Dishes</div><span class="chore-assignee jose">José</span><span class="chore-status done">Done</span></div>
+        <div class="chore-row"><div class="chore-name">Vacuum</div><span class="chore-assignee wife">Maura</span><span class="chore-status pending">Pending</span></div>
+        <div class="chore-row"><div class="chore-name">Laundry</div><span class="chore-assignee jose">José</span><span class="chore-status pending">Pending</span></div>
+        <div class="chore-row"><div class="chore-name">Groceries</div><span class="chore-assignee wife">Maura</span><span class="chore-status done">Done</span></div>
+      </div>
+      <div class="chore-fairness">
+        <div class="chore-fairness-label"><span>José 50%</span><span>Maura 50%</span></div>
+        <div class="chore-fairness-bar"><div class="chore-fairness-fill jose" style="width:50%"></div><div class="chore-fairness-fill wife" style="width:50%"></div></div>
+      </div>
+    </div>
+
+    <!-- 19. UTILITY METERS widget (hidden) -->
+    <div class="sec" x-show="widgets['utility-meters']" data-widget="utility-meters">
+      <div class="sec-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--wn)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Utility meters
+        <a href="utility-meters.html" class="sec-new">Manage</a>
+      </div>
+      <div class="utility-list">
+        <div class="utility-card">
+          <div class="utility-header"><div class="utility-name">Electricity</div><div class="utility-trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>+5%</div></div>
+          <div class="utility-value">342 <span class="utility-unit">kWh</span></div>
+        </div>
+        <div class="utility-card">
+          <div class="utility-header"><div class="utility-name">Water</div><div class="utility-trend down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>-3%</div></div>
+          <div class="utility-value">8.4 <span class="utility-unit">m³</span></div>
+        </div>
+        <div class="utility-card">
+          <div class="utility-header"><div class="utility-name">Gas</div><div class="utility-trend down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>-1%</div></div>
+          <div class="utility-value">12.1 <span class="utility-unit">m³</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right -->
+
+</div><!-- /layout -->
+
+<!-- CONFIGURATOR PANEL -->
+<div class="cfg-backdrop" :class="{'open': configuratorOpen}" @click="configuratorOpen=false"></div>
+<div class="cfg-panel" :class="{'open': configuratorOpen}">
+  <div class="cfg-hdr">
+    <div class="cfg-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Grid layout
+    </div>
+    <button class="cfg-close" @click="configuratorOpen=false">&times;</button>
+  </div>
+  <div class="cfg-body">
+    <div class="cfg-section">
+      <div class="cfg-section-title">Widget visibility</div>
+      <template x-for="w in widgetList" :key="w.key">
+        <div class="cfg-widget-row">
+          <div class="cfg-widget-name" x-text="w.label"></div>
+          <button class="cfg-toggle" :style="`background:${widgets[w.key]?'var(--ac)':'var(--bg4)'}`" @click="toggleWidget(w.key)">
+            <div class="cfg-toggle-knob" :style="`transform:translateX(${widgets[w.key]?14:0}px)`"></div>
+          </button>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM DETAIL MODAL -->
+<div class="vm-overlay" id="vault-modal" @click.self="closeModal()">
+  <div class="vm-dialog">
+    <div class="vm-header">
+      <div class="vm-hdot" id="vm-dot"></div>
+      <div class="vm-hgroup">
+        <div class="vm-htitle" id="vm-title"></div>
+        <div class="vm-hsub" id="vm-sub"></div>
+      </div>
+      <button class="vm-close" onclick="document.getElementById('vault-modal').classList.remove('open');document.body.style.overflow=''">&times;</button>
+    </div>
+    <div class="vm-body" id="vm-body"></div>
+    <div class="vm-footer" id="vm-footer"></div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bnav">
+  <div class="bnav-inner">
+    <a href="index.html" class="bnav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home
+    </a>
+    <a href="habits.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits
+    </a>
+    <a href="tasks.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks
+    </a>
+    <a href="maintenance.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.
+    </a>
+    <div class="bnav-item" @click="moreOpen=true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More
+    </div>
+  </div>
+</nav>
+
+<!-- MORE SHEET -->
+<div class="mobile-sheet-backdrop" :class="{'open': moreOpen}" @click="moreOpen=false"></div>
+<div class="mobile-sheet" :class="{'open': moreOpen}">
+  <div class="mobile-sheet-handle"></div>
+  <div class="mobile-sheet-title">More</div>
+  <a href="projects.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+  <a href="calendar.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+  <a href="performance.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+  <div class="mobile-sheet-sep"></div>
+  <a href="templates.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+  <a href="achievements.html" class="mobile-sheet-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>Achievements</a>
+  <div class="mobile-sheet-sep"></div>
+  <a href="notes.html" class="mobile-sheet-item" x-show="widgets.notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notes</a>
+  <a href="shopping.html" class="mobile-sheet-item" x-show="widgets.shopping"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Shopping</a>
+  <a href="budget.html" class="mobile-sheet-item" x-show="widgets.budget"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Budget</a>
+  <a href="meal-planner.html" class="mobile-sheet-item" x-show="widgets['meal-planner']"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Meal Planner</a>
+  <a href="inventory-pantry.html" class="mobile-sheet-item" x-show="widgets['inventory-pantry']"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>Pantry</a>
+  <a href="chore-rotation.html" class="mobile-sheet-item" x-show="widgets['chore-rotation']"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.67"/></svg>Chores</a>
+  <a href="utility-meters.html" class="mobile-sheet-item" x-show="widgets['utility-meters']"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Utilities</a>
+  <a href="birthdays.html" class="mobile-sheet-item" x-show="widgets.birthdays"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Birthdays</a>
+  <a href="water-health.html" class="mobile-sheet-item" x-show="widgets['water-health'] || widgets['fitness-weight']"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>Health</a>
+</div>
+
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script>
+function pageApp() {
+  return {
+    // UI state
+    taskTab: 'today',
+    calTab: 'week',
+    configuratorOpen: false,
+    moreOpen: false,
+    userMenuOpen: false,
+
+    // Sample data
+    habits: [],
+
+    taskCols: [],
+
+    projects: [
+      { id:1, name:'FERRO', desc:'Fitness tracking system', color:'var(--ac)', pct:45, open:8, daysLeft:62 },
+      { id:2, name:'Vault App', desc:'Household productivity app', color:'var(--inf)', pct:30, open:12, daysLeft:90 },
+      { id:3, name:'House Reno', desc:'Home renovation planning', color:'var(--wn)', pct:15, open:5, daysLeft:120 },
+    ],
+
+    calWeek: [
+      { date:6, isToday:true, events:[{title:'FERRO workout',color:'var(--inf)'},{title:'Car oil change!',color:'var(--dn)'}] },
+      { date:7, isToday:false, events:[{title:'Read 30min',color:'var(--wn)'}] },
+      { date:8, isToday:false, events:[] },
+      { date:9, isToday:false, events:[{title:'FERRO workout',color:'var(--inf)'}] },
+      { date:10, isToday:false, events:[{title:'Water plants',color:'var(--ac)'}] },
+      { date:11, isToday:false, events:[] },
+      { date:12, isToday:false, events:[{title:'FERRO workout',color:'var(--inf)'}] },
+    ],
+
+    weather: {
+      temp: 18, cond: 'Partly cloudy', loc: 'Lisbon, PT',
+      humidity: 65, wind: 12, windDir: 'NW',
+      forecast: [
+        { day:'Tue', high:19, low:12, cond:'Sunny',        icon:'sun' },
+        { day:'Wed', high:16, low:10, cond:'Rainy',        icon:'rain' },
+        { day:'Thu', high:20, low:13, cond:'Partly cloudy',icon:'cloud-sun' },
+        { day:'Fri', high:22, low:14, cond:'Sunny',        icon:'sun' },
+        { day:'Sat', high:21, low:13, cond:'Windy',        icon:'wind' },
+      ]
+    },
+
+    widgets: {
+      streak: true,
+      daily: true,
+      tasks: true,
+      projects: true,
+      calendar: true,
+      weather: false,
+      'quick-actions': false,
+      'daily-agenda': false,
+      'streak-gamification': false,
+      'water-health': false,
+      'fitness-weight': false,
+      birthdays: false,
+      budget: false,
+      notes: false,
+      shopping: false,
+      'meal-planner': false,
+      'inventory-pantry': false,
+      'chore-rotation': false,
+      'utility-meters': false,
+    },
+
+    widgetList: [
+      { key:'streak', label:'Habit streak & goals' },
+      { key:'daily', label:'Daily habit tracking' },
+      { key:'tasks', label:'Tasks' },
+      { key:'projects', label:'Project manager' },
+      { key:'calendar', label:'Calendar' },
+      { key:'weather', label:'Weather' },
+      { key:'quick-actions', label:'Quick actions' },
+      { key:'daily-agenda', label:'Daily agenda' },
+      { key:'streak-gamification', label:'Streak & gamification' },
+      { key:'water-health', label:'Water & health' },
+      { key:'fitness-weight', label:'Fitness & weight' },
+      { key:'birthdays', label:'Birthdays' },
+      { key:'budget', label:'Budget' },
+      { key:'notes', label:'Notes' },
+      { key:'shopping', label:'Shopping list' },
+      { key:'meal-planner', label:'Meal planner' },
+      { key:'inventory-pantry', label:'Inventory & pantry' },
+      { key:'chore-rotation', label:'Chore rotation' },
+      { key:'utility-meters', label:'Utility meters' },
+    ],
+
+    // Lifecycle
+    async init() {
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal(); });
+      try {
+        const res = await fetch('/api/habits');
+        if (res.ok) {
+          this.habits = await res.json();
+        }
+      } catch (e) {
+        console.error('Failed to load habits:', e);
+      }
+      try {
+        const res = await fetch('/api/tasks/columns');
+        if (res.ok) {
+          this.taskCols = await res.json();
+        }
+      } catch (e) {
+        console.error('Failed to load tasks:', e);
+      }
+    },
+
+    // Modal core
+    openModal({ title, sub, color, body, footer }) {
+      document.getElementById('vm-dot').style.background = color || 'var(--tx3)';
+      document.getElementById('vm-title').textContent = title || '';
+      document.getElementById('vm-sub').textContent = sub || '';
+      document.getElementById('vm-body').innerHTML = body || '';
+      document.getElementById('vm-footer').innerHTML = footer || '';
+      document.getElementById('vault-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    },
+    closeModal() {
+      document.getElementById('vault-modal').classList.remove('open');
+      document.body.style.overflow = '';
+    },
+
+    async toggleHabit(h) {
+      h.done = !h.done;
+      try {
+        const res = await fetch(`/api/habits/${h.id}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: null }),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          h.streak = updated.streak;
+          h.pct = updated.pct;
+          h.done = updated.done;
+        } else {
+          h.done = !h.done;
+        }
+      } catch (e) {
+        h.done = !h.done;
+        console.error('Toggle error:', e);
+      }
+    },
+
+    async updateQty(h, delta) {
+      const oldQty = h.qty;
+      h.qty = Math.max(0, +(h.qty + delta).toFixed(2));
+      try {
+        const res = await fetch(`/api/habits/${h.id}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: h.qty }),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          h.qty = updated.qty;
+          h.streak = updated.streak;
+          h.pct = updated.pct;
+        } else {
+          h.qty = oldQty;
+        }
+      } catch (e) {
+        h.qty = oldQty;
+        console.error('Update qty error:', e);
+      }
+    },
+
+    _tx(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    },
+
+    // Habit modal
+    openHabitModal(habit) {
+      const isQuant = habit.type === 'quant';
+      const doneLabel = isQuant
+        ? `${habit.qty} / ${habit.target}${habit.unit}`
+        : (habit.done ? 'Done today ✓' : 'Not done today');
+      const doneColor = isQuant
+        ? (habit.qty >= habit.target ? 'var(--actx)' : 'var(--tx2)')
+        : (habit.done ? 'var(--actx)' : 'var(--tx2)');
+      const pct = isQuant ? Math.round(habit.qty / habit.target * 100) : habit.pct;
+      const body = `
+        <div class="vm-section">
+          <div class="vm-row">
+            <div class="vm-col">
+              <div class="vm-label">Type</div>
+              <div class="vm-value">
+                <span class="vm-tag type-badge ${isQuant ? 'quant' : 'bool'}">${isQuant ? 'Quantitative' : 'Boolean'}</span>
+              </div>
+            </div>
+            <div class="vm-col">
+              <div class="vm-label">Frequency</div>
+              <div class="vm-value">${this._tx(habit.freq)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="vm-section">
+          <div class="vm-stat-grid">
+            <div class="vm-stat-card">
+              <div class="vm-stat-num" style="color:${habit.color}">${habit.streak}</div>
+              <div class="vm-stat-lbl">Day streak</div>
+            </div>
+            <div class="vm-stat-card">
+              <div class="vm-stat-num">${habit.pct}%</div>
+              <div class="vm-stat-lbl">Completion rate</div>
+            </div>
+          </div>
+        </div>
+        <div class="vm-section">
+          <div class="vm-label">Today</div>
+          <div class="vm-value" style="color:${doneColor}">${doneLabel}</div>
+          ${isQuant ? `<div class="vm-progress" style="margin-top:6px"><div class="vm-progress-fill" style="width:${Math.min(pct,100)}%;background:${habit.color}"></div></div>` : ''}
+        </div>
+        <div class="vm-divider"></div>
+        <div class="vm-section">
+          <div class="vm-label">April 2026 calendar</div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:4px">
+            ${['S','M','T','W','T','F','S'].map(d=>`<div style="font-size:7px;color:var(--tx3);text-align:center">${d}</div>`).join('')}
+            ${this.getCalMonth(habit).map(c => c.empty
+              ? `<div style="aspect-ratio:1"></div>`
+              : `<div style="aspect-ratio:1;border-radius:3px;background:${c.level>0?habit.hex+(c.level===1?'55':c.level===2?'88':c.level===3?'BB':''):'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:8px;color:${c.level>=3?'var(--bg)':c.level>=1?'var(--tx2)':'var(--tx3)'};font-weight:600;${c.isToday?'outline:1.5px solid var(--tx2);outline-offset:-1px':''}">${c.day}</div>`
+            ).join('')}
+          </div>
+        </div>`;
+      const footer = `
+        <button class="vm-btn danger" onclick="document.getElementById('vault-modal').classList.remove('open')">Delete</button>
+        <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit</button>
+        <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Done ✓</button>`;
+      this.openModal({ title: habit.name, sub: 'Habit · ' + habit.freq, color: habit.color, body, footer });
+    },
+
+    // Task modal
+    openTaskModal(task, col) {
+      const prioColors = { high: 'var(--dntx)', med: 'var(--wntx)', low: 'var(--inftx)' };
+      const prioBg = { high: 'var(--dnbg)', med: 'var(--wnbg)', low: 'var(--infbg)' };
+      const dueLabel = task.due
+        ? (this.isOverdue(task.due) ? '⚠ Overdue — ' : this.isDueToday(task.due) ? '✓ Today — ' : '') + this._tx(task.due)
+        : 'No due date';
+      const dueColor = task.due
+        ? (this.isOverdue(task.due) ? 'var(--dntx)' : this.isDueToday(task.due) ? 'var(--actx)' : 'var(--tx2)')
+        : 'var(--tx3)';
+      const body = `
+        <div class="vm-section">
+          <div class="vm-row">
+            <div class="vm-col">
+              <div class="vm-label">Status</div>
+              <div class="vm-value" style="color:${col.color}">${this._tx(col.name)}</div>
+            </div>
+            <div class="vm-col">
+              <div class="vm-label">Priority</div>
+              <div class="vm-value">
+                <span class="vm-tag" style="background:${prioBg[task.priority]||'var(--bg3)'};color:${prioColors[task.priority]||'var(--tx3)'}">${(task.priority||'none').toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="vm-section">
+          <div class="vm-label">Due date</div>
+          <div class="vm-value" style="color:${dueColor}">${dueLabel}</div>
+        </div>
+        <div class="vm-section">
+          <div class="vm-label">Project</div>
+          <div class="vm-value" style="color:var(--inftx)">${this._tx(task.project)}</div>
+        </div>`;
+      const footer = `
+        <button class="vm-btn danger" onclick="document.getElementById('vault-modal').classList.remove('open')">Delete</button>
+        <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit</button>
+        <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Close</button>`;
+      this.openModal({ title: task.title, sub: `Task · ${col.name}`, color: col.color, body, footer });
+    },
+
+    // Project modal
+    openProjectModal(project) {
+      const statusColor = project.daysLeft < 7 ? 'var(--dntx)' : project.daysLeft < 30 ? 'var(--wntx)' : 'var(--actx)';
+      const body = `
+        <div class="vm-section">
+          <div class="vm-label">Description</div>
+          <div class="vm-value">${this._tx(project.desc)}</div>
+        </div>
+        <div class="vm-section">
+          <div class="vm-label">Progress</div>
+          <div class="vm-value" style="font-weight:700;color:${project.color}">${project.pct}%</div>
+          <div class="vm-progress"><div class="vm-progress-fill" style="width:${project.pct}%;background:${project.color}"></div></div>
+        </div>
+        <div class="vm-section">
+          <div class="vm-stat-grid">
+            <div class="vm-stat-card">
+              <div class="vm-stat-num">${project.open}</div>
+              <div class="vm-stat-lbl">Open tasks</div>
+            </div>
+            <div class="vm-stat-card">
+              <div class="vm-stat-num" style="color:${statusColor}">${project.daysLeft}d</div>
+              <div class="vm-stat-lbl">Days left</div>
+            </div>
+          </div>
+        </div>`;
+      const footer = `
+        <button class="vm-btn danger" onclick="document.getElementById('vault-modal').classList.remove('open')">Archive</button>
+        <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit</button>
+        <a href="projects.html" class="vm-btn primary" style="text-decoration:none">Open →</a>`;
+      this.openModal({ title: project.name, sub: 'Project', color: project.color, body, footer });
+    },
+
+    // Calendar event modal
+    openEventModal(ev, day) {
+      const body = `
+        <div class="vm-section">
+          <div class="vm-label">Date</div>
+          <div class="vm-value">April ${day.date}, 2026</div>
+        </div>`;
+      const footer = `
+        <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Close</button>`;
+      this.openModal({ title: ev.title, sub: `Event · April ${day.date}`, color: ev.color, body, footer });
+    },
+
+    // Methods
+    toggleWidget(key) {
+      this.widgets[key] = !this.widgets[key];
+    },
+    _todayIso() { return new Date().toISOString().slice(0, 10); },
+    isOverdue(due) { return due < this._todayIso(); },
+    isDueToday(due) { return due === this._todayIso(); },
+    get filteredTaskCols() {
+      const today = this._todayIso();
+      if (this.taskTab === 'today') {
+        return this.taskCols.map(c => ({
+          ...c,
+          tasks: c.tasks.filter(t => t.due === today || (t.due && t.due < today))
+        })).filter(c => c.tasks.length > 0);
+      }
+      if (this.taskTab === 'done') {
+        return this.taskCols.filter(c => c.name === 'Done');
+      }
+      return this.taskCols;
+    },
+    // Returns flat 35-cell (5 weeks × 7 days) monthly calendar for April 2026.
+    // April 1, 2026 = Wednesday (DOW 3). April has 30 days.
+    // Bool habits: level 0 (not done) or 4 (done).
+    // Quant habits: level 0-4 based on how much of daily target was logged.
+    getCalMonth(habit) {
+      const cells = [];
+      const startDow = 3; // Wednesday
+      const daysInMonth = 30;
+      const today = 6; // April 6
+      for (let i = 0; i < startDow; i++) cells.push({ empty: true });
+      for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = day === today;
+        const future = day > today;
+        let level = 0;
+        if (!future) {
+          const n = (habit.id * 997 + day * 41) % 100;
+          if (habit.type === 'quant') {
+            // Vary 0-4: represents 0%, ~25%, ~50%, ~75%, 100% of target logged
+            const raw = (habit.id * 1123 + day * 67) % 100;
+            level = raw < 15 ? 0 : raw < 35 ? 1 : raw < 55 ? 2 : raw < 75 ? 3 : 4;
+          } else {
+            level = n >= (100 - habit.pct) ? 4 : 0;
+          }
+        }
+        cells.push({ empty: false, day, isToday, future, level });
+      }
+      while (cells.length < 35) cells.push({ empty: true });
+      return cells;
+    },
+  }
+}
+</script>
+</body>
+</html>

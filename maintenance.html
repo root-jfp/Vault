@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Maintenance</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { corePlugins: { preflight: false } }</script>
+<style>
+.maint-list{display:flex;flex-direction:column;gap:6px}
+.maint-row{display:grid;grid-template-columns:40px 1fr auto auto auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px 12px;transition:opacity .4s}
+.maint-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.maint-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.maint-interval{font-size:10px;color:var(--tx3)}
+.maint-nextdue{font-size:10px;min-width:80px}
+.maint-badge{font-size:9px;padding:2px 8px;border-radius:4px;font-weight:600;white-space:nowrap}
+.maint-badge.overdue{background:var(--dnbg);color:var(--dntx)}
+.maint-badge.soon{background:var(--wnbg);color:var(--wntx)}
+.maint-badge.ok{background:var(--acbg);color:var(--actx)}
+.maint-actions{display:flex;gap:4px}
+.maint-btn{font-size:10px;padding:4px 8px;border-radius:5px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.maint-btn:hover{background:var(--bg2);color:var(--tx)}
+.maint-btn.done-btn{border-color:var(--ac);color:var(--actx)}
+.maint-btn.done-btn:hover{background:var(--acbg)}
+.filter-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.filter-tab{font-size:11px;padding:4px 12px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s}
+.filter-tab:hover{background:var(--bg3);color:var(--tx2)}
+.filter-tab.active{background:var(--acbg);border-color:var(--ac);color:var(--actx);font-weight:600}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-title{font-size:18px;font-weight:700;color:var(--tx)}
+.btn-add{font-size:11px;padding:6px 14px;border-radius:6px;background:var(--ac);color:#fff;border:none;cursor:pointer;font-weight:600;transition:opacity .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-add:hover{opacity:.85}
+.btn-add svg{width:13px;height:13px}
+.stat-row{display:flex;flex-direction:column;gap:6px}
+.stat-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:7px;background:var(--bg3);font-size:11px}
+.stat-label{color:var(--tx2)}
+.stat-val{font-weight:700;font-size:13px}
+.stat-val.dn{color:var(--dntx)}
+.stat-val.wn{color:var(--wntx)}
+.stat-val.ac{color:var(--actx)}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin-bottom:8px;margin-top:18px;display:flex;align-items:center;gap:5px}
+.section-title svg{width:13px;height:13px;flex-shrink:0}
+.log-list{display:flex;flex-direction:column;gap:5px}
+.log-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--card);border:1px solid var(--cardb);border-radius:6px;font-size:11px}
+.log-name{font-weight:600;color:var(--tx)}
+.log-date{color:var(--tx3);font-size:10px}
+.log-icon{margin-right:8px;font-size:13px}
+</style>
+</head>
+<body x-data="pageApp()">
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>José
+      </a>
+      <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item active" style="color:var(--actx)">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item">&#9650; Performance</a><a href="accountability.html" class="lnav-item">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
+  <div class="right">
+      <div class="page-hdr">
+        <div class="page-title">Maintenance</div>
+        <a href="#" class="btn-add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </a>
+      </div>
+      <div class="filter-tabs">
+        <button class="filter-tab" :class="{ active: filter === 'all' }" @click="filter = 'all'">All (<span x-text="items.length"></span>)</button>
+        <button class="filter-tab" :class="{ active: filter === 'overdue' }" @click="filter = 'overdue'">Overdue <span style="color:var(--dntx)">(1)</span></button>
+        <button class="filter-tab" :class="{ active: filter === 'soon' }" @click="filter = 'soon'">Due Soon <span style="color:var(--wntx)">(2)</span></button>
+        <button class="filter-tab" :class="{ active: filter === 'ok' }" @click="filter = 'ok'">OK <span style="color:var(--actx)">(3)</span></button>
+      </div>
+      <div class="maint-list">
+        <template x-for="item in filteredItems" :key="item.id">
+          <div class="maint-row" :style="item.justDone ? 'opacity:0.35' : ''">
+            <div class="maint-icon" :style="'background:' + (item.status === 'overdue' ? 'var(--dnbg)' : item.status === 'soon' ? 'var(--wnbg)' : 'var(--acbg)')">
+              <span x-text="item.icon"></span>
+            </div>
+            <div>
+              <div class="maint-name" x-text="item.name"></div>
+              <div class="maint-interval" x-text="item.interval"></div>
+            </div>
+            <div class="maint-nextdue">
+              <div style="font-size:9px;color:var(--tx3);margin-bottom:1px">Next due</div>
+              <div style="font-weight:600;font-size:11px" x-text="item.nextDue"></div>
+              <div x-show="item.status === 'overdue'" style="font-size:9px;color:var(--dntx)" x-text="item.daysOverdue + 'd overdue'"></div>
+              <div x-show="item.status === 'soon' && item.daysLeft === 0" style="font-size:9px;color:var(--wntx)">Today</div>
+              <div x-show="item.status === 'ok' && item.daysLeft > 0" style="font-size:9px;color:var(--tx3)" x-text="item.daysLeft + 'd left'"></div>
+            </div>
+            <div>
+              <span class="maint-badge" :class="item.status" x-text="item.status === 'overdue' ? 'OVERDUE' : item.status === 'soon' ? 'DUE SOON' : 'OK'"></span>
+            </div>
+            <div class="maint-actions">
+              <button class="maint-btn done-btn" hx-post="#" hx-swap="none" @click="markDone(item.id)" title="Mark as done">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>Done
+              </button>
+              <button class="maint-btn" title="Edit item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+            </div>
+          </div>
+        </template>
+        <div x-show="filteredItems.length === 0" style="text-align:center;color:var(--tx3);font-size:12px;padding:24px 0">No items in this category.</div>
+      </div>
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Completion Log
+      </div>
+      <div class="log-list">
+        <template x-for="entry in completionLog" :key="entry.id">
+          <div class="log-row">
+            <div style="display:flex;align-items:center">
+              <span class="log-icon" x-text="entry.icon"></span>
+              <div>
+                <div class="log-name" x-text="entry.name"></div>
+                <div class="log-date" x-text="'Completed by ' + entry.user"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;color:var(--actx);background:var(--acbg);padding:2px 7px;border-radius:4px;font-weight:600">Done</span>
+              <span class="log-date" x-text="entry.date"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+  <nav class="bnav"><div class="bnav-inner">
+    <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+    <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+    <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+    <a href="maintenance.html" class="bnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+    <div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+  </div></nav>
+</body>
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script>
+function pageApp() {
+  return {
+    filter: 'all',
+    items: [
+      { id:1, name:'Car oil change',      icon:'🚗', interval:'Every 180 days', lastDone:'1 Oct 2025', nextDue:'30 Mar 2026', status:'overdue', daysOverdue:7,  daysLeft:0,  justDone:false },
+      { id:2, name:'Water plants',         icon:'🌿', interval:'Every 3 days',   lastDone:'3 Apr 2026', nextDue:'6 Apr 2026',  status:'soon',    daysOverdue:0,  daysLeft:0,  justDone:false },
+      { id:3, name:'Replace toothbrush',   icon:'🪥', interval:'Every 90 days',  lastDone:'5 Jan 2026', nextDue:'5 Apr 2026',  status:'soon',    daysOverdue:0,  daysLeft:0,  justDone:false },
+      { id:4, name:'HVAC filter',          icon:'💨', interval:'Every 90 days',  lastDone:'6 Jan 2026', nextDue:'6 Apr 2026',  status:'ok',      daysOverdue:0,  daysLeft:30, justDone:false },
+      { id:5, name:'Smoke detector check', icon:'🔥', interval:'Every 180 days', lastDone:'6 Oct 2025', nextDue:'5 Apr 2026',  status:'ok',      daysOverdue:0,  daysLeft:60, justDone:false },
+      { id:6, name:'Car tire pressure',    icon:'🚗', interval:'Every 30 days',  lastDone:'8 Mar 2026', nextDue:'8 Apr 2026',  status:'ok',      daysOverdue:0,  daysLeft:2,  justDone:false },
+    ],
+    completionLog: [
+      { id:1, icon:'🌿', name:'Water plants',       user:'José', date:'3 Apr 2026' },
+      { id:2, icon:'🪥', name:'Replace toothbrush', user:'Maura',       date:'5 Jan 2026' },
+      { id:3, icon:'💨', name:'HVAC filter',        user:'José', date:'6 Jan 2026' },
+      { id:4, icon:'🚗', name:'Car tire pressure',  user:'José', date:'8 Mar 2026' },
+      { id:5, icon:'🔥', name:'Smoke detector',     user:'Maura',       date:'6 Oct 2025' },
+    ],
+    get filteredItems() {
+      if (this.filter === 'all') return this.items;
+      const f = this.filter;
+      return this.items.filter(i => i.status === f);
+    },
+    markDone(id) {
+      const item = this.items.find(i => i.id === id);
+      if (!item) return;
+      item.justDone = true;
+      this.completionLog.unshift({ id: Date.now(), icon: item.icon, name: item.name, user: 'José', date: '7 Apr 2026' });
+      if (this.completionLog.length > 5) this.completionLog = this.completionLog.slice(0, 5);
+      const self = this;
+      setTimeout(() => {
+        const idx = self.items.findIndex(i => i.id === id);
+        if (idx !== -1) {
+          const updated = { ...item, status: 'ok', justDone: false, daysLeft: 30, nextDue: 'Apr 2026+' };
+          self.items = [...self.items.slice(0, idx), updated, ...self.items.slice(idx + 1)];
+        }
+      }, 600);
+    }
+  };
+}
+</script>
+</html>

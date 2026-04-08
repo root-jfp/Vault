@@ -175,9 +175,27 @@
     width: 36px !important;
     height: 36px !important;
   }
-  .stepper-btn {
+  .stepper-btn,
+  .qty-btn {
     width: 36px !important;
     height: 36px !important;
+    border-radius: 6px !important;
+    font-size: 18px !important;
+  }
+  /* Compensate: keep qty-val readable when buttons are bigger */
+  .qty-val {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+  }
+  /* Freq row with stepper: stack vertically on mobile so buttons don't overflow */
+  .dhcard .qty-stepper {
+    flex-direction: row;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  /* Give dhcard slightly more room */
+  .dhcard {
+    min-width: 160px !important;
   }
 
   /* === RESPONSIVE TABLE -> CARD CONVERSION === */
@@ -244,15 +262,25 @@
     position: relative;
   }
 
-  /* Horizontal scroll cards */
+  /* Horizontal scroll cards with snap */
   .hscroll {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
   }
   .hscroll::-webkit-scrollbar {
     display: none;
+  }
+  /* Snap targets — all direct card children */
+  .hscroll > .hcard,
+  .hscroll > .dhcard,
+  .hscroll > .tcol,
+  .hscroll > .pcard {
+    scroll-snap-align: start;
+    flex-shrink: 0;
   }
 
   /* Hide scroll arrows on mobile */

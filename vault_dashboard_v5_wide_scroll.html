@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="vault-grid.css">
 <link rel="stylesheet" href="vault-gamification.css">
 <link rel="stylesheet" href="vault-mobile.css">
+<link rel="stylesheet" href="vault-widgets.css">
 <style>
 /* Dashboard-specific: performance sidebar, sections, cards */
 .perf-date{font-size:10px;color:var(--tx3);margin-bottom:5px}
@@ -200,6 +201,48 @@
 <div class="wkgrid" id="cal-grid"></div>
 </div>
 
+<!-- WEATHER -->
+<div class="sec vg-hidden" data-widget="weather"></div>
+
+<!-- QUICK ACTIONS -->
+<div class="sec vg-hidden" data-widget="quick-actions"></div>
+
+<!-- DAILY AGENDA -->
+<div class="sec vg-hidden" data-widget="daily-agenda"></div>
+
+<!-- STREAK & GAMIFICATION -->
+<div class="sec vg-hidden" data-widget="streak-gamification"></div>
+
+<!-- WATER & HEALTH -->
+<div class="sec vg-hidden" data-widget="water-health"></div>
+
+<!-- FITNESS & WEIGHT -->
+<div class="sec vg-hidden" data-widget="fitness-weight"></div>
+
+<!-- BIRTHDAYS -->
+<div class="sec vg-hidden" data-widget="birthdays"></div>
+
+<!-- BUDGET -->
+<div class="sec vg-hidden" data-widget="budget"></div>
+
+<!-- NOTES -->
+<div class="sec vg-hidden" data-widget="notes"></div>
+
+<!-- SHOPPING LIST -->
+<div class="sec vg-hidden" data-widget="shopping"></div>
+
+<!-- MEAL PLANNER -->
+<div class="sec vg-hidden" data-widget="meal-planner"></div>
+
+<!-- INVENTORY & PANTRY -->
+<div class="sec vg-hidden" data-widget="inventory-pantry"></div>
+
+<!-- CHORE ROTATION -->
+<div class="sec vg-hidden" data-widget="chore-rotation"></div>
+
+<!-- UTILITY METERS -->
+<div class="sec vg-hidden" data-widget="utility-meters"></div>
+
 </div>
 </div>
 
@@ -265,6 +308,9 @@
 <script src="vault-tasks.js"></script>
 <script src="vault-widget-registry.js"></script>
 <script src="vault-widget-renderers.js"></script>
+<script src="vault-widget-renderers-dashboard.js"></script>
+<script src="vault-widget-renderers-lifestyle.js"></script>
+<script src="vault-widget-renderers-household.js"></script>
 <script>
 (function(){
 
@@ -352,6 +398,11 @@ var vmDot=document.getElementById('vm-dot');
 var vmBody=document.getElementById('vm-body');
 var vmFooter=document.getElementById('vm-footer');
 
+function sanitizeText(str){
+var d=document.createElement('div');
+d.textContent=str||'';
+return d.innerHTML;
+}
 function openModal(opts){
 vmDot.style.background=opts.color||'var(--tx3)';
 vmTitle.textContent=opts.title||'';
@@ -440,15 +491,15 @@ var colColor=COLS[t.columnId]||'var(--tx3)';
 var b='';
 if(t.description){
 b+='<div class="vm-section"><div class="vm-label">Description</div>';
-b+='<div class="vm-value">'+t.description+'</div></div>';
+b+='<div class="vm-value">'+sanitizeText(t.description)+'</div></div>';
 }
 b+='<div class="vm-section"><div class="vm-row">';
-b+='<div class="vm-col"><div class="vm-label">Column</div><div class="vm-value" style="display:flex;align-items:center;gap:5px"><div class="tdot" style="background:'+colColor+'"></div>'+col.name+'</div></div>';
-b+='<div class="vm-col"><div class="vm-label">Priority</div><div class="vm-value">'+t.priority+'</div></div>';
+b+='<div class="vm-col"><div class="vm-label">Column</div><div class="vm-value" style="display:flex;align-items:center;gap:5px"><div class="tdot" style="background:'+colColor+'"></div>'+sanitizeText(col.name)+'</div></div>';
+b+='<div class="vm-col"><div class="vm-label">Priority</div><div class="vm-value">'+sanitizeText(t.priority)+'</div></div>';
 b+='</div></div>';
 if(t.label){
 b+='<div class="vm-section"><div class="vm-label">Label</div>';
-b+='<div class="vm-tag" style="background:color-mix(in srgb,'+(t.labelColor||'#378ADD')+' 15%,transparent);color:'+(t.labelColor||'#378ADD')+'">'+t.label+'</div></div>';
+b+='<div class="vm-tag" style="background:color-mix(in srgb,'+(t.labelColor||'#378ADD')+' 15%,transparent);color:'+(t.labelColor||'#378ADD')+'">'+sanitizeText(t.label)+'</div></div>';
 }
 if(t.dueDate){
 b+='<div class="vm-section"><div class="vm-label">Due date</div>';
@@ -456,7 +507,7 @@ b+='<div class="vm-value">'+t.dueDate+'</div></div>';
 }
 if(t.projectName){
 b+='<div class="vm-section"><div class="vm-label">Project</div>';
-b+='<div class="vm-value" style="color:var(--inftx)">'+t.projectName+'</div></div>';
+b+='<div class="vm-value" style="color:var(--inftx)">'+sanitizeText(t.projectName)+'</div></div>';
 }
 var f='<a href="vault_task_edit.html?id='+t.id+'" class="vm-btn" style="text-decoration:none">Edit</a><button class="vm-btn primary">Close</button>';
 openModal({title:t.title,subtitle:col.name,color:colColor,body:b,footer:f});
@@ -471,7 +522,7 @@ var pct=p.totalTasks>0?Math.round(p.completed/p.totalTasks*100):0;
 var b='';
 
 b+='<div class="vm-section"><div class="vm-label">Description</div>';
-b+='<div class="vm-value">'+p.description+'</div></div>';
+b+='<div class="vm-value">'+sanitizeText(p.description)+'</div></div>';
 
 b+='<div class="vm-section"><div class="vm-label">Progress</div>';
 b+='<div class="vm-value">'+pct+'% complete</div>';
@@ -487,15 +538,16 @@ b+='</div></div>';
 
 b+='<div class="vm-section"><div class="vm-row">';
 b+='<div class="vm-col"><div class="vm-label">Deadline</div><div class="vm-value">'+p.daysLeft+' days remaining</div></div>';
-b+='<div class="vm-col"><div class="vm-label">Status</div><div class="vm-value">'+p.status+'</div></div>';
+b+='<div class="vm-col"><div class="vm-label">Status</div><div class="vm-value">'+sanitizeText(p.status)+'</div></div>';
 b+='</div></div>';
 
-var linked=tasks.filter(function(t){return t.project===p.name;});
+var allTasks=(typeof TaskStore!=='undefined'?TaskStore.getAll():[])||[];
+var linked=allTasks.filter(function(t){return t.project===p.name;});
 if(linked.length>0){
 b+='<div class="vm-section"><div class="vm-label">Linked tasks</div>';
 linked.forEach(function(t){
 b+='<div class="vm-task-link"><div class="vm-task-dot" style="background:'+t.columnColor+'"></div>'+t.title;
-b+='<span class="vm-tag" style="margin-left:auto;background:'+t.statusBg+';color:'+t.statusTx+'">'+t.status+'</span></div>';
+b+='<span class="vm-tag" style="margin-left:auto;background:'+t.statusBg+';color:'+t.statusTx+'">'+sanitizeText(t.status)+'</span></div>';
 });
 b+='</div>';
 }

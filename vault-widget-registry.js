@@ -5,6 +5,18 @@
    ============================================ */
 var VaultWidgetRegistry = (function () {
   'use strict';
+  /* Safe merge that skips dangerous prototype keys (C10: prototype pollution prevention) */
+  function safeMerge(target, source) {
+    if (!source || typeof source !== 'object') return target;
+    var dangerous = ['__proto__', 'constructor', 'prototype'];
+    Object.keys(source).forEach(function (k) {
+      if (dangerous.indexOf(k) === -1) {
+        target[k] = source[k];
+      }
+    });
+    return target;
+  }
+
 
   /* Widget type definitions: key -> { label, icon, category, defaultConfig, render, configSchema } */
   var definitions = {};
@@ -44,7 +56,7 @@ var VaultWidgetRegistry = (function () {
     var instance = {
       id: id,
       type: type,
-      config: Object.assign({}, def.defaultConfig, config || {}),
+      config: safeMerge(Object.assign({}, def.defaultConfig), config || {}),
       visible: true
     };
     instances.push(instance);
@@ -75,7 +87,7 @@ var VaultWidgetRegistry = (function () {
   function updateConfig(id, newConfig) {
     instances = instances.map(function (inst) {
       if (inst.id !== id) return inst;
-      return Object.assign({}, inst, { config: Object.assign({}, inst.config, newConfig) });
+      return Object.assign({}, inst, { config: safeMerge(Object.assign({}, inst.config), newConfig) });
     });
     persist();
   }
@@ -110,7 +122,11 @@ var VaultWidgetRegistry = (function () {
       var def = definitions[inst.type];
       if (!def || typeof def.render !== 'function') return;
 
-      var sec = parentContainer.querySelector('.sec[data-widget-id="' + inst.id + '"]');
+      var sec = null;
+      var allSecs = parentContainer.querySelectorAll('.sec[data-widget-id]');
+      for (var si = 0; si < allSecs.length; si++) {
+        if (allSecs[si].getAttribute('data-widget-id') === inst.id) { sec = allSecs[si]; break; }
+      }
       if (!sec) {
         sec = parentContainer.querySelector('.sec[data-widget="' + inst.type + '"]:not([data-widget-id])');
         if (sec) {

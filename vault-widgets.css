@@ -1,0 +1,221 @@
+/* ============================================
+   VAULT WIDGETS CSS
+   Styles for the 14 showcase dashboard widgets.
+   Uses existing design tokens (--ac, --dn, --wn, --inf, --pu).
+   ============================================ */
+
+/* ===== WEATHER WIDGET ===== */
+.weather-main{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.weather-temp{font-size:36px;font-weight:700;line-height:1}
+.weather-cond{font-size:11px;color:var(--tx3);margin-top:2px}
+.weather-loc{font-size:10px;color:var(--tx3)}
+.weather-icon{width:48px;height:48px;color:var(--wn)}
+
+/* humidity + wind as standout badges */
+.weather-badges{display:flex;gap:8px;margin-bottom:12px}
+.weather-badge{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.weather-badge-humidity{background:var(--infbg);color:var(--inftx)}
+.weather-badge-wind{background:var(--bg3);color:var(--tx2);border:1px solid var(--bd)}
+.weather-badge-lbl{font-size:9px;font-weight:400;opacity:.75;margin-left:1px}
+
+/* forecast strip */
+.weather-forecast{display:flex;gap:8px}
+.weather-day{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:8px;text-align:center;flex:1;min-width:56px}
+.weather-day-name{font-size:9px;color:var(--tx3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.weather-day-icon{display:flex;align-items:center;justify-content:center;height:22px;margin-bottom:4px}
+.weather-day-temp{font-size:11px;font-weight:700}
+.weather-day-low{font-size:9px;color:var(--tx3)}
+
+/* forecast always visible, scrolls on small panels */
+.weather-forecast-responsive{display:flex;overflow-x:auto;scrollbar-width:none}
+.weather-forecast-responsive::-webkit-scrollbar{display:none}
+
+/* ===== QUICK ACTIONS WIDGET ===== */
+.quick-actions-strip{display:flex;gap:8px;flex-wrap:wrap}
+.qa-action{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--card);border:1px solid var(--cardb);border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;transition:border-color .2s,background .2s;flex:1 1 auto;min-width:120px;justify-content:center}
+.qa-action:hover{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 5%,var(--card))}
+.qa-action svg{width:16px;height:16px;flex-shrink:0}
+
+/* ===== DAILY AGENDA WIDGET ===== */
+.agenda-timeline{display:flex;flex-direction:column;gap:0}
+.agenda-slot{display:flex;align-items:flex-start;gap:10px;padding:6px 0;position:relative}
+.agenda-time{font-size:10px;color:var(--tx3);min-width:44px;text-align:right;padding-top:2px;font-weight:500}
+.agenda-line{width:2px;background:var(--bd);position:absolute;left:54px;top:0;bottom:0}
+.agenda-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;position:relative;z-index:1}
+.agenda-content{flex:1;min-width:0}
+.agenda-title{font-size:11px;font-weight:600;margin-bottom:1px}
+.agenda-meta{font-size:9px;color:var(--tx3)}
+.agenda-type-badge{font-size:8px;padding:1px 5px;border-radius:3px;display:inline-block}
+
+/* ===== STREAK & GAMIFICATION WIDGET ===== */
+.gamify-competition{display:flex;gap:12px;margin-bottom:12px}
+.gamify-player{flex:1;background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:10px;text-align:center}
+.gamify-player-name{font-size:11px;font-weight:600;margin-bottom:4px}
+.gamify-player-score{font-size:24px;font-weight:700;color:var(--ac)}
+.gamify-player-label{font-size:9px;color:var(--tx3)}
+.gamify-player.leading{border-color:var(--ac)}
+.gamify-vs{font-size:10px;color:var(--tx3);display:flex;align-items:center;font-weight:600}
+.gamify-breakdown{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.gamify-stat{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:6px 10px;font-size:10px;flex:1;min-width:80px}
+.gamify-stat-label{color:var(--tx3);font-size:9px;margin-bottom:2px}
+.gamify-stat-val{font-weight:600}
+.gamify-streaks{display:flex;gap:8px;flex-wrap:wrap}
+.gamify-streak{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1;min-width:100px}
+.gamify-streak-name{font-size:10px;font-weight:600;margin-bottom:2px}
+.gamify-streak-val{font-size:18px;font-weight:700;color:var(--wn)}
+.gamify-streak-unit{font-size:9px;color:var(--tx3)}
+
+/* ===== WATER/HEALTH WIDGET ===== */
+.water-main{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.water-ring{position:relative;width:80px;height:80px;flex-shrink:0}
+.water-ring svg{width:80px;height:80px;transform:rotate(-90deg)}
+.water-ring-bg{fill:none;stroke:var(--bd);stroke-width:6}
+.water-ring-fill{fill:none;stroke:var(--inf);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .5s}
+.water-ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.water-ring-pct{font-size:16px;font-weight:700;display:block}
+.water-ring-label{font-size:8px;color:var(--tx3);display:block}
+.water-info{flex:1}
+.water-amount{font-size:20px;font-weight:700}
+.water-goal{font-size:10px;color:var(--tx3)}
+.water-glasses{display:flex;gap:4px;margin:8px 0}
+.water-glass{width:20px;height:24px;border-radius:3px;background:var(--bg3);display:flex;align-items:center;justify-content:center}
+.water-glass.filled{background:color-mix(in srgb,var(--inf) 25%,var(--bg3))}
+.water-glass svg{width:14px;height:14px;color:var(--inf)}
+.water-history{display:flex;gap:6px;align-items:flex-end}
+.water-bar-wrap{text-align:center;flex:1}
+.water-bar{height:40px;background:var(--bg3);border-radius:3px;position:relative;overflow:hidden}
+.water-bar-fill{position:absolute;bottom:0;left:0;right:0;background:var(--inf);border-radius:3px;transition:height .3s}
+.water-bar-label{font-size:8px;color:var(--tx3);margin-top:2px}
+
+/* ===== FITNESS/WEIGHT WIDGET ===== */
+.fitness-main{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.fitness-current{text-align:center}
+.fitness-weight{font-size:32px;font-weight:700}
+.fitness-unit{font-size:12px;color:var(--tx3)}
+.fitness-goal{font-size:10px;color:var(--tx3);margin-top:2px}
+.fitness-chart{flex:1;height:60px}
+.fitness-chart svg{width:100%;height:60px}
+.fitness-delta{display:flex;gap:12px;margin-bottom:8px}
+.fitness-delta-card{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:6px 10px;flex:1;text-align:center}
+.fitness-delta-val{font-size:14px;font-weight:700}
+.fitness-delta-val.positive{color:var(--dn)}
+.fitness-delta-val.negative{color:var(--ac)}
+.fitness-delta-label{font-size:9px;color:var(--tx3)}
+.fitness-entries{display:flex;gap:6px;flex-wrap:wrap}
+.fitness-entry{font-size:9px;color:var(--tx3);background:var(--bg3);border-radius:4px;padding:3px 6px}
+.fitness-entry-date{font-weight:600;color:var(--tx2)}
+
+/* ===== BIRTHDAYS WIDGET ===== */
+.birthday-list{display:flex;gap:8px;flex-wrap:wrap}
+.birthday-card{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:10px;flex:1 1 140px;min-width:140px;max-width:180px;display:flex;align-items:center;gap:10px}
+.birthday-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
+.birthday-info{flex:1;min-width:0}
+.birthday-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.birthday-date{font-size:9px;color:var(--tx3)}
+.birthday-days{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.birthday-days.soon{background:var(--wnbg);color:var(--wntx)}
+.birthday-days.upcoming{background:var(--infbg);color:var(--inftx)}
+
+/* ===== BUDGET WIDGET ===== */
+.budget-main{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.budget-ring{position:relative;width:80px;height:80px;flex-shrink:0}
+.budget-ring svg{width:80px;height:80px;transform:rotate(-90deg)}
+.budget-ring-bg{fill:none;stroke:var(--bd);stroke-width:6}
+.budget-ring-fill{fill:none;stroke:var(--ac);stroke-width:6;stroke-linecap:round}
+.budget-ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.budget-ring-pct{font-size:16px;font-weight:700;display:block}
+.budget-ring-label{font-size:8px;color:var(--tx3);display:block}
+.budget-summary{flex:1}
+.budget-spent{font-size:20px;font-weight:700}
+.budget-total{font-size:10px;color:var(--tx3)}
+.budget-remaining{font-size:11px;margin-top:2px}
+.budget-remaining.ok{color:var(--actx)}
+.budget-remaining.warning{color:var(--wntx)}
+.budget-remaining.over{color:var(--dntx)}
+.budget-cats{display:flex;flex-direction:column;gap:4px}
+.budget-cat{display:flex;align-items:center;gap:8px;font-size:10px}
+.budget-cat-name{min-width:70px;color:var(--tx3)}
+.budget-cat-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.budget-cat-fill{height:100%;border-radius:3px}
+.budget-cat-amt{min-width:50px;text-align:right;font-weight:500}
+.budget-cat.overspent .budget-cat-name{color:var(--dntx);font-weight:600}
+
+/* ===== NOTES WIDGET ===== */
+.notes-list{display:flex;gap:8px;flex-wrap:wrap}
+.note-card{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:10px;flex:1 1 140px;min-width:140px;max-width:200px;position:relative}
+.note-card.pinned{border-color:var(--wn)}
+.note-card.starred{border-color:var(--ac)}
+.note-icons{display:flex;gap:4px;margin-bottom:4px}
+.note-icon{width:14px;height:14px}
+.note-icon.pin{color:var(--wn)}
+.note-icon.star{color:var(--ac)}
+.note-title{font-size:11px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-preview{font-size:9px;color:var(--tx3);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.note-date{font-size:8px;color:var(--tx3);margin-top:6px;opacity:.7}
+
+/* ===== SHOPPING LIST WIDGET ===== */
+.shopping-cats{display:flex;flex-direction:column;gap:8px}
+.shopping-cat-title{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.shopping-cat-title svg{width:14px;height:14px}
+.shopping-items{display:flex;flex-direction:column;gap:3px}
+.shopping-item{display:flex;align-items:center;gap:8px;font-size:11px;padding:4px 6px;border-radius:4px;background:var(--card);border:1px solid var(--cardb)}
+.shopping-item.checked{opacity:.5;text-decoration:line-through}
+.shopping-check{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.shopping-check.done{background:var(--ac);border-color:var(--ac)}
+.shopping-check svg{width:10px;height:10px;color:#fff;opacity:0}
+.shopping-check.done svg{opacity:1}
+.shopping-qty{font-size:9px;color:var(--tx3);margin-left:auto}
+.shopping-recurring{font-size:7px;padding:1px 4px;border-radius:2px;background:var(--infbg);color:var(--inftx)}
+
+/* ===== MEAL PLANNER WIDGET ===== */
+.meal-grid{display:grid;grid-template-columns:auto repeat(7,1fr);gap:4px}
+.meal-header{font-size:9px;font-weight:600;color:var(--tx3);text-align:center;padding:4px 2px}
+.meal-label{font-size:9px;font-weight:600;color:var(--tx3);padding:4px 6px;text-align:right}
+.meal-cell{background:var(--card);border:1px solid var(--cardb);border-radius:5px;padding:4px 6px;font-size:9px;min-height:28px;text-align:center;display:flex;align-items:center;justify-content:center}
+.meal-cell.today{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 5%,var(--card))}
+.meal-cell.empty{color:var(--tx3);font-style:italic}
+
+/* ===== INVENTORY/PANTRY WIDGET ===== */
+.inventory-list{display:flex;gap:8px;flex-wrap:wrap}
+.inventory-card{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1 1 130px;min-width:130px;max-width:170px}
+.inventory-name{font-size:11px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.inventory-stock{font-size:9px;font-weight:500;padding:2px 6px;border-radius:3px;display:inline-block}
+.inventory-stock.high{background:var(--acbg);color:var(--actx)}
+.inventory-stock.medium{background:var(--infbg);color:var(--inftx)}
+.inventory-stock.low{background:var(--wnbg);color:var(--wntx)}
+.inventory-stock.critical{background:var(--dnbg);color:var(--dntx)}
+.inventory-detail{font-size:9px;color:var(--tx3);margin-top:3px}
+.inventory-alert{font-size:8px;color:var(--dntx);font-weight:600;margin-top:3px;display:flex;align-items:center;gap:3px}
+.inventory-alert svg{width:10px;height:10px}
+
+/* ===== CHORE ROTATION WIDGET ===== */
+.chore-list{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.chore-row{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--card);border:1px solid var(--cardb);border-radius:6px;font-size:11px}
+.chore-name{flex:1;font-weight:500}
+.chore-assignee{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:500}
+.chore-assignee.jose{background:var(--infbg);color:var(--inftx)}
+.chore-assignee.wife{background:var(--pubg);color:var(--putx)}
+.chore-status{font-size:9px;padding:2px 6px;border-radius:3px}
+.chore-status.done{background:var(--acbg);color:var(--actx)}
+.chore-status.pending{background:var(--wnbg);color:var(--wntx)}
+.chore-fairness{margin-top:4px}
+.chore-fairness-label{font-size:10px;color:var(--tx3);margin-bottom:4px;display:flex;justify-content:space-between}
+.chore-fairness-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;display:flex}
+.chore-fairness-fill{height:100%}
+.chore-fairness-fill.jose{background:var(--inf)}
+.chore-fairness-fill.wife{background:var(--pu)}
+
+/* ===== UTILITY METERS WIDGET ===== */
+.utility-list{display:flex;gap:10px;flex-wrap:wrap}
+.utility-card{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:10px;flex:1;min-width:140px}
+.utility-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.utility-name{font-size:11px;font-weight:600}
+.utility-trend{font-size:10px;font-weight:600;display:flex;align-items:center;gap:2px}
+.utility-trend.up{color:var(--dntx)}
+.utility-trend.down{color:var(--actx)}
+.utility-trend svg{width:12px;height:12px}
+.utility-value{font-size:18px;font-weight:700;margin-bottom:4px}
+.utility-unit{font-size:9px;color:var(--tx3)}
+.utility-chart{height:40px;margin-top:6px}
+.utility-chart svg{width:100%;height:40px}
+.utility-chart rect{rx:2}

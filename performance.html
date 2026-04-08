@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Performance</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { corePlugins: { preflight: false } }</script>
+<style>
+.perf-section{margin-bottom:20px;background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:16px}
+.perf-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.perf-section-title svg{width:14px;height:14px;flex-shrink:0}
+.bar-chart{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:11px}
+.bar-label{width:120px;flex-shrink:0;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:20px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:9px;font-weight:600;color:#fff;transition:width .6s ease}
+.bar-val{width:40px;text-align:right;font-size:10px;font-weight:600;color:var(--tx3)}
+.streak-table{width:100%;border-collapse:collapse;font-size:11px}
+.streak-table th{text-align:left;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);padding:4px 8px;border-bottom:1px solid var(--bd)}
+.streak-table td{padding:8px;border-bottom:1px solid var(--bd)}
+.streak-table tr:last-child td{border-bottom:none}
+.score-card{display:flex;gap:12px}
+.score-player{flex:1;background:var(--bg3);border-radius:8px;padding:12px;text-align:center}
+.score-player.winner{background:var(--acbg);border:1px solid var(--ac)}
+.score-name{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--tx)}
+.score-num{font-size:28px;font-weight:700;color:var(--actx)}
+.score-label{font-size:9px;color:var(--tx3);margin-top:2px}
+.score-badge{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--acbg);color:var(--actx);font-weight:600;display:inline-block;margin-top:4px}
+.period-tabs{display:flex;gap:4px;margin-bottom:14px}
+.period-tab{font-size:11px;padding:4px 12px;border-radius:5px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s}
+.period-tab:hover{background:var(--bg3);color:var(--tx2)}
+.period-tab.active{background:var(--acbg);border-color:var(--ac);color:var(--actx);font-weight:600}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-title{font-size:18px;font-weight:700;color:var(--tx)}
+.quick-stat-row{display:flex;flex-direction:column;gap:6px}
+.quick-stat{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:7px;background:var(--bg3);font-size:11px}
+.quick-stat-label{color:var(--tx2)}
+.quick-stat-val{font-weight:700;font-size:13px;color:var(--actx)}
+.velocity-chart{display:flex;align-items:flex-end;gap:10px;height:80px;padding:0 4px}
+.vel-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.vel-bar-track{width:100%;background:var(--bg3);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;height:60px}
+.vel-bar-fill{width:100%;border-radius:4px 4px 0 0;background:var(--inf);transition:height .6s ease;display:flex;align-items:flex-start;justify-content:center}
+.vel-bar-num{font-size:9px;font-weight:700;color:#fff;padding-top:2px}
+.vel-bar-label{font-size:9px;color:var(--tx3);font-weight:600}
+.streak-dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body x-data="pageApp()">
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>José
+      </a>
+      <button class="topbar-cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="left"><div class="lnav-block"><a href="index.html" class="lnav-item">&#9783; Dashboard</a><a href="habits.html" class="lnav-item">&#10003; Habits</a><a href="maintenance.html" class="lnav-item">&#9874; Maintenance</a><a href="tasks.html" class="lnav-item">&#9783; Tasks</a><a href="projects.html" class="lnav-item">&#9782; Projects</a><a href="calendar.html" class="lnav-item">&#9776; Calendar</a><a href="performance.html" class="lnav-item active" style="color:var(--actx)">&#9650; Performance</a><a href="accountability.html" class="lnav-item">&#9786; Accountability</a><a href="achievements.html" class="lnav-item">&#9733; Achievements</a><a href="templates.html" class="lnav-item">&#9783; Templates</a></div><div class="gm-sidebar-widget" style="margin-top:14px"><div class="gm-sidebar-top"><div class="gm-level-badge">8</div><div class="gm-sidebar-info"><div class="gm-sidebar-level">Level 8 &#183; Consistent</div><div class="gm-sidebar-xp">2,340 / 3,000 XP</div></div></div><div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div><div class="gm-sidebar-xp" style="margin-top:4px">660 XP to Level 9</div></div></div>
+  <div class="right">
+      <div class="page-hdr"><div class="page-title">Performance</div></div>
+      <div class="period-tabs">
+        <button class="period-tab" :class="{ active: period === 'week' }" @click="period = 'week'">Week</button>
+        <button class="period-tab" :class="{ active: period === 'month' }" @click="period = 'month'">Month</button>
+        <button class="period-tab" :class="{ active: period === 'quarter' }" @click="period = 'quarter'">Quarter</button>
+      </div>
+      <div class="perf-section">
+        <div class="perf-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Habit Completion
+        </div>
+        <div class="bar-chart">
+          <template x-for="h in habitData" :key="h.name">
+            <div class="bar-row">
+              <div class="bar-label" x-text="h.name" :title="h.name"></div>
+              <div class="bar-track">
+                <div class="bar-fill" :style="'width:' + h.pct + '%;background:' + h.color">
+                  <span x-show="h.pct > 15" x-text="h.pct + '%'"></span>
+                </div>
+              </div>
+              <div class="bar-val" x-text="h.pct + '%'"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="perf-section">
+        <div class="perf-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Task Velocity — Last 4 Weeks
+        </div>
+        <div class="velocity-chart">
+          <template x-for="wk in taskVelocity" :key="wk.week">
+            <div class="vel-bar-wrap">
+              <div class="vel-bar-track">
+                <div class="vel-bar-fill" :style="'height:' + Math.round((wk.count / maxVelocity) * 60) + 'px'">
+                  <span class="vel-bar-num" x-text="wk.count"></span>
+                </div>
+              </div>
+              <div class="vel-bar-label" x-text="wk.week"></div>
+            </div>
+          </template>
+        </div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:8px;text-align:center">Tasks completed per week</div>
+      </div>
+      <div class="perf-section">
+        <div class="perf-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Streak Overview
+        </div>
+        <table class="streak-table">
+          <thead><tr><th>Habit</th><th>Current</th><th>Best</th><th>30d Rate</th></tr></thead>
+          <tbody>
+            <template x-for="h in habitData" :key="h.name">
+              <tr>
+                <td><span class="streak-dot" :style="'background:' + h.color"></span><span x-text="h.name"></span></td>
+                <td><span style="font-weight:700" x-text="h.streak"></span> <span style="color:var(--tx3)">d</span></td>
+                <td><span style="color:var(--wntx);font-weight:600" x-text="h.bestStreak"></span> <span style="color:var(--tx3)">d</span></td>
+                <td><span :style="'font-weight:600;color:' + (h.rate30 >= 80 ? 'var(--actx)' : h.rate30 >= 60 ? 'var(--wntx)' : 'var(--dntx)')" x-text="h.rate30 + '%'"></span></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <div class="perf-section">
+        <div class="perf-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3 3h6l-3-3z"/><circle cx="12" cy="8" r="4"/><path d="M5.52 19h12.96"/></svg>
+          Weekly Score
+        </div>
+        <div class="score-card">
+          <template x-for="p in scores" :key="p.name">
+            <div class="score-player" :class="{ winner: p.winner }">
+              <div class="score-name">
+                <span x-show="p.winner" style="color:var(--wntx);margin-right:4px">🏆</span>
+                <span x-text="p.name"></span>
+              </div>
+              <div class="score-num" x-text="p.score"></div>
+              <div class="score-label">XP this week</div>
+              <div class="score-badge">Lvl <span x-text="p.badge"></span></div>
+            </div>
+          </template>
+        </div>
+        <div style="margin-top:12px;font-size:10px;color:var(--tx3);text-align:center">
+          José leads by <span style="color:var(--actx);font-weight:700">130 XP</span> this week
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="bnav"><div class="bnav-inner">
+    <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+    <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+    <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+    <a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maint.</a>
+    <div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>More</div>
+  </div></nav>
+</body>
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script>
+function pageApp() {
+  return {
+    period: 'week',
+    habitData: [
+      { name:'6hr deep work', color:'var(--ac)',  pct:86, streak:12, bestStreak:18, rate30:86 },
+      { name:'FERRO workout', color:'var(--inf)', pct:60, streak:5,  bestStreak:12, rate30:60 },
+      { name:'Read 30min',    color:'var(--wn)',  pct:72, streak:8,  bestStreak:22, rate30:72 },
+      { name:'Water 2L',      color:'var(--inf)', pct:65, streak:3,  bestStreak:9,  rate30:65 },
+      { name:'Meditate',      color:'var(--pu)',  pct:90, streak:15, bestStreak:30, rate30:90 },
+      { name:'Study',         color:'var(--wn)',  pct:70, streak:4,  bestStreak:15, rate30:70 },
+    ],
+    taskVelocity: [
+      { week:'W12', count:8 },
+      { week:'W13', count:5 },
+      { week:'W14', count:11 },
+      { week:'W15', count:3 },
+    ],
+    scores: [
+      { name:'José', score:340, badge:'8', winner:true  },
+      { name:'Maura',  score:210, badge:'5', winner:false },
+    ],
+    get maxVelocity() {
+      return Math.max(...this.taskVelocity.map(w => w.count));
+    }
+  };
+}
+</script>
+</html>
