@@ -69,6 +69,10 @@
 .tcheck{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .2s;margin-left:auto}
 .tcheck:hover{border-color:var(--ac);background:var(--acbg)}
 .tcheck.done{background:var(--ac);border-color:var(--ac);color:#fff}
+.tcheck.locked{background:var(--bg3);border-color:var(--bd);color:var(--tx3);cursor:default;opacity:.6}
+.tcard.is-done{opacity:.4;cursor:default}
+.tcard.is-done:hover{border-color:var(--cardb)}
+.tcard.is-done .tcard-title{text-decoration:line-through;color:var(--tx3)}
 .pcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;flex:1 1 160px;min-width:160px;max-width:200px}
 .pcard-name{font-size:12px;font-weight:600;margin-bottom:2px;color:var(--inftx)}
 .pcard-desc{font-size:10px;color:var(--tx3);margin-bottom:5px}
@@ -133,7 +137,11 @@
 .gm-sidebar-link:hover{color:var(--actx)}
 .dhcard{background:var(--card);border:1px solid var(--cardb);border-radius:9px;padding:13px 14px;flex:1 1 160px;min-width:160px;max-width:210px;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column}
 .dhcard:hover{border-color:var(--tx3)}
-.dhcard.completed{border-color:var(--ac)!important}
+.dhcard.done-undoable{border-color:var(--ac)!important}
+.dhcard.done-locked{border-color:var(--ac)!important;opacity:.45;cursor:default}
+.dhcard.done-locked:hover{border-color:var(--ac)!important}
+.dhcard-undo{margin-top:8px;width:100%;background:rgba(29,158,117,.12);border:1px solid var(--ac);color:var(--actx);font-size:10px;font-weight:600;padding:5px 0;border-radius:6px;cursor:pointer;letter-spacing:.02em}
+.dhcard-undo:hover{background:rgba(29,158,117,.22)}
 .dhcard-top{display:flex;align-items:center;gap:10px;margin-bottom:5px}
 .dhcard-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px;flex:1;line-height:1.25}
 .dhcard-freq{font-size:11px;color:var(--tx3);margin-bottom:8px}
@@ -143,6 +151,11 @@
 .qty-btn-lg{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;line-height:1}
 .qty-btn-lg:hover{background:var(--bg2);border-color:var(--tx3)}
 .qty-val-lg{font-size:12px;font-weight:600;color:var(--tx);flex:1;text-align:center}
+/* Habit completion animation */
+@keyframes habit-pop{0%{transform:scale(1)}30%{transform:scale(1.06)}65%{transform:scale(0.97)}100%{transform:scale(1)}}
+.dhcard.just-done{animation:habit-pop .35s ease}
+/* Habit toast */
+.habit-toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--ac);color:#fff;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.45);pointer-events:none;transition:opacity .2s,transform .2s}
 </style>
 </head>
 <body x-data="pageApp()" x-cloak style="overflow:hidden">
@@ -282,7 +295,7 @@
       </div>
       <div class="hscroll">
         <template x-for="h in activeHabits" :key="h.id">
-          <div class="dhcard" :class="{'completed': h.type==='quant' ? h.qty>=h.target : h.done}" @click="h.type==='quant' ? openHabitModal(h) : toggleHabit(h)">
+          <div class="dhcard" :class="{'done-undoable': (h.type==='quant'?h.qty>=h.target:h.done) && h.canUndo, 'done-locked': (h.type==='quant'?h.qty>=h.target:h.done) && !h.canUndo, 'just-done': h.justDone}" @click="(h.type==='quant'?h.qty>=h.target:h.done) ? null : (h.type==='quant' ? openHabitModal(h) : toggleHabit(h))">
             <div class="dhcard-top">
               <div class="hcheck" :class="{'done': h.type==='quant' ? h.qty>=h.target : h.done}">
                 <svg x-show="h.type==='quant' ? h.qty>=h.target : h.done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg>
@@ -299,6 +312,7 @@
             <div class="hcard-pbar">
               <div class="hcard-pbar-fill" :style="`width:${h.type==='quant' ? Math.min(h.qty/h.target*100,100) : (h.done?100:h.pct)}%;background:${h.color}`"></div>
             </div>
+            <button x-show="h.canUndo" class="dhcard-undo" @click.stop="undoHabit(h)">Undo</button>
           </div>
         </template>
       </div>
@@ -322,12 +336,13 @@
       </div>
       <div class="hscroll" style="align-items:stretch;flex-wrap:nowrap;overflow-x:auto">
         <template x-for="t in filteredTasks" :key="t.id">
-          <div class="tcard" :class="t.due && isOverdue(t.due) ? 'is-overdue' : t.due && isDueToday(t.due) ? 'is-today' : ''" @click="openTaskModal(t, taskCols.find(c=>c.name===t.colName))">
+          <div class="tcard" :class="t.colName==='Done' ? 'is-done' : t.due && isOverdue(t.due) ? 'is-overdue' : t.due && isDueToday(t.due) ? 'is-today' : ''" @click="t.colName!=='Done' && openTaskModal(t, taskCols.find(c=>c.name===t.colName))">
             <div class="tcard-status">
               <div class="tcard-dot" :style="`background:${t.due && isOverdue(t.due) ? 'var(--dn)' : t.due && isDueToday(t.due) ? 'var(--wn)' : 'var(--tx3)'}`"></div>
               <span style="font-size:10px;font-weight:700;letter-spacing:.04em" :style="`color:${t.due && isOverdue(t.due) ? 'var(--dntx)' : t.due && isDueToday(t.due) ? 'var(--wntx)' : 'var(--tx3)'}`" x-text="t.due && isOverdue(t.due) ? 'Overdue' : t.due && isDueToday(t.due) ? 'Today' : t.colName"></span>
-              <div class="tcheck" :class="{done: t.colName==='Done'}" @click.stop="completeTask(t)" :title="t.colName==='Done' ? 'Mark undone' : 'Mark done'">
-                <svg x-show="t.colName==='Done'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:11px;height:11px"><polyline points="20 6 9 17 4 12"/></svg>
+              <div class="tcheck" :class="{done: t.colName==='Done', locked: t.colName==='Done' && !_canUndoTask(t)}" @click.stop="completeTask(t)" :title="t.colName==='Done' ? (_canUndoTask(t) ? 'Undo (within 24h)' : 'Cannot undo — older than 24h') : 'Mark done'">
+                <svg x-show="t.colName==='Done' && _canUndoTask(t)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:11px;height:11px"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg x-show="t.colName==='Done' && !_canUndoTask(t)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               </div>
             </div>
             <div class="tcard-title" x-text="t.title"></div>
@@ -745,6 +760,12 @@
   </div>
 </div>
 
+<!-- Habit completion toast -->
+<div class="habit-toast" x-show="habitToast.show" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span x-text="habitToast.name + ' — done!'"></span>
+</div>
+
 <!-- MOBILE BOTTOM NAV -->
 <nav class="bnav">
   <div class="bnav-inner">
@@ -800,6 +821,8 @@ function pageApp() {
     configuratorOpen: false,
     moreOpen: false,
     userMenuOpen: false,
+    habitToast: { show: false, name: '' },
+    _toastTimer: null,
 
     // Sample data
     habits: [],
@@ -896,7 +919,7 @@ function pageApp() {
               weekDone: h.weekDone, weekGoal: h.weekGoal,
               increment: loc.increment || h.increment || 1,
               daysOfWeek: h.daysOfWeek || '0,1,2,3,4,5,6',
-              hmView: 'week',
+              hmView: 'week', justDone: false, canUndo: false,
             };
           });
         }
@@ -940,29 +963,87 @@ function pageApp() {
 
     async completeTask(t) {
       const isDone = t.colName === 'Done';
+      if (isDone && !this._canUndoTask(t)) return;
       const targetColName = isDone ? 'To Do' : 'Done';
       const targetCol = this.taskCols.find(c => c.name === targetColName);
       if (!targetCol) return;
       const srcCol = this.taskCols.find(c => c.name === t.colName);
       if (srcCol) srcCol.tasks = srcCol.tasks.filter(x => x.id !== t.id);
-      targetCol.tasks.push({ ...t, colName: targetColName });
+      const updated = { ...t, colName: targetColName, completedAt: isDone ? null : new Date().toISOString() };
+      targetCol.tasks.push(updated);
       t.colName = targetColName;
+      t.completedAt = updated.completedAt;
       fetch(`/api/tasks/${t.id}/move`, {
         method: 'PATCH', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ columnId: targetCol.id, position: targetCol.tasks.length })
       }).catch(() => {});
     },
 
+    _canUndoTask(t) {
+      if (!t.completedAt) return true; // no timestamp = legacy, allow
+      return (Date.now() - new Date(t.completedAt).getTime()) < 24 * 60 * 60 * 1000;
+    },
+
+    playDing() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+        [523.25, 659.25].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sine'; osc.frequency.value = freq;
+          const t = now + i * 0.13;
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.15, t + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+          osc.start(t); osc.stop(t + 0.45);
+        });
+      } catch(e) {}
+    },
+
+    showHabitToast(h) {
+      clearTimeout(this._toastTimer);
+      this.habitToast = { show: true, name: h.name };
+      this._toastTimer = setTimeout(() => { this.habitToast.show = false; }, 3000);
+    },
+
+    undoHabit(h) {
+      h.canUndo = false;
+      h.done = false;
+      h.streak = Math.max((h.streak||1) - 1, 0);
+      this._saveHabits();
+      fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:null}) })
+        .then(r => r.ok ? r.json() : null).then(u => { if (u) { h.streak = u.streak; h.pct = u.pct; h.done = u.done; this._saveHabits(); } }).catch(()=>{});
+    },
+
     toggleHabit(h) {
       h.done = !h.done;
-      if (h.done) h.streak = (h.streak||0) + 1; else h.streak = Math.max((h.streak||1)-1, 0);
+      if (h.done) {
+        h.streak = (h.streak||0) + 1;
+        h.justDone = true; h.canUndo = true;
+        setTimeout(() => { h.justDone = false; }, 400);
+        setTimeout(() => { h.canUndo = false; }, 60000);
+        this.playDing();
+        this.showHabitToast(h);
+      } else {
+        h.streak = Math.max((h.streak||1)-1, 0);
+      }
       this._saveHabits();
       fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:null}) })
         .then(r => r.ok ? r.json() : null).then(u => { if (u) { h.streak = u.streak; h.pct = u.pct; h.done = u.done; this._saveHabits(); } }).catch(()=>{});
     },
 
     updateQty(h, delta) {
+      const wasAtTarget = h.target > 0 && h.qty >= h.target;
       h.qty = Math.max(0, +(h.qty + delta).toFixed(2));
+      if (!wasAtTarget && h.target > 0 && h.qty >= h.target) {
+        h.justDone = true; h.canUndo = true;
+        setTimeout(() => { h.justDone = false; }, 400);
+        setTimeout(() => { h.canUndo = false; }, 60000);
+        this.playDing();
+        this.showHabitToast(h);
+      }
       this._saveHabits();
       fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:h.qty}) })
         .then(r => r.ok ? r.json() : null).then(u => { if (u) { h.qty = u.qty; h.streak = u.streak; h.pct = u.pct; this._saveHabits(); } }).catch(()=>{});
