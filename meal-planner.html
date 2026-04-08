@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault &#8212; Meal Planner</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={corePlugins:{preflight:false}}</script>
+<style>
+[x-cloak]{display:none!important}
+.filter-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.ftab{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);cursor:pointer;transition:all .15s}
+.ftab.active{background:var(--acbg);color:var(--actx);border-color:var(--ac)}
+.ftab:hover:not(.active){background:var(--bg3);color:var(--tx)}
+/* Week nav */
+.week-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.week-nav-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.week-nav-btn:hover{background:var(--bg3);color:var(--tx)}
+.week-label{font-size:13px;font-weight:600;color:var(--tx);flex:1}
+/* Meal grid */
+.meal-grid{display:grid;grid-template-columns:80px repeat(7,1fr);gap:0;border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.mg-corner{background:var(--bg2);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:8px}
+.mg-day-hdr{background:var(--bg2);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:6px 4px;text-align:center}
+.mg-day-hdr:last-child{border-right:none}
+.mg-day-name{font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px}
+.mg-day-date{font-size:9px;color:var(--tx3);margin-top:1px}
+.mg-row-hdr{background:var(--bg2);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:8px 6px;display:flex;align-items:center;justify-content:center}
+.mg-row-hdr:last-child{border-bottom:none}
+.mg-slot-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);writing-mode:vertical-rl;transform:rotate(180deg)}
+.mg-cell{border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:5px;min-height:60px;cursor:pointer;transition:background .12s;position:relative}
+.mg-cell:last-child{border-right:none}
+.mg-row-last .mg-cell,.mg-row-last .mg-row-hdr{border-bottom:none}
+.mg-cell:hover{background:var(--bg3)}
+.mg-meal-card{background:var(--card);border:1px solid var(--cardb);border-radius:6px;padding:4px 6px;height:100%;display:flex;flex-direction:column;gap:2px}
+.mg-meal-emoji{font-size:14px;line-height:1}
+.mg-meal-name{font-size:9px;font-weight:600;color:var(--tx);line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mg-meal-prep{font-size:8px;color:var(--tx3)}
+.mg-add{display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:18px;font-weight:300;opacity:.4;transition:opacity .15s}
+.mg-cell:hover .mg-add{opacity:.8}
+/* Tag pills */
+.tag-pill{display:inline-block;font-size:8px;padding:1px 5px;border-radius:3px;font-weight:500;background:var(--bg3);color:var(--tx3);margin-right:2px}
+.tag-pill.quick{background:var(--acbg);color:var(--actx)}
+.tag-pill.veggie{background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--actx)}
+.tag-pill.highprot{background:var(--infbg);color:var(--inftx)}
+.tag-pill.comfort{background:var(--wnbg);color:var(--wntx)}
+.tag-pill.healthy{background:var(--pubg);color:var(--putx)}
+/* Recipe list */
+.recipe-section-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:10px;margin-top:2px;display:flex;align-items:center;gap:6px}
+.recipe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.recipe-card{background:var(--card);border:1px solid var(--cardb);border-radius:10px;padding:12px;cursor:pointer;transition:border-color .15s}
+.recipe-card:hover{border-color:var(--tx3)}
+.recipe-card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+.recipe-emoji{font-size:22px;line-height:1;flex-shrink:0}
+.recipe-name{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.recipe-desc{font-size:10px;color:var(--tx3);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.recipe-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.recipe-prep{font-size:9px;color:var(--tx3)}
+.recipe-stars{font-size:10px;color:var(--wn)}
+.recipe-fav{font-size:10px;color:var(--dn);cursor:pointer}
+/* Modal: slot picker */
+.slot-meal-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:7px;cursor:pointer;transition:background .1s}
+.slot-meal-row:hover{background:var(--bg3)}
+.slot-meal-row-emoji{font-size:18px;flex-shrink:0}
+.slot-meal-info{flex:1;min-width:0}
+.slot-meal-name{font-size:12px;font-weight:600;color:var(--tx)}
+.slot-meal-tags{font-size:9px;color:var(--tx3);margin-top:1px}
+.slot-meal-prep{font-size:10px;color:var(--tx3);white-space:nowrap;flex-shrink:0}
+@media(max-width:900px){.recipe-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){
+  .meal-grid{grid-template-columns:56px repeat(7,1fr)}
+  .mg-day-name{font-size:8px}
+  .mg-day-date{display:none}
+  .mg-cell{min-height:50px;padding:3px}
+  .mg-meal-name{-webkit-line-clamp:1}
+  .mg-meal-prep{display:none}
+  .recipe-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body x-data="pageApp()" x-cloak>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-title">Vault</div>
+    <div class="topbar-right">
+      <a href="index.html" class="topbar-user" style="text-decoration:none">
+        <div class="gm-level-badge sm">8</div>
+        <div class="topbar-av" style="background:var(--ac)">J</div>Jos&#233;
+      </a>
+      <button class="topbar-cog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="17" height="17"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="lnav">
+      <div class="lnav-block">
+        <a href="index.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <a href="habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+        <a href="maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+        <a href="tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+        <a href="projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+        <a href="calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+        <a href="performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+        <a href="notes.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notes</a>
+        <a href="shopping.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Shopping</a>
+        <a href="meal-planner.html" class="lnav-item active" style="color:var(--actx)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>Meal Planner</a>
+      </div>
+      <div class="gm-sidebar-widget">
+        <div class="gm-sw-header">
+          <div class="gm-level-badge">8</div>
+          <div>
+            <div style="font-size:11px;font-weight:600">Level 8 &#183; Consistent</div>
+            <div style="font-size:9px;color:var(--tx3)">2,340 / 3,000 XP</div>
+          </div>
+        </div>
+        <div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">660 XP to Level 9</div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" style="display:flex;align-items:center;gap:7px;font-size:18px;font-weight:700">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+            Meal Planner
+          </h1>
+          <div class="page-sub" style="font-size:11px;color:var(--tx3);margin-top:2px">Plan your week, eat well</div>
+        </div>
+        <div class="page-actions" style="display:flex;gap:8px;align-items:center">
+          <button class="btn-secondary" @click="clearWeek()">Clear Week</button>
+          <button class="btn-primary">+ Add Recipe</button>
+        </div>
+      </div>
+
+      <!-- Week navigation -->
+      <div class="week-nav">
+        <button class="week-nav-btn" @click="prevWeek()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="week-label" x-text="weekLabel"></div>
+        <button class="week-nav-btn" @click="nextWeek()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div style="font-size:10px;color:var(--tx3);background:var(--bg2);border:1px solid var(--bd);border-radius:6px;padding:3px 10px">Week <span x-text="weekOffset===0?'(current)':weekOffset>0?'+'+weekOffset+'w':weekOffset+'w'"></span></div>
+      </div>
+
+      <!-- Weekly meal grid -->
+      <div class="meal-grid">
+        <!-- Header row -->
+        <div class="mg-corner"></div>
+        <template x-for="(day, di) in days" :key="day.key">
+          <div class="mg-day-hdr">
+            <div class="mg-day-name" x-text="day.short"></div>
+            <div class="mg-day-date" x-text="day.date"></div>
+          </div>
+        </template>
+        <!-- Meal rows -->
+        <template x-for="(slot, si) in slots" :key="slot.key">
+          <template x-if="true">
+            <div style="display:contents" :class="si===slots.length-1?'mg-row-last':''">
+              <div class="mg-row-hdr" :style="si===slots.length-1?'border-bottom:none':''">
+                <span class="mg-slot-label" x-text="slot.label"></span>
+              </div>
+              <template x-for="(day, di) in days" :key="day.key">
+                <div class="mg-cell"
+                  :style="(si===slots.length-1?'border-bottom:none;':'')+(di===days.length-1?'border-right:none;':'')"
+                  @click="openSlotModal(day.key, slot.key)">
+                  <template x-if="getMeal(day.key, slot.key)">
+                    <div class="mg-meal-card">
+                      <div class="mg-meal-emoji" x-text="getMeal(day.key, slot.key).emoji"></div>
+                      <div class="mg-meal-name" x-text="getMeal(day.key, slot.key).name"></div>
+                      <div class="mg-meal-prep" x-text="getMeal(day.key, slot.key).prepTime+'min'"></div>
+                    </div>
+                  </template>
+                  <template x-if="!getMeal(day.key, slot.key)">
+                    <div class="mg-add">+</div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+        </template>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs">
+        <button class="ftab" :class="{active:filter==='all'}" @click="filter='all'">All</button>
+        <button class="ftab" :class="{active:filter==='week'}" @click="filter='week'">This Week</button>
+        <button class="ftab" :class="{active:filter==='favorites'}" @click="filter='favorites'">Favorites</button>
+        <button class="ftab" :class="{active:filter==='quick'}" @click="filter='quick'">Quick (&lt;30min)</button>
+      </div>
+
+      <!-- Recipe list -->
+      <div class="recipe-section-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="12" height="12"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Recipes
+      </div>
+      <div class="recipe-grid">
+        <template x-for="m in filteredMeals" :key="m.id">
+          <div class="recipe-card" @click="openMealModal(m)">
+            <div class="recipe-card-top">
+              <div class="recipe-emoji" x-text="m.emoji"></div>
+              <div style="flex:1;min-width:0">
+                <div class="recipe-name" x-text="m.name"></div>
+                <div class="recipe-desc" x-text="m.desc"></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">
+              <template x-for="tag in m.tags" :key="tag">
+                <span class="tag-pill" :class="tagClass(tag)" x-text="tag"></span>
+              </template>
+            </div>
+            <div class="recipe-footer">
+              <span class="recipe-prep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="9" height="9" style="vertical-align:middle;margin-right:2px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span x-text="m.prepTime+'min'"></span></span>
+              <span class="recipe-stars" x-text="'★'.repeat(m.rating)+'☆'.repeat(5-m.rating)"></span>
+              <span class="recipe-fav" x-text="m.favorite?'♥':'♡'" @click.stop="m.favorite=!m.favorite"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bnav">
+    <div class="bnav-inner">
+      <a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></a>
+      <a href="habits.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Habits</span></a>
+      <a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Tasks</span></a>
+      <a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="20" height="20"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>Maint.</span></a>
+      <div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="20" height="20"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></div>
+    </div>
+  </nav>
+
+  <!-- Modal -->
+  <div class="vm-overlay" id="vault-modal" onclick="if(event.target===this){document.getElementById('vault-modal').classList.remove('open')}">
+    <div class="vm-dialog">
+      <div class="vm-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div id="vm-dot" style="width:10px;height:10px;border-radius:50%;background:var(--ac)"></div>
+          <div>
+            <div id="vm-title" style="font-weight:700;font-size:14px"></div>
+            <div id="vm-sub" style="font-size:11px;color:var(--tx3)"></div>
+          </div>
+        </div>
+        <button onclick="document.getElementById('vault-modal').classList.remove('open')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:18px">&#215;</button>
+      </div>
+      <div class="vm-body" id="vm-body"></div>
+      <div class="vm-footer" id="vm-footer"></div>
+    </div>
+  </div>
+
+  <script>
+  function pageApp() {
+    return {
+      loading: true,
+      filter: "all",
+      weekOffset: 0,
+      recipes: [],
+      meals: [],
+      weekPlan: {},
+
+      slots: [
+        { key:"breakfast", label:"Breakfast" },
+        { key:"lunch", label:"Lunch" },
+        { key:"dinner", label:"Dinner" },
+      ],
+
+      async init() {
+        document.addEventListener("keydown", e => {
+          if (e.key === "Escape") document.getElementById("vault-modal").classList.remove("open");
+        });
+        await this.fetchData();
+      },
+
+      async fetchData() {
+        this.loading = true;
+        try {
+          const [recipesRes, mealsRes] = await Promise.all([
+            fetch("/api/recipes"),
+            fetch("/api/meals")
+          ]);
+          if (!recipesRes.ok) throw new Error("Recipes fetch failed: " + recipesRes.status);
+          if (!mealsRes.ok)   throw new Error("Meals fetch failed: "   + mealsRes.status);
+          const recipesData = await recipesRes.json();
+          const mealsData   = await mealsRes.json();
+          const recipeList = Array.isArray(recipesData) ? recipesData : (recipesData.data || recipesData.recipes || []);
+          this.recipes = recipeList.map(r => ({
+            ...r,
+            id:       r.Id         || r.id,
+            name:     r.Name       || r.name,
+            prepTime: r.PrepMinutes || r.prepTime || 0,
+            cookTime: r.CookMinutes || r.cookTime || 0,
+            servings: r.Servings   || r.servings  || 2,
+            tags:     Array.isArray(r.Tags) ? r.Tags : (Array.isArray(r.tags) ? r.tags : []),
+            rating:   r.Rating     || r.rating    || 0,
+            favorite: r.IsFavorite ?? r.favorite  ?? false,
+            desc:     r.Description|| r.desc      || "",
+            emoji:    r.emoji      || r.Emoji     || "️",
+          }));
+          const mealList = Array.isArray(mealsData) ? mealsData : (mealsData.data || mealsData.meals || []);
+          this.meals = mealList;
+          var newPlan = {};
+          mealList.forEach(m => {
+            var date = m.Date || m.date || "";
+            var slot = (m.Slot || m.slot || "").toLowerCase();
+            var rid  = m.RecipeId || m.recipeId || null;
+            if (date && slot) {
+              if (!newPlan[date]) newPlan[date] = { breakfast: null, lunch: null, dinner: null };
+              newPlan[date][slot] = rid;
+            }
+          });
+          this.weekPlan = newPlan;
+        } catch (err) {
+          console.error("Error fetching meal data:", err);
+          this.recipes = []; this.weekPlan = {};
+        } finally { this.loading = false; }
+      },
+
+      get days() {
+        var now = new Date();
+        var day = now.getDay();
+        var mondayOffset = day === 0 ? -6 : 1 - day;
+        var monday = new Date(now);
+        monday.setDate(now.getDate() + mondayOffset + this.weekOffset * 7);
+        monday.setHours(0,0,0,0);
+        var shorts = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        return shorts.map((short, i) => {
+          var d = new Date(monday); d.setDate(monday.getDate() + i);
+          var iso = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+          return { key: iso, short: short, date: (d.getMonth()+1) + "/" + d.getDate() };
+        });
+      },
+
+      get weekLabel() {
+        var days = this.days;
+        if (\!days.length) return "";
+        var start = new Date(days[0].key);
+        var end   = new Date(days[6].key);
+        var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        return months[start.getMonth()] + " " + start.getDate() + " – " + end.getDate() + ", " + end.getFullYear();
+      },
+
+      get filteredMeals() {
+        var usedIds = new Set();
+        Object.values(this.weekPlan).forEach(day => {
+          if (day.breakfast) usedIds.add(day.breakfast);
+          if (day.lunch)     usedIds.add(day.lunch);
+          if (day.dinner)    usedIds.add(day.dinner);
+        });
+        return this.recipes.filter(m => {
+          if (this.filter === "favorites") return m.favorite;
+          if (this.filter === "quick")     return m.prepTime < 30;
+          if (this.filter === "week")      return usedIds.has(m.id);
+          return true;
+        });
+      },
+
+      getMeal(dateKey, slotKey) {
+        var plan = this.weekPlan[dateKey];
+        if (\!plan) return null;
+        var id = plan[slotKey];
+        if (\!id) return null;
+        return this.recipes.find(r => r.id === id) || null;
+      },
+
+      tagClass(tag) {
+        var map = { "Quick":"quick", "Veggie":"veggie", "High-protein":"highprot", "Comfort":"comfort", "Healthy":"healthy" };
+        return map[tag] || "";
+      },
+
+      prevWeek() { this.weekOffset--; this.fetchData(); },
+      nextWeek() { this.weekOffset++; this.fetchData(); },
+
+      async clearWeek() {
+        var days = this.days;
+        try {
+          var deletePromises = [];
+          this.meals.forEach(m => {
+            var date = m.Date || m.date || "";
+            if (days.some(d => d.key === date)) {
+              var id = m.Id || m.id;
+              if (id) deletePromises.push(fetch("/api/meals/" + id, { method: "DELETE" }));
+            }
+          });
+          await Promise.all(deletePromises); await this.fetchData();
+        } catch (err) {
+          console.error("Error clearing week:", err);
+          var newPlan = Object.assign({}, this.weekPlan);
+          days.forEach(d => { newPlan[d.key] = { breakfast:null, lunch:null, dinner:null }; });
+          this.weekPlan = newPlan;
+        }
+      },
+
+      async setMealSlot(date, slot, recipeId) {
+        try {
+          const res = await fetch("/api/meals", {
+            method: "PUT", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ date: date, slot: slot, recipeId: recipeId })
+          });
+          if (\!res.ok) throw new Error("Failed to set meal slot: " + res.status);
+          await this.fetchData();
+        } catch (err) {
+          console.error("Error setting meal slot:", err);
+          var newPlan = Object.assign({}, this.weekPlan);
+          if (\!newPlan[date]) newPlan[date] = { breakfast:null, lunch:null, dinner:null };
+          newPlan[date] = Object.assign({}, newPlan[date], { [slot]: recipeId });
+          this.weekPlan = newPlan;
+        }
+      },
+
+      async clearSlot(date, slot) {
+        var mealEntry = this.meals.find(m => {
+          var d = m.Date || m.date || "";
+          var s = (m.Slot || m.slot || "").toLowerCase();
+          return d === date && s === slot;
+        });
+        if (\!mealEntry) {
+          var newPlan = Object.assign({}, this.weekPlan);
+          if (newPlan[date]) newPlan[date] = Object.assign({}, newPlan[date], { [slot]: null });
+          this.weekPlan = newPlan; return;
+        }
+        var id = mealEntry.Id || mealEntry.id;
+        try {
+          const res = await fetch("/api/meals/" + id, { method: "DELETE" });
+          if (\!res.ok) throw new Error("Failed to clear slot: " + res.status);
+          await this.fetchData();
+        } catch (err) { console.error("Error clearing slot:", err); }
+      },
+
+      async saveRecipe(formData) {
+        try {
+          const res = await fetch("/api/recipes", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+          });
+          if (\!res.ok) throw new Error("Failed to save recipe: " + res.status);
+          await this.fetchData(); this.closeModal();
+        } catch (err) { console.error("Error saving recipe:", err); }
+      },
+
+      async toggleFavorite(id) {
+        try {
+          const res = await fetch("/api/recipes/" + id + "/favorite", { method: "PATCH" });
+          if (\!res.ok) throw new Error("Failed to toggle favorite: " + res.status);
+          await this.fetchData();
+        } catch (err) {
+          console.error("Error toggling favorite:", err);
+          var idx = this.recipes.findIndex(r => r.id === id);
+          if (idx \!== -1) {
+            var updated = Object.assign({}, this.recipes[idx], { favorite: \!this.recipes[idx].favorite });
+            this.recipes = [...this.recipes.slice(0,idx), updated, ...this.recipes.slice(idx+1)];
+          }
+        }
+      },
+
+      async deleteRecipe(id) {
+        if (\!confirm("Delete this recipe?")) return;
+        try {
+          const res = await fetch("/api/recipes/" + id, { method: "DELETE" });
+          if (\!res.ok) throw new Error("Failed to delete recipe: " + res.status);
+          await this.fetchData(); this.closeModal();
+        } catch (err) { console.error("Error deleting recipe:", err); }
+      },
+
+      openModal(cfg) {
+        document.getElementById("vm-dot").style.background = cfg.color || "var(--ac)";
+        document.getElementById("vm-title").textContent = cfg.title || "";
+        document.getElementById("vm-sub").textContent = cfg.sub || "";
+        document.getElementById("vm-body").innerHTML = cfg.body || "";
+        document.getElementById("vm-footer").innerHTML = cfg.footer || "";
+        document.getElementById("vault-modal").classList.add("open");
+      },
+      closeModal() { document.getElementById("vault-modal").classList.remove("open"); },
+
+      openMealModal(meal) {
+        var tags = (meal.tags||[]).map(t => "<span class=\"vm-tag\" style=\"background:var(--bg3);color:var(--tx2);margin-right:3px\">" + t + "</span>").join("");
+        var stars = "★".repeat(meal.rating) + "☆".repeat(Math.max(0, 5 - meal.rating));
+        var body = "<div style=\"text-align:center;font-size:42px;margin-bottom:10px\">" + (meal.emoji||"️") + "</div>"
+          + "<div style=\"margin-bottom:10px\">" + tags + "</div>"
+          + "<div class=\"vm-row\" style=\"margin-bottom:14px\">"
+          + "<div class=\"vm-col\"><div class=\"vm-label\">Prep</div><div class=\"vm-value\">" + meal.prepTime + " min</div></div>"
+          + "<div class=\"vm-col\"><div class=\"vm-label\">Cook</div><div class=\"vm-value\">" + (meal.cookTime||0) + " min</div></div>"
+          + "<div class=\"vm-col\"><div class=\"vm-label\">Rating</div><div class=\"vm-value\" style=\"color:var(--wn)\">" + stars + "</div></div>"
+          + "<div class=\"vm-col\"><div class=\"vm-label\">Fav</div><div class=\"vm-value\">" + (meal.favorite ? "♥ Yes" : "♡ No") + "</div></div>"
+          + "</div>"
+          + "<div class=\"vm-divider\"></div>"
+          + "<div class=\"vm-label\">Description</div>"
+          + "<div class=\"vm-value\" style=\"margin-bottom:12px;line-height:1.5\">" + (meal.desc||"No description.") + "</div>";
+        var mid = meal.id;
+        var footer = "<button class=\"vm-btn danger\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;deleteRecipe(" + mid + ")&quot;)\">Delete</button>"
+          + "<button class=\"vm-btn\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;toggleFavorite(" + mid + ")&quot;)\">Toggle Fav</button>"
+          + "<button class=\"vm-btn\" onclick=\"document.getElementById(&quot;vault-modal&quot;).classList.remove(&quot;open&quot;)\">Close</button>";
+        this.openModal({ title: meal.name, sub: (meal.tags||[]).join(" · "), color: "var(--ac)", body: body, footer: footer });
+      },
+
+      openSlotModal(dateKey, slotKey) {
+        var self = this;
+        var slotLabels = { breakfast:"Breakfast", lunch:"Lunch", dinner:"Dinner" };
+        var current = (this.weekPlan[dateKey] || {})[slotKey];
+        var rows = this.recipes.map(m => {
+          var sel = current === m.id ? " style=\"background:var(--acbg)\"" : "";
+          return "<div class=\"slot-meal-row\"" + sel + " onclick=\"window._slotPick(" + m.id + ")\">"
+            + "<div class=\"slot-meal-row-emoji\">" + (m.emoji||"️") + "</div>"
+            + "<div class=\"slot-meal-info\"><div class=\"slot-meal-name\">" + m.name + "</div>"
+            + "<div class=\"slot-meal-tags\">" + (m.tags||[]).join(" · ") + "</div></div>"
+            + "<div class=\"slot-meal-prep\">" + m.prepTime + "min</div></div>";
+        }).join("");
+        window._slotPick = function(id) {
+          self.setMealSlot(dateKey, slotKey, id);
+          self.closeModal();
+        };
+        var footer = "<button class=\"vm-btn danger\" onclick=\"window._slotPick(null)\">Clear Slot</button>"
+          + "<button class=\"vm-btn\" onclick=\"document.getElementById(&quot;vault-modal&quot;).classList.remove(&quot;open&quot;)\">Close</button>";
+        this.openModal({ title: slotLabels[slotKey] + " – " + dateKey, sub: "Choose a meal", color: "var(--pu)", body: rows, footer: footer });
+      },
+    }
+  }
+  </script>
+  <script defer src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+</body>
+</html>

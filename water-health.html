@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault &#8212; Water &amp; Health</title>
+<link rel="stylesheet" href="vault-core.css">
+<link rel="stylesheet" href="vault-modal.css">
+<link rel="stylesheet" href="vault-gamification.css">
+<link rel="stylesheet" href="vault-mobile.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={corePlugins:{preflight:false}}</script>
+<style>
+.lnav{width:180px;min-width:180px;flex-shrink:0;padding:14px;border-right:1px solid var(--bd);overflow-y:auto;height:100%}
+.lnav-block{margin-bottom:14px}
+.main-content{flex:1;padding:16px 20px;overflow-y:auto;min-width:0;height:100%;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent}
+.main-content::-webkit-scrollbar{width:4px}
+.main-content::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.page-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:7px}
+.page-sub{font-size:11px;color:var(--tx3);margin-top:2px}
+.page-actions{display:flex;gap:8px}
+.gm-sw-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+/* Water ring */
+.water-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px}
+.ring-center{font-size:22px;font-weight:700;fill:var(--tx)}
+.ring-sub{font-size:10px;fill:var(--tx3)}
+/* Glass icons */
+.glass-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 20px 16px}
+.glass-icon{width:24px;height:32px;border-radius:3px 3px 5px 5px;border:2px solid var(--bd);background:var(--bg3);position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.glass-icon.filled{border-color:var(--inf);background:var(--infbg)}
+.glass-icon.filled::after{content:'';position:absolute;bottom:0;left:0;right:0;height:65%;background:var(--inf);opacity:.6;border-radius:0 0 3px 3px}
+.glass-icon:hover{border-color:var(--inftx)}
+/* Quick-add buttons */
+.qadd-row{display:flex;gap:10px;justify-content:center;padding-bottom:16px}
+.qadd-btn{padding:8px 20px;border-radius:20px;border:1.5px solid var(--inf);background:var(--infbg);color:var(--inftx);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.qadd-btn:hover{background:var(--inf);color:#fff}
+/* Mini bar chart */
+.mini-bar-chart{display:flex;align-items:flex-end;gap:5px;height:48px;padding:0 20px 12px}
+.mini-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.mini-bar{width:100%;border-radius:3px 3px 0 0;background:var(--inf);opacity:.5;min-height:4px;transition:height .3s}
+.mini-bar.today{opacity:1}
+.mini-bar-lbl{font-size:8px;color:var(--tx3)}
+/* Metric cards */
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.metric-card{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s}
+.metric-card:hover{border-color:var(--tx3)}
+.metric-val{font-size:22px;font-weight:700;margin:4px 0 2px}
+.metric-lbl{font-size:10px;color:var(--tx3)}
+.metric-trend{font-size:10px;display:flex;align-items:center;gap:3px;margin-top:4px}
+.trend-up{color:var(--actx)}
+.trend-dn{color:var(--inftx)}
+.trend-neutral{color:var(--tx3)}
+/* Sparkline */
+.spark{height:28px;width:80px;display:block;margin-top:6px}
+/* Week log table */
+.wlog-table{width:100%;border-collapse:collapse;font-size:11px}
+.wlog-table th{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);padding:6px 10px;text-align:left;border-bottom:1px solid var(--bd);font-weight:600}
+.wlog-table td{padding:8px 10px;border-bottom:1px solid var(--bd);color:var(--tx2)}
+.wlog-table tr:last-child td{border-bottom:none}
+.wlog-table tr:hover td{background:var(--bg2);color:var(--tx);cursor:pointer}
+.wlog-today td{color:var(--tx)}
+.wlog-null{color:var(--tx3)!important;font-style:italic}
+.water-ok{color:var(--actx)}
+.water-low{color:var(--wntx)}
+.sec-card{background:var(--bg);border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.sec-card-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);padding:12px 16px 10px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--bd)}
+.sec-card-hdr svg{width:13px;height:13px;opacity:.7}
+[x-cloak]{display:none!important}
+@media(max-width:700px){
+  .metric-grid{grid-template-columns:repeat(2,1fr)}
+  .lnav{display:none!important}
+}
+</style>
+</head>
+<body x-data="pageApp()" x-cloak>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title">Vault</div>
+  <div class="topbar-right">
+    <a href="index.html" class="topbar-user" style="text-decoration:none">
+      <div class="gm-level-badge sm">8</div>
+      <div class="topbar-av" style="background:var(--ac)">J</div>
+      Jos&#233;
+    </a>
+    <button class="topbar-cog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="17" height="17"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="lnav">
+    <div class="lnav-block">
+      <a href="index.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="habits.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Habits</a>
+      <a href="water-health.html" class="lnav-item active" style="color:var(--actx)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>Health</a>
+      <a href="maintenance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
+      <a href="tasks.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Tasks</a>
+      <a href="projects.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Projects</a>
+      <a href="vault_calendar.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+      <a href="vault_performance.html" class="lnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="15" height="15"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>Performance</a>
+    </div>
+    <div class="gm-sidebar-widget">
+      <div class="gm-sw-header">
+        <div class="gm-level-badge">8</div>
+        <div>
+          <div style="font-size:11px;font-weight:600">Level 8 &#183; Consistent</div>
+          <div style="font-size:9px;color:var(--tx3)">2,340 / 3,000 XP</div>
+        </div>
+      </div>
+      <div class="gm-xp-bar"><div class="gm-xp-fill" style="width:78%"></div></div>
+      <div style="font-size:9px;color:var(--tx3);margin-top:4px">660 XP to Level 9</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="16" height="16"><path d="M12 2l-5.5 9.5A6.5 6.5 0 0 0 12 23a6.5 6.5 0 0 0 5.5-11.5L12 2z"/></svg>
+          Water &amp; Health
+        </h1>
+        <div class="page-sub">Hydration and body metrics &#183; Apr 7, 2026</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn-secondary" style="font-size:11px;padding:6px 14px" @click="openMetricModal('weight')">+ Log Metrics</button>
+      </div>
+    </div>
+
+    <!-- WATER TRACKING -->
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l-5.5 9.5A6.5 6.5 0 0 0 12 23a6.5 6.5 0 0 0 5.5-11.5L12 2z"/></svg>
+        Water Intake &#183; Today
+      </div>
+
+      <!-- Ring + quick-add -->
+      <div class="water-ring-wrap">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <!-- track -->
+          <circle cx="70" cy="70" r="54" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+          <!-- fill: circumference = 2*PI*54 ≈ 339.3 -->
+          <circle cx="70" cy="70" r="54" fill="none" stroke="var(--inf)" stroke-width="10"
+            stroke-linecap="round"
+            stroke-dasharray="339.3"
+            :stroke-dashoffset="339.3 - (water.today / water.goal) * 339.3"
+            transform="rotate(-90 70 70)"
+            style="transition:stroke-dashoffset .4s ease"/>
+          <text x="70" y="65" text-anchor="middle" class="ring-center" style="font-size:22px;font-weight:700;fill:var(--tx);font-family:'Segoe UI',sans-serif" x-text="Math.round(water.today/water.goal*100)+'%'"></text>
+          <text x="70" y="80" text-anchor="middle" style="font-size:10px;fill:var(--tx3);font-family:'Segoe UI',sans-serif" :x="70" x-text="water.today+'ml / '+water.goal+'ml'"></text>
+          <text x="70" y="93" text-anchor="middle" style="font-size:9px;fill:var(--tx3);font-family:'Segoe UI',sans-serif">daily goal</text>
+        </svg>
+        <div class="qadd-row">
+          <button class="qadd-btn" @click="addWater(250)">+250ml</button>
+          <button class="qadd-btn" @click="addWater(500)">+500ml</button>
+        </div>
+      </div>
+
+      <!-- 8 glasses -->
+      <div class="glass-row">
+        <template x-for="i in 8" :key="i">
+          <div class="glass-icon" :class="i <= water.glasses ? 'filled' : ''" @click="addWater(i <= water.glasses ? 0 : 250)" :title="i*250+'ml'"></div>
+        </template>
+        <div style="width:100%;text-align:center;font-size:10px;color:var(--tx3);margin-top:4px">
+          <span x-text="water.glasses"></span> / <span x-text="water.totalGlasses"></span> glasses &#183; 250ml each
+        </div>
+      </div>
+
+      <!-- 7-day mini bar chart -->
+      <div style="padding:0 16px 4px">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);margin-bottom:6px;font-weight:600">Last 7 days</div>
+      </div>
+      <div class="mini-bar-chart">
+        <template x-for="(day, i) in weekLog" :key="i">
+          <div class="mini-bar-wrap">
+            <div class="mini-bar" :class="i===6?'today':''" :style="{height: Math.round((day.water/2200)*44)+'px', opacity: i===6 ? 1 : (day.water >= water.goal ? 0.75 : 0.4)}"></div>
+            <div class="mini-bar-lbl" x-text="day.date.replace('Apr ','')"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- HEALTH METRICS -->
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Health Metrics
+      </div>
+      <div class="metric-grid" style="padding:14px 14px 10px">
+
+        <!-- Weight -->
+        <div class="metric-card" @click="openMetricModal('weight')">
+          <div class="metric-lbl">Weight</div>
+          <div class="metric-val" style="color:var(--tx)">78.2 <span style="font-size:12px;font-weight:400;color:var(--tx3)">kg</span></div>
+          <div class="metric-trend trend-dn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="18 15 12 9 6 15"/></svg>
+            &#8722;0.3 vs last week
+          </div>
+          <svg class="spark" viewBox="0 0 80 28" preserveAspectRatio="none">
+            <polyline points="0,22 13,18 26,18 39,15 52,13 65,15 80,13" fill="none" stroke="var(--inf)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- BMI -->
+        <div class="metric-card" @click="openMetricModal('bmi')">
+          <div class="metric-lbl">BMI</div>
+          <div class="metric-val" style="color:var(--actx)">24.1</div>
+          <div class="metric-trend trend-neutral" style="color:var(--actx)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Normal range
+          </div>
+          <svg class="spark" viewBox="0 0 80 28" preserveAspectRatio="none">
+            <polyline points="0,16 13,14 26,14 39,13 52,12 65,13 80,12" fill="none" stroke="var(--ac)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- Resting HR -->
+        <div class="metric-card" @click="openMetricModal('hr')">
+          <div class="metric-lbl">Resting HR</div>
+          <div class="metric-val" style="color:var(--tx)">62 <span style="font-size:12px;font-weight:400;color:var(--tx3)">bpm</span></div>
+          <div class="metric-trend trend-dn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="18 15 12 9 6 15"/></svg>
+            &#8722;2 vs last week
+          </div>
+          <svg class="spark" viewBox="0 0 80 28" preserveAspectRatio="none">
+            <polyline points="0,8 13,10 26,6 39,12 52,16 65,12 80,12" fill="none" stroke="var(--dn)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- Sleep -->
+        <div class="metric-card" @click="openMetricModal('sleep')">
+          <div class="metric-lbl">Sleep Avg</div>
+          <div class="metric-val" style="color:var(--tx)">7.2 <span style="font-size:12px;font-weight:400;color:var(--tx3)">hrs</span></div>
+          <div class="metric-trend trend-up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="18 9 12 15 6 9"/></svg>
+            +0.3 vs last week
+          </div>
+          <svg class="spark" viewBox="0 0 80 28" preserveAspectRatio="none">
+            <polyline points="0,22 13,14 26,6 39,14 52,6 65,14 80,10" fill="none" stroke="var(--pu)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- WEEKLY LOG TABLE -->
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Weekly Log
+      </div>
+      <div style="overflow-x:auto">
+        <table class="wlog-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Water</th>
+              <th>Weight</th>
+              <th>HR</th>
+              <th>Sleep</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, i) in weekLog" :key="i">
+              <tr :class="i===6?'wlog-today':''" @click="openDayModal(row)" style="cursor:pointer">
+                <td x-text="row.date" style="font-weight:600;color:var(--tx)"></td>
+                <td :class="row.water >= water.goal ? 'water-ok' : 'water-low'" x-text="row.water+'ml'"></td>
+                <td x-text="row.weight ? row.weight+'kg' : '—'" :class="!row.weight?'wlog-null':''"></td>
+                <td x-text="row.hr ? row.hr+' bpm' : '—'" :class="!row.hr?'wlog-null':''"></td>
+                <td x-text="row.sleep ? row.sleep+'h' : '—'" :class="!row.sleep?'wlog-null':''"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <div class="bnav-inner">
+    <a href="index.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="habits.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Habits</span>
+    </a>
+    <a href="tasks.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>Tasks</span>
+    </a>
+    <a href="maintenance.html" class="bnav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span>Maint.</span>
+    </a>
+    <div class="bnav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      <span>More</span>
+    </div>
+  </div>
+</nav>
+
+<!-- MODAL -->
+<div class="vm-overlay" :class="{open: modal.open}" @click.self="closeModal()">
+  <div class="vm-dialog">
+    <div class="vm-header">
+      <div class="vm-hdot" :style="{background: modal.color}"></div>
+      <div class="vm-hgroup">
+        <div class="vm-htitle" x-text="modal.title"></div>
+        <div class="vm-hsub" x-text="modal.sub"></div>
+      </div>
+      <button class="vm-close" @click="closeModal()">&#10005;</button>
+    </div>
+    <div class="vm-body" x-html="modal.body"></div>
+    <div class="vm-footer" x-html="modal.footer"></div>
+  </div>
+</div>
+
+<script>
+function pageApp() {
+  return {
+    loading: true,
+    modal: { open: false, title: "", sub: "", color: "var(--inf)", body: "", footer: "" },
+    water: { today: 0, goal: 2000, glasses: 0, totalGlasses: 8, streak: 0 },
+    waterPct: 0,
+    weightHistory: [],
+    hrHistory: [],
+    sleepHistory: [],
+    weekLog: [],
+
+    async init() {
+      document.addEventListener("keydown", e => { if (e.key === "Escape") this.closeModal(); });
+      await this.fetchData();
+    },
+
+    async fetchData() {
+      this.loading = true;
+      try {
+        const [waterRes, weightRes, sleepRes, hrRes, summaryRes] = await Promise.all([
+          fetch("/api/health?type=water&days=7"),
+          fetch("/api/health?type=weight&days=7"),
+          fetch("/api/health?type=sleep&days=7"),
+          fetch("/api/health?type=hr&days=7"),
+          fetch("/api/health/summary?type=water")
+        ]);
+        if (!waterRes.ok)   throw new Error("Water fetch failed: "   + waterRes.status);
+        if (!weightRes.ok)  throw new Error("Weight fetch failed: "  + weightRes.status);
+        if (!sleepRes.ok)   throw new Error("Sleep fetch failed: "   + sleepRes.status);
+        if (!hrRes.ok)      throw new Error("HR fetch failed: "      + hrRes.status);
+        if (!summaryRes.ok) throw new Error("Summary fetch failed: " + summaryRes.status);
+        const waterData  = await waterRes.json();
+        const weightData = await weightRes.json();
+        const sleepData  = await sleepRes.json();
+        const hrData     = await hrRes.json();
+        const summary    = await summaryRes.json();
+        this.water.today        = summary.TodayMl        ?? summary.todayMl        ?? 0;
+        this.water.goal         = summary.GoalMl         ?? summary.goalMl         ?? 2000;
+        this.water.glasses      = summary.GlassesDone    ?? summary.glassesDone    ?? 0;
+        this.water.totalGlasses = summary.TotalGlasses   ?? summary.totalGlasses   ?? 8;
+        this.water.streak       = summary.Streak         ?? summary.streak         ?? 0;
+        const pct = summary.Pct ?? summary.pct ?? 0;
+        this.waterPct = Math.min(Math.round(pct * 100) / 100, 100);
+        const toArr = d => Array.isArray(d) ? d : (d.data || d.entries || []);
+        const waterArr  = toArr(waterData);
+        const weightArr = toArr(weightData);
+        const sleepArr  = toArr(sleepData);
+        const hrArr     = toArr(hrData);
+        this.weightHistory = weightArr.map(e => e.Value ?? e.value ?? null);
+        this.hrHistory     = hrArr.map(e => e.Value    ?? e.value ?? null);
+        this.sleepHistory  = sleepArr.map(e => e.Value ?? e.value ?? null);
+        this.weekLog = waterArr.map((entry, i) => {
+          const date = entry.Date || entry.date || "";
+          const label = date ? new Date(date).toLocaleDateString("en-US", {month:"short", day:"numeric"}) : ("Day " + (i+1));
+          return {
+            date: label,
+            water:  entry.Value ?? entry.value ?? 0,
+            weight: weightArr[i] ? (weightArr[i].Value ?? weightArr[i].value ?? null) : null,
+            hr:     hrArr[i]     ? (hrArr[i].Value     ?? hrArr[i].value     ?? null) : null,
+            sleep:  sleepArr[i]  ? (sleepArr[i].Value  ?? sleepArr[i].value  ?? null) : null,
+          };
+        });
+      } catch (err) {
+        console.error("Error fetching health data:", err);
+      } finally { this.loading = false; }
+    },
+
+    async quickAddWater(ml) {
+      if (ml <= 0) return;
+      try {
+        const res = await fetch("/api/health/water/add", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ml: ml })
+        });
+        if (!res.ok) throw new Error("Failed to add water: " + res.status);
+        await this.fetchData();
+      } catch (err) {
+        console.error("Error adding water:", err);
+        this.water.today = Math.min(this.water.today + ml, 4000);
+        this.water.glasses = Math.min(Math.floor(this.water.today / 250), this.water.totalGlasses);
+        if (this.weekLog.length) this.weekLog[this.weekLog.length-1].water = this.water.today;
+        this.waterPct = Math.min(Math.round(this.water.today / this.water.goal * 100), 100);
+      }
+    },
+
+    addWater(ml) { return this.quickAddWater(ml); },
+
+    async logMetric(metricData) {
+      try {
+        const res = await fetch("/api/health", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(metricData)
+        });
+        if (!res.ok) throw new Error("Failed to log metric: " + res.status);
+        await this.fetchData(); this.closeModal();
+      } catch (err) { console.error("Error logging metric:", err); }
+    },
+
+    openModal({ title, sub, color, body, footer }) {
+      this.modal = { open: true, title, sub: sub || "", color: color || "var(--inf)", body, footer };
+    },
+    closeModal() { this.modal.open = false; },
+
+    openDayModal(day) {
+      const waterPct = Math.round(day.water / this.water.goal * 100);
+      const wc = day.water >= this.water.goal ? "var(--actx)" : "var(--wntx)";
+      this.openModal({
+        title: day.date, sub: "Daily health summary", color: "var(--inf)",
+        body: "<div class=\"vm-stat-grid\" style=\"margin-bottom:14px\">"
+          + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\" style=\"color:" + wc + "\">" + day.water + "ml</div><div class=\"vm-stat-lbl\">Water</div></div>"
+          + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\">" + (day.weight != null ? day.weight + "kg" : "—") + "</div><div class=\"vm-stat-lbl\">Weight</div></div>"
+          + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\">" + (day.hr != null ? day.hr + " bpm" : "—") + "</div><div class=\"vm-stat-lbl\">HR</div></div>"
+          + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\">" + (day.sleep != null ? day.sleep + "h" : "—") + "</div><div class=\"vm-stat-lbl\">Sleep</div></div>"
+          + "</div>",
+        footer: "<button class=\"vm-btn\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;closeModal()&quot;)\">Close</button>"
+      });
+    },
+
+    openMetricModal(metric) {
+      const meta = {
+        weight: { label:"Weight",    unit:"kg",  color:"var(--inf)", history: this.weightHistory, desc:"Body weight tracked daily." },
+        bmi:    { label:"BMI",        unit:"",    color:"var(--ac)",  history: [],                 desc:"BMI 18.5-24.9 is Normal." },
+        hr:     { label:"Resting HR", unit:"bpm", color:"var(--dn)", history: this.hrHistory,     desc:"Resting heart rate. Ideal: 60-70 bpm." },
+        sleep:  { label:"Sleep",      unit:"hrs", color:"var(--pu)", history: this.sleepHistory,  desc:"Average nightly sleep. Target: 7-9 hours." },
+      };
+      const m = meta[metric] || { label: metric, unit:"", color:"var(--inf)", history:[], desc:"" };
+      const rows = m.history.map((v,i) => {
+        var day = this.weekLog[i]; var label = day ? day.date : ("Day " + (i+1));
+        return "<div class=\"vm-task-link\"><div class=\"vm-task-dot\" style=\"background:" + m.color + "\"></div>"
+          + "<span style=\"flex:1\">" + label + "</span>"
+          + "<span style=\"font-weight:600;color:var(--tx)\">" + (v!=null?v+m.unit:"—") + "</span></div>";
+      }).join("");
+      this.openModal({
+        title: m.label, sub: "7-day trend", color: m.color,
+        body: "<div class=\"vm-section\"><div class=\"vm-label\">Description</div><div class=\"vm-value\" style=\"line-height:1.5\">" + m.desc + "</div></div>"
+          + "<div class=\"vm-divider\"></div>"
+          + "<div class=\"vm-section\"><div class=\"vm-label\">7-day log</div>" + rows + "</div>",
+        footer: "<button class=\"vm-btn primary\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;closeModal()&quot;)\">Log Now</button>"
+          + "<button class=\"vm-btn\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;closeModal()&quot;)\">Close</button>"
+      });
+    },
+  };
+}
+
+</script>
+<script defer src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+</body>
+</html>
