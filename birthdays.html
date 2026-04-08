@@ -152,7 +152,7 @@
           <div class="person-av" :style="'background:'+p.color" x-text="p.initial"></div>
           <div class="person-info">
             <div class="person-name" x-text="p.name + (p.note ? ' · ' + p.note : '')"></div>
-            <div class="person-date" x-text="formatDateFull(p.date) + (p.type==='birthday' ? ' · turns '+nextAge(p.date) : ' · '+yearsTogther(p.date)+' yrs')"></div>
+            <div class="person-date" x-text="formatDateFull(p.date) + (p.type==='birthday' ? ' · turns '+nextAge(p.date) : ' · '+yearsTogether(p.date)+' yrs')"></div>
           </div>
           <div class="person-right">
             <div class="days-badge" x-text="daysUntil(p.date)===0 ? 'Today!' : 'in '+daysUntil(p.date)+'d'"></div>
@@ -207,6 +207,9 @@
 </div>
 
 <script>
+function h(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 function pageApp() {
   return {
     loading: true,
@@ -383,9 +386,9 @@ function pageApp() {
         +"</div>"
         +"<div class=\"vm-row\">"
         +"<div class=\"vm-col\"><div class=\"vm-label\">Date</div><div class=\"vm-value\">"+this.formatDateFull(date)+"</div></div>"
-        +"<div class=\"vm-col\"><div class=\"vm-label\">Category</div><div class=\"vm-value\">"+cat+"</div></div>"
+        +"<div class=\"vm-col\"><div class=\"vm-label\">Category</div><div class=\"vm-value\">"+h(cat)+"</div></div>"
         +"</div>"
-        +(note ? "<div class=\"vm-divider\"></div><div class=\"vm-label\">Note</div><div class=\"vm-value\">"+note+"</div>" : "")
+        +(note ? "<div class=\"vm-divider\"></div><div class=\"vm-label\">Note</div><div class=\"vm-value\">"+h(note)+"</div>" : "")
         +(p.IsMilestone ? "<div class=\"vm-divider\"></div><div class=\"vm-value\" style=\"color:var(--wn)\">★ Milestone!</div>" : "");
       var footer =
         "<button class=\"vm-btn primary\" onclick=\"void(0)\">Set Reminder</button>"

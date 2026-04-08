@@ -107,10 +107,10 @@
             </div>
             <div class="assignee-av" :style="c.assignee==='Jos\u00e9'?'background:var(--ac)':'background:var(--pu)'" x-text="c.assignee==='Jos\u00e9'?'J':'A'"></div>
             <div class="chore-day" x-text="c.dueDay" style="font-size:10px;color:var(--tx3);min-width:36px;text-align:center"></div>
-            <button class="chore-check" :class="c.done?'checked':''" @click.stop="toggleDone(c)" title="Toggle done">
+            <button class="chore-check" :class="c.done?'checked':''" @click.stop="markDone(c.id || c.Id)" title="Toggle done">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
-            <button class="swap-btn" @click.stop="swapAssignee(c)">Swap</button>
+            <button class="swap-btn" @click.stop="swapChore(c.id || c.Id)">Swap</button>
           </div>
         </template>
         <div class="empty-msg" x-show="filtered.length===0">No chores in this category.</div>
@@ -154,6 +154,9 @@
   function closeModal() {
     document.getElementById('vm-overlay').classList.remove('open');
   }
+function h(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 function pageApp() {
     return {
       loading: true,
@@ -172,7 +175,8 @@ function pageApp() {
       async fetchData() {
         this.loading = true;
         try {
-          const res = await fetch("/api/chores");
+          const week = this._getISOWeek(this.weekOffset);
+          const res = await fetch(`/api/chores?week=${week}`);
           if (!res.ok) throw new Error("Failed to fetch chores: " + res.status);
           const data = await res.json();
           const list = Array.isArray(data) ? data : (data.data || data.chores || []);
@@ -215,7 +219,15 @@ function pageApp() {
         return this.chores;
       },
 
-      prevWeek() { this.weekOffset--; this.fetchData(); },
+      _getISOWeek(offset) {
+        const d = new Date();
+        d.setDate(d.getDate() + (offset * 7));
+        const jan4 = new Date(d.getFullYear(), 0, 4);
+        const weekNum = Math.ceil(((d - jan4) / 86400000 + jan4.getDay() + 1) / 7);
+        return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+      },
+
+            prevWeek() { this.weekOffset--; this.fetchData(); },
       nextWeek() { this.weekOffset++; this.fetchData(); },
 
       async markDone(id) {
@@ -275,16 +287,16 @@ function pageApp() {
             ? "<span class=\"vm-tag\" style=\"background:var(--dnbg);color:var(--dntx)\">Overdue</span>"
             : "<span class=\"vm-tag\" style=\"background:var(--bg3);color:var(--tx3)\">Pending</span>";
         var body = "<div class=\"vm-stat-grid\" style=\"margin-bottom:14px\">"
-          + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\" style=\"font-size:14px\">" + (chore.freq||"") + "</div><div class=\"vm-stat-lbl\">Frequency</div></div>"
+          + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\" style=\"font-size:14px\">" + h(chore.freq||"") + "</div><div class=\"vm-stat-lbl\">Frequency</div></div>"
           + "<div class=\"vm-stat-card\"><div class=\"vm-stat-num\" style=\"font-size:14px\">" + (chore.effort||1) + " pts</div><div class=\"vm-stat-lbl\">Effort</div></div>"
           + "</div>"
           + "<div class=\"vm-section\"><div class=\"vm-label\">Assigned to</div>"
           + "<div style=\"display:flex;align-items:center;gap:8px;margin-top:4px\">"
           + "<div style=\"width:28px;height:28px;border-radius:50%;background:" + avBg + ";display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700\">" + avLetter + "</div>"
-          + "<span class=\"vm-value\" style=\"font-weight:600\">" + (chore.assignee||"") + "</span></div></div>"
+          + "<span class=\"vm-value\" style=\"font-weight:600\">" + h(chore.assignee||"") + "</span></div></div>"
           + "<div class=\"vm-divider\"></div>"
           + "<div class=\"vm-section\"><div class=\"vm-label\">Status</div><div style=\"margin-top:4px\">" + doneBadge + "</div></div>"
-          + "<div class=\"vm-section\"><div class=\"vm-label\">Last Completed</div><div class=\"vm-value\">" + (chore.lastDone || "Unknown") + "</div></div>";
+          + "<div class=\"vm-section\"><div class=\"vm-label\">Last Completed</div><div class=\"vm-value\">" + h(chore.lastDone || "Unknown") + "</div></div>";
         var id = chore.id || chore.Id;
         var footer = "<button class=\"vm-btn primary\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;markDone(" + id + ")&quot;)\">" + (chore.done ? "Mark Undone" : "Mark Done") + "</button>"
           + "<button class=\"vm-btn\" onclick=\"Alpine.evaluate(document.querySelector(&quot;[x-data]&quot;), &quot;swapChore(" + id + ")&quot;)\">Swap</button>"

@@ -173,8 +173,7 @@ function pageApp() {
       var d = parts.length === 3 ? parseInt(parts[2], 10) : null;
       var h = null;
       if (ev.startTime && ev.startTime.includes(":")) h = parseInt(ev.startTime.split(":")[0], 10);
-      ev.day = d; ev.hour = h;
-      return ev;
+      return Object.assign({}, ev, { day: d, hour: h });
     },
     init: async function() {
       await this.fetchEvents();

@@ -30,7 +30,23 @@ public sealed class TemplateService(VaultDbContext db)
         var template = await db.Templates.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
         if (template is null) return new { error = "Template not found" };
 
-        var payload = JsonSerializer.Deserialize<JsonElement>(template.Payload);
+        if (string.IsNullOrWhiteSpace(template.Payload))
+            return new { error = "Template payload is empty" };
+
+        JsonElement payload;
+        try
+        {
+            payload = JsonSerializer.Deserialize<JsonElement>(template.Payload);
+        }
+        catch (JsonException ex)
+        {
+            return new { error = $"Template payload is invalid JSON: {ex.Message}" };
+        }
+        catch (ArgumentNullException ex)
+        {
+            return new { error = $"Template payload argument error: {ex.Message}" };
+        }
+
         var created = new List<object>();
 
         if (template.Category == "habits" && payload.TryGetProperty("habits", out var habitsEl))

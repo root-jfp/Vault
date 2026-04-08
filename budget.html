@@ -106,7 +106,7 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">&#128176; Budget</h1>
-          <div class="page-sub">Household spending &mdash; April 2026</div>
+          <div class="page-sub">Household spending &mdash; <span x-text="new Date().toLocaleDateString('en-US', {month:'long', year:'numeric'})"></span></div>
         </div>
         <div class="page-actions">
           <button class="btn-primary" @click="openAddExpenseModal()">+ Add Expense</button>
@@ -129,22 +129,22 @@
         <svg width="100" height="100" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="38" fill="none" stroke="var(--bg3)" stroke-width="10"/>
           <circle cx="50" cy="50" r="38" fill="none" stroke="var(--ac)" stroke-width="10"
-            stroke-dasharray="167 239" stroke-dashoffset="-60" stroke-linecap="round" transform="rotate(-90 50 50)"/>
-          <text x="50" y="46" text-anchor="middle" font-size="11" font-weight="700" fill="var(--tx)">70%</text>
+            :stroke-dasharray="(summary.totalBudget > 0 ? Math.min(summary.totalSpent / summary.totalBudget, 1) : 0) * 238.76 + ' 238.76'" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+          <text x="50" y="46" text-anchor="middle" font-size="11" font-weight="700" fill="var(--tx)" x-text="summary.totalBudget > 0 ? Math.round(summary.totalSpent / summary.totalBudget * 100) + '%' : '0%'">0%</text>
           <text x="50" y="57" text-anchor="middle" font-size="7" fill="var(--tx3)">used</text>
         </svg>
         <div style="flex:1;min-width:180px">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
             <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-size:18px;font-weight:700">&#8364;1,400</div>
+              <div style="font-size:18px;font-weight:700" x-text="'€' + (summary.totalSpent || 0)"></div>
               <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Spent</div>
             </div>
             <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-size:18px;font-weight:700">&#8364;2,000</div>
+              <div style="font-size:18px;font-weight:700" x-text="'€' + (summary.totalBudget || 0)"></div>
               <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Budget</div>
             </div>
             <div style="background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-size:18px;font-weight:700;color:var(--actx)">&#8364;600</div>
+              <div style="font-size:18px;font-weight:700;color:var(--actx)" x-text="'€' + (summary.totalRemaining || 0)"></div>
               <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Left</div>
             </div>
           </div>
@@ -228,7 +228,10 @@
   </div>
 
   <script>
-  function pageApp() {
+  function h(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function pageApp() {
     return {
       activeFilter: 'all',
       loading: true,
@@ -354,7 +357,7 @@
         const over   = cat.spent > cat.budget;
         const txRows = txs.map(t =>
           `<div style="display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--bd)">
-            <span style="color:var(--tx2)">${t.date} &middot; ${t.desc}</span>
+            <span style="color:var(--tx2)">${h(t.date)} &middot; ${h(t.desc)}</span>
             <span style="color:var(--tx)">\u20AC${t.amount.toFixed(2)}</span>
           </div>`
         ).join('');
@@ -383,7 +386,7 @@
           <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit Budget</button>
           <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Close</button>`;
 
-        this.openModal({ title: cat.name, sub: 'Category \u00b7 April 2026', color: cat.color, body, footer });
+        this.openModal({ title: cat.name, sub: 'Category · ' + new Date().toLocaleDateString('en-US', {month:'long', year:'numeric'}), color: cat.color, body, footer });
       },
 
       openTxModal(tx) {
@@ -396,11 +399,11 @@
             <div class="vm-row">
               <div class="vm-col">
                 <div class="vm-label">Category</div>
-                <div class="vm-value" style="color:${tx.catColor}">${tx.cat}</div>
+                <div class="vm-value" style="color:${tx.catColor}">${h(tx.cat)}</div>
               </div>
               <div class="vm-col">
                 <div class="vm-label">Date</div>
-                <div class="vm-value">${tx.date}</div>
+                <div class="vm-value">${h(tx.date)}</div>
               </div>
             </div>
           </div>
@@ -452,7 +455,7 @@
 
         const footer = `
           <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Cancel</button>
-          <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Save</button>`;
+          <button class="vm-btn primary" onclick="(function(){ var app=Alpine.evaluate(document.querySelector('[x-data]'), 'this'); var desc=document.getElementById('ae-desc').value; var amount=document.getElementById('ae-amount').value; var catName=document.getElementById('ae-cat').value; var date=document.getElementById('ae-date').value; var cat=app.categories.find(function(c){return c.name===catName;}); app.addTransaction(desc, amount, cat ? cat.id : null, date); })()">Save</button>`;
 
         this.openModal({ title: 'Add Expense', sub: 'New transaction', color: 'var(--ac)', body, footer });
       },
