@@ -59,6 +59,11 @@
       },
 
       async init() {
+        // vault-userdata.js global → localStorage → API
+        if (window.__vaultHabits && window.__vaultHabits.length) {
+          this.habits = window.__vaultHabits.map(h => this._mapHabit(h));
+          return;
+        }
         try {
           const stored = localStorage.getItem('vault_habits');
           if (stored) { this.habits = JSON.parse(stored).map(h => this._mapHabit(h)); return; }

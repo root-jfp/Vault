@@ -799,15 +799,19 @@ function pageApp() {
     // Lifecycle
     async init() {
       document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal(); });
-      // Load habits: localStorage → API
-      try {
-        const stored = localStorage.getItem('vault_habits');
-        if (stored) { this.habits = JSON.parse(stored); }
-      } catch (e) {}
+      // Load habits: vault-userdata.js global → localStorage → API
+      if (window.__vaultHabits && window.__vaultHabits.length) {
+        this.habits = window.__vaultHabits;
+      } else {
+        try {
+          const stored = localStorage.getItem('vault_habits');
+          if (stored) { this.habits = JSON.parse(stored); }
+        } catch (e) {}
+      }
       if (!this.habits.length) {
         try {
           const res = await fetch('/api/habits');
-          if (res.ok) { this.habits = await res.json(); localStorage.setItem('vault_habits', JSON.stringify(this.habits)); }
+          if (res.ok) { this.habits = await res.json(); }
         } catch (e) {}
       }
       try {
