@@ -9,6 +9,7 @@ public sealed class TaskItem
     public string? Description { get; set; }
     public required string Priority { get; set; }   // "high", "med", "low"
     public string? Project { get; set; }
+    public int? ProjectId { get; set; }
     public DateOnly? DueDate { get; set; }
     public int Position { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
@@ -17,4 +18,5 @@ public sealed class TaskItem
 
     public TaskColumn Column { get; init; } = null!;
     public UserProfile User { get; init; } = null!;
+    public Project? ProjectNav { get; init; }
 }
