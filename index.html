@@ -815,7 +815,10 @@
 <script>
 function pageApp() {
   return {
-    // UI state
+<script>
+function pageApp() {
+  return {
+    dashboardLoading: true,
     taskTab: 'all',
     calTab: 'week',
     configuratorOpen: false,
@@ -824,117 +827,338 @@ function pageApp() {
     habitToast: { show: false, name: '' },
     _toastTimer: null,
 
-    // Sample data
     habits: [],
-
     taskCols: [],
-
-    projects: [
-      { id:1, name:'FERRO', desc:'Fitness tracking system', color:'var(--ac)', pct:45, open:8, daysLeft:62 },
-      { id:2, name:'Vault App', desc:'Household productivity app', color:'var(--inf)', pct:30, open:12, daysLeft:90 },
-      { id:3, name:'House Reno', desc:'Home renovation planning', color:'var(--wn)', pct:15, open:5, daysLeft:120 },
-    ],
-
-    calWeek: [
-      { date:6, isToday:true, events:[{title:'FERRO workout',color:'var(--inf)'},{title:'Car oil change!',color:'var(--dn)'}] },
-      { date:7, isToday:false, events:[{title:'Read 30min',color:'var(--wn)'}] },
-      { date:8, isToday:false, events:[] },
-      { date:9, isToday:false, events:[{title:'FERRO workout',color:'var(--inf)'}] },
-      { date:10, isToday:false, events:[{title:'Water plants',color:'var(--ac)'}] },
-      { date:11, isToday:false, events:[] },
-      { date:12, isToday:false, events:[{title:'FERRO workout',color:'var(--inf)'}] },
-    ],
+    projects: [],
+    calWeek: [],
+    calDayEvents: [],
+    birthdays: [],
+    budget: { totalSpent: 0, totalBudget: 0, totalRemaining: 0, pct: 0, categories: [] },
+    notes: [],
+    shopping: { itemCount: 0, doneCount: 0, items: [] },
+    meals: { breakfast: null, lunch: null, dinner: null },
+    pantry: { low: 0, expiring: 0, out: 0 },
+    chores: [],
+    meters: [],
+    gamification: { name: 'José', xp: 0, level: 1, xpToNext: 100, xpCurrent: 0, pct: 0, leaderboard: [] },
+    waterHealth: { todayMl: 0, goalMl: 2000, pct: 0, glassesDone: 0 },
+    performance: { productivityScore: 0 },
+    maintenance: [],
 
     weather: {
       temp: 18, cond: 'Partly cloudy', loc: 'Lisbon, PT',
       humidity: 65, wind: 12, windDir: 'NW',
       forecast: [
-        { day:'Tue', high:19, low:12, cond:'Sunny',        icon:'sun' },
-        { day:'Wed', high:16, low:10, cond:'Rainy',        icon:'rain' },
-        { day:'Thu', high:20, low:13, cond:'Partly cloudy',icon:'cloud-sun' },
-        { day:'Fri', high:22, low:14, cond:'Sunny',        icon:'sun' },
-        { day:'Sat', high:21, low:13, cond:'Windy',        icon:'wind' },
+        { day:'Tue', high:19, low:12, icon:'sun' },
+        { day:'Wed', high:16, low:10, icon:'rain' },
+        { day:'Thu', high:20, low:13, icon:'cloud-sun' },
+        { day:'Fri', high:22, low:14, icon:'sun' },
+        { day:'Sat', high:21, low:13, icon:'wind' },
       ]
     },
 
     widgets: {
-      streak: true,
-      daily: true,
-      tasks: true,
-      projects: true,
-      calendar: true,
-      weather: false,
-      'quick-actions': false,
-      'daily-agenda': false,
-      'streak-gamification': false,
-      'water-health': false,
-      'fitness-weight': false,
-      birthdays: false,
-      budget: false,
-      notes: false,
-      shopping: false,
-      'meal-planner': false,
-      'inventory-pantry': false,
-      'chore-rotation': false,
+      streak: true, daily: true, tasks: true, projects: true, calendar: true,
+      weather: false, 'quick-actions': false, 'daily-agenda': false,
+      'streak-gamification': false, 'water-health': false, 'fitness-weight': false,
+      birthdays: false, budget: false, notes: false, shopping: false,
+      'meal-planner': false, 'inventory-pantry': false, 'chore-rotation': false,
       'utility-meters': false,
     },
 
     widgetList: [
-      { key:'streak', label:'Habit streak & goals' },
-      { key:'daily', label:'Daily habit tracking' },
-      { key:'tasks', label:'Tasks' },
-      { key:'projects', label:'Project manager' },
-      { key:'calendar', label:'Calendar' },
-      { key:'weather', label:'Weather' },
-      { key:'quick-actions', label:'Quick actions' },
-      { key:'daily-agenda', label:'Daily agenda' },
+      { key:'streak',              label:'Habit streak & goals' },
+      { key:'daily',               label:'Daily habit tracking' },
+      { key:'tasks',               label:'Tasks' },
+      { key:'projects',            label:'Project manager' },
+      { key:'calendar',            label:'Calendar' },
+      { key:'weather',             label:'Weather' },
+      { key:'quick-actions',       label:'Quick actions' },
+      { key:'daily-agenda',        label:'Daily agenda' },
       { key:'streak-gamification', label:'Streak & gamification' },
-      { key:'water-health', label:'Water & health' },
-      { key:'fitness-weight', label:'Fitness & weight' },
-      { key:'birthdays', label:'Birthdays' },
-      { key:'budget', label:'Budget' },
-      { key:'notes', label:'Notes' },
-      { key:'shopping', label:'Shopping list' },
-      { key:'meal-planner', label:'Meal planner' },
-      { key:'inventory-pantry', label:'Inventory & pantry' },
-      { key:'chore-rotation', label:'Chore rotation' },
-      { key:'utility-meters', label:'Utility meters' },
+      { key:'water-health',        label:'Water & health' },
+      { key:'fitness-weight',      label:'Fitness & weight' },
+      { key:'birthdays',           label:'Birthdays' },
+      { key:'budget',              label:'Budget' },
+      { key:'notes',               label:'Notes' },
+      { key:'shopping',            label:'Shopping list' },
+      { key:'meal-planner',        label:'Meal planner' },
+      { key:'inventory-pantry',    label:'Inventory & pantry' },
+      { key:'chore-rotation',      label:'Chore rotation' },
+      { key:'utility-meters',      label:'Utility meters' },
     ],
 
-    // Lifecycle
     async init() {
       document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal(); });
-      // Load local data first (for increment display units), then always overlay real values from API
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const dow = now.getDay();
+      const diffToMon = (dow === 0) ? -6 : 1 - dow;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() + diffToMon);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      const weekStartIso = weekStart.toISOString().split('T')[0];
+      const weekEndIso   = weekEnd.toISOString().split('T')[0];
       const local = window.__vaultHabits || [];
-      try {
-        const res = await fetch('/api/habits');
-        if (res.ok) {
-          const apiHabits = await res.json();
-          this.habits = apiHabits.map(h => {
-            const loc = local.find(l => l.id === h.id) || {};
-            return {
-              id: h.id, name: h.name, color: h.hex, type: h.type,
-              freq: h.freq, streak: h.streak, pct: h.pct, done: h.done,
-              qty: h.qty, target: h.target, unit: h.unit || '',
-              weekDone: h.weekDone, weekGoal: h.weekGoal,
-              increment: loc.increment || h.increment || 1,
-              daysOfWeek: h.daysOfWeek || '0,1,2,3,4,5,6',
-              hmView: 'week', justDone: false, canUndo: false,
-            };
-          });
-        }
-      } catch (e) {
-        // Offline fallback: use local data
-        if (local.length) this.habits = local;
+
+      const results = await Promise.allSettled([
+        /* 0  */ fetch('/api/habits').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 1  */ fetch('/api/tasks/columns').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 2  */ fetch('/api/projects').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 3  */ fetch('/api/calendar?from=' + today + '&to=' + today).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 4  */ fetch('/api/calendar?from=' + weekStartIso + '&to=' + weekEndIso).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 5  */ fetch('/api/birthdays/upcoming?days=30').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 6  */ fetch('/api/budget/summary').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 7  */ fetch('/api/notes').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 8  */ fetch('/api/shopping').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 9  */ fetch('/api/meals').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 10 */ fetch('/api/pantry').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 11 */ fetch('/api/chores').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 12 */ fetch('/api/meters').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 13 */ fetch('/api/gamification/leaderboard?period=week').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 14 */ fetch('/api/health/summary?type=water').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 15 */ fetch('/api/performance/summary?period=week').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        /* 16 */ fetch('/api/maintenance').then(r => r.ok ? r.json() : Promise.reject(r.status)),
+      ]);
+
+      // 0: Habits
+      if (results[0].status === 'fulfilled') {
+        const raw = results[0].value;
+        this.habits = Array.isArray(raw) ? raw.map(h => {
+          const loc = local.find(l => l.id === h.id) || {};
+          return {
+            id: h.id, name: h.name,
+            color: h.hex || h.color || 'var(--ac)', hex: h.hex || h.color || 'var(--ac)',
+            type: h.type || 'bool', freq: h.freq || '',
+            streak: h.streak || 0, pct: h.pct || 0, done: !!h.done,
+            qty: h.qty || 0, target: h.target || 1, unit: h.unit || '',
+            weekDone: h.weekDone || 0, weekGoal: h.weekGoal || 7,
+            increment: loc.increment || h.increment || 1,
+            daysOfWeek: h.daysOfWeek || '0,1,2,3,4,5,6',
+            hmView: 'week', justDone: false, canUndo: false,
+          };
+        }) : [];
+        try { localStorage.setItem('vault_habits', JSON.stringify(this.habits)); } catch(e) {}
+      } else {
+        if (local.length) this.habits = local.map(h => ({ ...h, justDone: false, canUndo: false }));
+        console.warn('[Vault] Habits API unavailable:', results[0].reason);
       }
-      try {
-        const res = await fetch('/api/tasks/columns');
-        if (res.ok) {
-          this.taskCols = await res.json();
+
+      // 1: Task columns
+      if (results[1].status === 'fulfilled') {
+        const raw = results[1].value;
+        this.taskCols = Array.isArray(raw) ? raw : [];
+      } else { console.warn('[Vault] Tasks API unavailable:', results[1].reason); }
+
+      // 2: Projects
+      if (results[2].status === 'fulfilled') {
+        const raw = results[2].value;
+        this.projects = Array.isArray(raw) ? raw.map(p => ({
+          id: p.id,
+          name: p.name || p.Name || '',
+          desc: p.description || p.Description || p.desc || '',
+          color: p.color || p.Color || 'var(--inf)',
+          pct: p.pct ?? p.Pct ?? 0,
+          open: p.open ?? p.openTaskCount ?? p.OpenTaskCount ?? 0,
+          daysLeft: p.daysLeft ?? p.DaysLeft ?? 0,
+        })) : [];
+      } else { console.warn('[Vault] Projects API unavailable:', results[2].reason); }
+
+      // 3: Calendar — daily agenda
+      if (results[3].status === 'fulfilled') {
+        const data = results[3].value;
+        const raw = Array.isArray(data) ? data : (data.events || data.items || []);
+        this.calDayEvents = raw.map(ev => ({
+          time:  ev.time  || ev.Time  || '',
+          title: ev.title || ev.Title || '',
+          meta:  ev.meta  || ev.Meta  || ev.type || ev.Type || '',
+          color: ev.color || ev.Color || 'var(--inf)',
+        }));
+      } else { console.warn('[Vault] Calendar (daily) API unavailable:', results[3].reason); }
+
+      // 4: Calendar — week view
+      if (results[4].status === 'fulfilled') {
+        const data = results[4].value;
+        const raw = Array.isArray(data) ? data : (data.events || data.items || []);
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(weekStart);
+          d.setDate(weekStart.getDate() + i);
+          const iso = d.toISOString().split('T')[0];
+          const evs = raw.filter(ev => (ev.date || ev.Date || '').startsWith(iso))
+                         .map(ev => ({ title: ev.title || ev.Title || '', color: ev.color || ev.Color || 'var(--inf)' }));
+          days.push({ date: d.getDate(), isoDate: iso, isToday: iso === today, events: evs });
         }
-      } catch (e) {
-        console.error('Failed to load tasks:', e);
+        this.calWeek = days;
+      } else {
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(weekStart);
+          d.setDate(weekStart.getDate() + i);
+          const iso = d.toISOString().split('T')[0];
+          days.push({ date: d.getDate(), isoDate: iso, isToday: iso === today, events: [] });
+        }
+        this.calWeek = days;
+        console.warn('[Vault] Calendar (week) API unavailable:', results[4].reason);
       }
+
+      // 5: Birthdays
+      if (results[5].status === 'fulfilled') {
+        const data = results[5].value;
+        const raw = Array.isArray(data) ? data : (data.birthdays || data.items || []);
+        this.birthdays = raw.slice(0, 3).map(b => ({
+          id: b.id,
+          name: b.name || b.Name || '',
+          date: b.date || b.Date || '',
+          daysUntil: b.daysUntil ?? b.DaysUntil ?? 0,
+          avatar: (b.name || b.Name || '?')[0].toUpperCase(),
+          avatarColor: b.avatarColor || b.color || 'var(--wn)',
+        }));
+      } else { console.warn('[Vault] Birthdays API unavailable:', results[5].reason); }
+
+      // 6: Budget
+      if (results[6].status === 'fulfilled') {
+        const d = results[6].value;
+        const spent     = d.totalSpent     ?? d.TotalSpent     ?? 0;
+        const budgetAmt = d.totalBudget    ?? d.TotalBudget    ?? 0;
+        const remaining = d.totalRemaining ?? d.TotalRemaining ?? (budgetAmt - spent);
+        const pct       = budgetAmt > 0 ? Math.round((spent / budgetAmt) * 100) : 0;
+        this.budget = {
+          totalSpent: spent, totalBudget: budgetAmt, totalRemaining: remaining,
+          pct: Math.min(pct, 100),
+          categories: Array.isArray(d.categories || d.Categories) ? (d.categories || d.Categories) : [],
+        };
+      } else { console.warn('[Vault] Budget API unavailable:', results[6].reason); }
+
+      // 7: Notes (pinned first, limit 4)
+      if (results[7].status === 'fulfilled') {
+        const data = results[7].value;
+        const raw = Array.isArray(data) ? data : (data.notes || data.items || []);
+        const sorted = [...raw].sort((a, b) => ((b.pinned || b.Pinned) ? 1 : 0) - ((a.pinned || a.Pinned) ? 1 : 0));
+        this.notes = sorted.slice(0, 4).map(n => ({
+          id: n.id,
+          title:   n.title   || n.Title   || '',
+          preview: n.preview || n.Preview || n.content || n.Content || '',
+          date:    n.date    || n.Date    || n.updatedAt || '',
+          pinned:  !!(n.pinned  || n.Pinned),
+          starred: !!(n.starred || n.Starred),
+        }));
+      } else { console.warn('[Vault] Notes API unavailable:', results[7].reason); }
+
+      // 8: Shopping
+      if (results[8].status === 'fulfilled') {
+        const data = results[8].value;
+        const raw = Array.isArray(data) ? data : (data.items || data.Items || []);
+        const doneCount = raw.filter(i => i.done || i.Done).length;
+        this.shopping = {
+          itemCount: raw.length, doneCount,
+          items: raw.map(i => ({
+            id: i.id, name: i.name || i.Name || '',
+            qty: i.qty || i.Qty || i.quantity || '',
+            done: !!(i.done || i.Done),
+            recurring: !!(i.recurring || i.Recurring),
+            category: i.category || i.Category || '',
+          })),
+        };
+      } else { console.warn('[Vault] Shopping API unavailable:', results[8].reason); }
+
+      // 9: Meals
+      if (results[9].status === 'fulfilled') {
+        const data = results[9].value;
+        if (Array.isArray(data)) {
+          const byType = {};
+          data.forEach(m => { byType[(m.type || m.Type || '').toLowerCase()] = m.name || m.Name || m.title || ''; });
+          this.meals = { breakfast: byType.breakfast || null, lunch: byType.lunch || null, dinner: byType.dinner || null };
+        } else {
+          this.meals = { breakfast: data.breakfast || data.Breakfast || null, lunch: data.lunch || data.Lunch || null, dinner: data.dinner || data.Dinner || null };
+        }
+      } else { console.warn('[Vault] Meals API unavailable:', results[9].reason); }
+
+      // 10: Pantry
+      if (results[10].status === 'fulfilled') {
+        const data = results[10].value;
+        if (Array.isArray(data)) {
+          this.pantry = {
+            low:      data.filter(i => (i.stock || i.Stock || '').toLowerCase() === 'low').length,
+            expiring: data.filter(i => i.expiringSoon || i.ExpiringSoon).length,
+            out:      data.filter(i => (i.stock || i.Stock || '').toLowerCase() === 'critical' || i.outOfStock || i.OutOfStock).length,
+          };
+        } else {
+          this.pantry = { low: data.low ?? data.Low ?? 0, expiring: data.expiring ?? data.Expiring ?? 0, out: data.out ?? data.Out ?? 0 };
+        }
+      } else { console.warn('[Vault] Pantry API unavailable:', results[10].reason); }
+
+      // 11: Chores
+      if (results[11].status === 'fulfilled') {
+        const data = results[11].value;
+        const raw = Array.isArray(data) ? data : (data.chores || data.items || []);
+        this.chores = raw.map(c => ({
+          id: c.id, name: c.name || c.Name || '',
+          assignee: c.assignee || c.Assignee || '',
+          done: !!(c.done || c.Done || c.status === 'done' || c.Status === 'done'),
+        }));
+      } else { console.warn('[Vault] Chores API unavailable:', results[11].reason); }
+
+      // 12: Utility meters (top 3)
+      if (results[12].status === 'fulfilled') {
+        const data = results[12].value;
+        const raw = Array.isArray(data) ? data : (data.meters || data.items || []);
+        this.meters = raw.slice(0, 3).map(m => ({
+          id: m.id, name: m.name || m.Name || '',
+          value: m.value ?? m.Value ?? m.latestReading ?? m.LatestReading ?? 0,
+          unit: m.unit || m.Unit || '',
+          trend: m.trend ?? m.Trend ?? 0,
+        }));
+      } else { console.warn('[Vault] Meters API unavailable:', results[12].reason); }
+
+      // 13: Gamification leaderboard
+      if (results[13].status === 'fulfilled') {
+        const data = results[13].value;
+        const entries = Array.isArray(data) ? data : (data.leaderboard || data.entries || []);
+        const jose = entries.find(e => (e.name || '').toLowerCase().includes('jos')) || entries[0] || {};
+        const xpCurrent = jose.xp ?? jose.Xp ?? 0;
+        const xpToNext  = jose.xpToNext ?? jose.XpToNext ?? 100;
+        const pct = xpToNext > 0 ? Math.round((xpCurrent / xpToNext) * 100) : 0;
+        this.gamification = {
+          name: jose.name || jose.Name || 'José',
+          xp: xpCurrent, level: jose.level || jose.Level || 1,
+          xpToNext, xpCurrent, pct: Math.min(pct, 100),
+          leaderboard: entries.map(e => ({ name: e.name || e.Name || '', xp: e.xp || e.Xp || 0, level: e.level || e.Level || 1 })),
+        };
+      } else { console.warn('[Vault] Gamification API unavailable:', results[13].reason); }
+
+      // 14: Water / health
+      if (results[14].status === 'fulfilled') {
+        const d = results[14].value;
+        const todayMl     = d.todayMl     ?? d.TodayMl     ?? 0;
+        const goalMl      = d.goalMl      ?? d.GoalMl      ?? 2000;
+        const glassesDone = d.glassesDone ?? d.GlassesDone ?? 0;
+        const pct = goalMl > 0 ? Math.round((todayMl / goalMl) * 100) : 0;
+        this.waterHealth = { todayMl, goalMl, pct: Math.min(pct, 100), glassesDone };
+      } else { console.warn('[Vault] Health API unavailable:', results[14].reason); }
+
+      // 15: Performance
+      if (results[15].status === 'fulfilled') {
+        const d = results[15].value;
+        this.performance = { productivityScore: d.productivityScore ?? d.ProductivityScore ?? d.score ?? d.Score ?? 0 };
+      } else { console.warn('[Vault] Performance API unavailable:', results[15].reason); }
+
+      // 16: Maintenance (next 5 due)
+      if (results[16].status === 'fulfilled') {
+        const data = results[16].value;
+        const raw = Array.isArray(data) ? data : (data.items || data.maintenance || []);
+        this.maintenance = raw.slice(0, 5).map(m => ({
+          id: m.id, name: m.name || m.Name || '',
+          nextDue: m.nextDue || m.NextDue || m.next_due || '',
+          overdue: !!(m.overdue || m.Overdue || m.isOverdue),
+          dueSoon: !!(m.dueSoon || m.DueSoon),
+          icon: m.icon || m.Icon || '',
+        }));
+      } else { console.warn('[Vault] Maintenance API unavailable:', results[16].reason); }
+
+      this.dashboardLoading = false;
     },
 
     // Modal core
