@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="vault-modal.css">
 <link rel="stylesheet" href="vault-gamification.css">
 <link rel="stylesheet" href="vault-mobile.css">
+<script src="vault-userdata.js" onerror="void(0)"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={corePlugins:{preflight:false}}</script>
 <style>
@@ -47,35 +48,27 @@
       filter: 'all',
       loading: false,
       error: null,
-      habits: [
-        { id:1, name:'Drink 2.5L Water',   type:'quantitative', freq:'Daily',      color:'#378ADD', streak:4,  done:false, weekDone:4, weekGoal:7, rate:65, todayAmt:1.2,  goal:2.5,  uom:'L',     hmView:'week' },
-        { id:2, name:'Morning Prayers',     type:'boolean',      freq:'Daily',      color:'#EF9F27', streak:12, done:true,  weekDone:6, weekGoal:7, rate:85, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
-        { id:3, name:'Workout',             type:'boolean',      freq:'Daily',      color:'#1D9E75', streak:5,  done:false, weekDone:3, weekGoal:5, rate:70, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
-        { id:4, name:'Study 1h',            type:'quantitative', freq:'Daily',      color:'#7F77DD', streak:8,  done:false, weekDone:5, weekGoal:7, rate:72, todayAmt:0,    goal:60,   uom:'min',   hmView:'week' },
-        { id:5, name:'Walk 6k Steps',       type:'quantitative', freq:'Daily',      color:'#5BC4C4', streak:3,  done:false, weekDone:3, weekGoal:7, rate:55, todayAmt:2400, goal:6000, uom:'steps', hmView:'week' },
-        { id:6, name:'Evening Prayers',     type:'boolean',      freq:'Daily',      color:'#C77DD3', streak:9,  done:false, weekDone:4, weekGoal:7, rate:78, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
-        { id:7, name:'Go to Bed Early',     type:'boolean',      freq:'Daily',      color:'#E07B54', streak:2,  done:false, weekDone:3, weekGoal:7, rate:48, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
-      ],
+      habits: [],
+
+      _mapHabit(h) {
+        return { ...h, type: h.type === 'quant' ? 'quantitative' : 'boolean', rate: h.pct, todayAmt: h.qty, goal: h.target, uom: h.unit, hmView: h.hmView || 'week' };
+      },
+      _saveHabits() {
+        const canonical = this.habits.map(h => ({ ...h, type: h.type === 'quantitative' ? 'quant' : 'bool', pct: h.rate, qty: h.todayAmt, target: h.goal, unit: h.uom }));
+        try { localStorage.setItem('vault_habits', JSON.stringify(canonical)); } catch(e) {}
+      },
 
       async init() {
+        try {
+          const stored = localStorage.getItem('vault_habits');
+          if (stored) { this.habits = JSON.parse(stored).map(h => this._mapHabit(h)); return; }
+        } catch (e) {}
         try {
           const res = await fetch('/api/habits');
           if (!res.ok) return;
           const data = await res.json();
-          if (data && data.length) {
-            this.habits = data.map(h => ({
-              ...h,
-              type: h.type === 'quant' ? 'quantitative' : 'boolean',
-              rate: h.pct,
-              todayAmt: h.qty,
-              goal: h.target,
-              uom: h.unit,
-              hmView: h.hmView || 'week',
-            }));
-          }
-        } catch (e) {
-          // keep sample data
-        }
+          if (data && data.length) { this.habits = data.map(h => this._mapHabit(h)); this._saveHabits(); }
+        } catch (e) {}
       },
 
       get view() {
@@ -113,19 +106,11 @@
           h.done = !h.done;
           if (h.done) { h.streak = (h.streak||0) + 1; h.weekDone = Math.min((h.weekDone||0)+1, h.weekGoal); }
           else { h.streak = Math.max((h.streak||1) - 1, 0); h.weekDone = Math.max((h.weekDone||1)-1, 0); }
+          this._saveHabits();
           try {
-            const res = await fetch(`/api/habits/${h.id}/toggle`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ amount: null }),
-            });
-            if (res.ok) {
-              const updated = await res.json();
-              h.streak = updated.streak;
-              h.rate = updated.pct;
-              h.weekDone = updated.weekDone;
-            }
-          } catch (e) { /* offline — local toggle kept */ }
+            const res = await fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:null}) });
+            if (res.ok) { const u = await res.json(); h.streak = u.streak; h.rate = u.pct; h.weekDone = u.weekDone; this._saveHabits(); }
+          } catch (e) { /* offline */ }
         }
       }
     }

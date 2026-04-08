@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="vault-gamification.css">
 <link rel="stylesheet" href="vault-mobile.css">
 <link rel="stylesheet" href="vault-widgets.css">
+<script src="vault-userdata.js" onerror="void(0)"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { corePlugins: { preflight: false } }</script>
 <style>
@@ -798,13 +799,16 @@ function pageApp() {
     // Lifecycle
     async init() {
       document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal(); });
+      // Load habits: localStorage → API
       try {
-        const res = await fetch('/api/habits');
-        if (res.ok) {
-          this.habits = await res.json();
-        }
-      } catch (e) {
-        console.error('Failed to load habits:', e);
+        const stored = localStorage.getItem('vault_habits');
+        if (stored) { this.habits = JSON.parse(stored); }
+      } catch (e) {}
+      if (!this.habits.length) {
+        try {
+          const res = await fetch('/api/habits');
+          if (res.ok) { this.habits = await res.json(); localStorage.setItem('vault_habits', JSON.stringify(this.habits)); }
+        } catch (e) {}
       }
       try {
         const res = await fetch('/api/tasks/columns');
@@ -831,49 +835,25 @@ function pageApp() {
       document.body.style.overflow = '';
     },
 
+    _saveHabits() { try { localStorage.setItem('vault_habits', JSON.stringify(this.habits)); } catch(e) {} },
+
     async toggleHabit(h) {
       h.done = !h.done;
+      if (h.done) h.streak = (h.streak||0) + 1; else h.streak = Math.max((h.streak||1)-1, 0);
+      this._saveHabits();
       try {
-        const res = await fetch(`/api/habits/${h.id}/toggle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: null }),
-        });
-        if (res.ok) {
-          const updated = await res.json();
-          h.streak = updated.streak;
-          h.pct = updated.pct;
-          h.done = updated.done;
-        } else {
-          h.done = !h.done;
-        }
-      } catch (e) {
-        h.done = !h.done;
-        console.error('Toggle error:', e);
-      }
+        const res = await fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:null}) });
+        if (res.ok) { const u = await res.json(); h.streak = u.streak; h.pct = u.pct; h.done = u.done; this._saveHabits(); }
+      } catch (e) { /* offline — local state kept */ }
     },
 
     async updateQty(h, delta) {
-      const oldQty = h.qty;
       h.qty = Math.max(0, +(h.qty + delta).toFixed(2));
+      this._saveHabits();
       try {
-        const res = await fetch(`/api/habits/${h.id}/toggle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: h.qty }),
-        });
-        if (res.ok) {
-          const updated = await res.json();
-          h.qty = updated.qty;
-          h.streak = updated.streak;
-          h.pct = updated.pct;
-        } else {
-          h.qty = oldQty;
-        }
-      } catch (e) {
-        h.qty = oldQty;
-        console.error('Update qty error:', e);
-      }
+        const res = await fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:h.qty}) });
+        if (res.ok) { const u = await res.json(); h.qty = u.qty; h.streak = u.streak; h.pct = u.pct; this._saveHabits(); }
+      } catch (e) { /* offline — local state kept */ }
     },
 
     _tx(str) {

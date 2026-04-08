@@ -1,0 +1,13 @@
+# Personal local data — never commit
+vault-userdata.js
+
+# Build artefacts
+bin/
+obj/
+
+# Temp / scratch files
+_*.txt
+_*.json
+_*.js
+_*.py
+_*.b64
