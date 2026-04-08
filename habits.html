@@ -45,29 +45,36 @@
   function pageApp() {
     return {
       filter: 'all',
-      habits: [],
-      loading: true,
+      loading: false,
       error: null,
+      habits: [
+        { id:1, name:'Drink 2.5L Water',   type:'quantitative', freq:'Daily',      color:'#378ADD', streak:4,  done:false, weekDone:4, weekGoal:7, rate:65, todayAmt:1.2,  goal:2.5,  uom:'L',     hmView:'week' },
+        { id:2, name:'Morning Prayers',     type:'boolean',      freq:'Daily',      color:'#EF9F27', streak:12, done:true,  weekDone:6, weekGoal:7, rate:85, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
+        { id:3, name:'Workout',             type:'boolean',      freq:'Daily',      color:'#1D9E75', streak:5,  done:false, weekDone:3, weekGoal:5, rate:70, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
+        { id:4, name:'Study 1h',            type:'quantitative', freq:'Daily',      color:'#7F77DD', streak:8,  done:false, weekDone:5, weekGoal:7, rate:72, todayAmt:0,    goal:60,   uom:'min',   hmView:'week' },
+        { id:5, name:'Walk 6k Steps',       type:'quantitative', freq:'Daily',      color:'#5BC4C4', streak:3,  done:false, weekDone:3, weekGoal:7, rate:55, todayAmt:2400, goal:6000, uom:'steps', hmView:'week' },
+        { id:6, name:'Evening Prayers',     type:'boolean',      freq:'Daily',      color:'#C77DD3', streak:9,  done:false, weekDone:4, weekGoal:7, rate:78, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
+        { id:7, name:'Go to Bed Early',     type:'boolean',      freq:'Daily',      color:'#E07B54', streak:2,  done:false, weekDone:3, weekGoal:7, rate:48, todayAmt:0,    goal:0,    uom:'',      hmView:'week' },
+      ],
 
       async init() {
         try {
           const res = await fetch('/api/habits');
-          if (!res.ok) throw new Error('Failed to load habits');
+          if (!res.ok) return;
           const data = await res.json();
-          this.habits = data.map(h => ({
-            ...h,
-            type: h.type === 'quant' ? 'quantitative' : 'boolean',
-            rate: h.pct,
-            todayAmt: h.qty,
-            goal: h.target,
-            uom: h.unit,
-            hmView: h.hmView || 'week',
-          }));
+          if (data && data.length) {
+            this.habits = data.map(h => ({
+              ...h,
+              type: h.type === 'quant' ? 'quantitative' : 'boolean',
+              rate: h.pct,
+              todayAmt: h.qty,
+              goal: h.target,
+              uom: h.unit,
+              hmView: h.hmView || 'week',
+            }));
+          }
         } catch (e) {
-          this.error = e.message;
-          console.error('Habit load error:', e);
-        } finally {
-          this.loading = false;
+          // keep sample data
         }
       },
 
@@ -104,6 +111,8 @@
       async toggleDone(h) {
         if (h.type === 'boolean') {
           h.done = !h.done;
+          if (h.done) { h.streak = (h.streak||0) + 1; h.weekDone = Math.min((h.weekDone||0)+1, h.weekGoal); }
+          else { h.streak = Math.max((h.streak||1) - 1, 0); h.weekDone = Math.max((h.weekDone||1)-1, 0); }
           try {
             const res = await fetch(`/api/habits/${h.id}/toggle`, {
               method: 'POST',
@@ -115,13 +124,8 @@
               h.streak = updated.streak;
               h.rate = updated.pct;
               h.weekDone = updated.weekDone;
-            } else {
-              h.done = !h.done;
             }
-          } catch (e) {
-            h.done = !h.done;
-            console.error('Toggle error:', e);
-          }
+          } catch (e) { /* offline — local toggle kept */ }
         }
       }
     }
