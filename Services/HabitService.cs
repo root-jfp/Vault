@@ -59,7 +59,8 @@ public sealed class HabitService(VaultDbContext db)
                 WeekGoal: h.WeeklyGoal,
                 Icon: h.Icon,
                 Notes: h.Notes,
-                HmView: "week"
+                HmView: "week",
+                DaysOfWeek: h.DaysOfWeek
             );
         }).ToList();
     }
@@ -84,7 +85,8 @@ public sealed class HabitService(VaultDbContext db)
             Increment: habit.Increment,
             StartDate: habit.StartDate?.ToString("yyyy-MM-dd"),
             WeeklyGoal: habit.WeeklyGoal,
-            Notes: habit.Notes
+            Notes: habit.Notes,
+            DaysOfWeek: habit.DaysOfWeek
         );
     }
 
@@ -111,6 +113,7 @@ public sealed class HabitService(VaultDbContext db)
             Increment = req.Increment ?? 1,
             Icon = req.Icon,
             Notes = req.Notes,
+            DaysOfWeek = req.DaysOfWeek ?? "0,1,2,3,4,5,6",
             StartDate = req.StartDate is not null && DateTime.TryParseExact(req.StartDate, "yyyy-MM-dd",
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.None, out var sd) ? sd : null,
@@ -145,6 +148,7 @@ public sealed class HabitService(VaultDbContext db)
         if (req.Increment is not null) habit.Increment = req.Increment.Value;
         if (req.WeeklyGoal is not null) habit.WeeklyGoal = req.WeeklyGoal.Value;
         if (req.Notes is not null) habit.Notes = req.Notes;
+        if (req.DaysOfWeek is not null) habit.DaysOfWeek = req.DaysOfWeek;
         if (req.StartDate is not null &&
             DateTime.TryParseExact(req.StartDate, "yyyy-MM-dd",
                 System.Globalization.CultureInfo.InvariantCulture,

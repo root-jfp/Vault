@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="vault-mobile.css">
 <link rel="stylesheet" href="vault-widgets.css">
 <script src="vault-userdata.js" onerror="void(0)"></script>
+<script>(function(){var s=localStorage.getItem('vault_habits');if(s){try{window.__vaultHabits=JSON.parse(s);}catch(e){}}})()</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { corePlugins: { preflight: false } }</script>
 <style>
@@ -49,10 +50,25 @@
 .hcard-pbar{height:4px;background:var(--bg3);border-radius:2px;margin-top:4px;overflow:hidden}
 .hcard-pbar-fill{height:100%;border-radius:2px}
 .hcard-stats{font-size:8px;color:var(--tx3);margin-top:2px;display:flex;align-items:center;justify-content:space-between}
-.tcol{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:8px;flex:1 1 160px;min-width:160px;max-width:200px}
-.tcol-name{font-size:11px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.tdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.titem{font-size:10px;background:var(--bg3);border-radius:5px;padding:6px 8px;margin-bottom:4px}
+.tcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:11px 13px;flex:0 0 190px;display:flex;flex-direction:column;gap:7px;cursor:pointer;transition:border-color .15s}
+.tcard:hover{border-color:var(--tx3)}
+.tcard.is-overdue{border-left:3px solid var(--dn)}
+.tcard.is-today{border-left:3px solid var(--wn)}
+.tcard-status{display:flex;align-items:center;gap:6px}
+.tcard-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tcard-title{font-size:12px;font-weight:600;color:var(--tx);line-height:1.4}
+.tcard-footer{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:auto}
+.tcard-pri{font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+.tcard-pri.high{background:var(--dnbg);color:var(--dntx)}
+.tcard-pri.med{background:var(--wnbg);color:var(--wntx)}
+.tcard-pri.low{background:var(--infbg);color:var(--inftx)}
+.tcard-proj{font-size:9px;background:var(--infbg);color:var(--inftx);padding:2px 6px;border-radius:3px}
+.tcard-date{font-size:9px;color:var(--tx3);margin-left:auto}
+.tcard-new{border-style:dashed;min-width:130px;flex:0 0 130px;align-items:center;justify-content:center;color:var(--tx3);font-size:11px;text-decoration:none}
+.tcard-new:hover{border-color:var(--ac);color:var(--actx)}
+.tcheck{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .2s;margin-left:auto}
+.tcheck:hover{border-color:var(--ac);background:var(--acbg)}
+.tcheck.done{background:var(--ac);border-color:var(--ac);color:#fff}
 .pcard{background:var(--card);border:1px solid var(--cardb);border-radius:8px;padding:10px;flex:1 1 160px;min-width:160px;max-width:200px}
 .pcard-name{font-size:12px;font-weight:600;margin-bottom:2px;color:var(--inftx)}
 .pcard-desc{font-size:10px;color:var(--tx3);margin-bottom:5px}
@@ -115,11 +131,18 @@
 .gm-sidebar-xp{font-size:9px;color:var(--tx3);margin-top:1px}
 .gm-sidebar-link{display:block;font-size:9px;color:var(--tx3);margin-top:6px;text-decoration:none;text-align:right}
 .gm-sidebar-link:hover{color:var(--actx)}
-.dhcard{background:var(--card);border:1px solid var(--cardb);border-radius:7px;padding:8px 10px;flex:1 1 150px;min-width:150px;max-width:185px}
-.dhcard-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.dhcard-name{font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;flex:1}
-.hcheck{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.dhcard{background:var(--card);border:1px solid var(--cardb);border-radius:9px;padding:13px 14px;flex:1 1 160px;min-width:160px;max-width:210px;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column}
+.dhcard:hover{border-color:var(--tx3)}
+.dhcard.completed{border-color:var(--ac)!important}
+.dhcard-top{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.dhcard-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px;flex:1;line-height:1.25}
+.dhcard-freq{font-size:11px;color:var(--tx3);margin-bottom:8px}
+.hcheck{width:24px;height:24px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
 .hcheck.done{background:var(--ac);border-color:var(--ac);color:#fff}
+.qty-row{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.qty-btn-lg{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;line-height:1}
+.qty-btn-lg:hover{background:var(--bg2);border-color:var(--tx3)}
+.qty-val-lg{font-size:12px;font-weight:600;color:var(--tx);flex:1;text-align:center}
 </style>
 </head>
 <body x-data="pageApp()" x-cloak style="overflow:hidden">
@@ -258,32 +281,22 @@
         <span class="sec-new" style="cursor:pointer">+ New</span>
       </div>
       <div class="hscroll">
-        <template x-for="h in habits" :key="h.id">
-          <div class="dhcard" :class="{'completed': h.type==='quant' ? h.qty>=h.target : h.done}" @click="openHabitModal(h)">
+        <template x-for="h in activeHabits" :key="h.id">
+          <div class="dhcard" :class="{'completed': h.type==='quant' ? h.qty>=h.target : h.done}" @click="h.type==='quant' ? openHabitModal(h) : toggleHabit(h)">
             <div class="dhcard-top">
-              <!-- Bool: toggle checkbox -->
-              <div x-show="h.type!=='quant'" class="hcheck" :class="{'done': h.done}" @click.stop="toggleHabit(h)">
-                <svg x-show="h.done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>
+              <div class="hcheck" :class="{'done': h.type==='quant' ? h.qty>=h.target : h.done}">
+                <svg x-show="h.type==='quant' ? h.qty>=h.target : h.done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <!-- Quant: check icon if target reached -->
-              <div x-show="h.type==='quant'" class="hcheck" :class="{'done': h.qty>=h.target}">
-                <svg x-show="h.qty>=h.target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <div class="dhcard-name">
-                <div class="hcard-dot" :style="`background:${h.color}`"></div>
-                <span x-text="h.name"></span>
-              </div>
+              <div class="dhcard-name" x-text="h.name"></div>
             </div>
-            <!-- Freq row: always same height; stepper sits inline on the right for quant -->
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--tx3);margin-top:2px">
-              <span x-text="h.freq"></span>
-              <div x-show="h.type==='quant'" class="qty-stepper" @click.stop>
-                <button class="qty-btn" @click.stop="updateQty(h, -0.25)">−</button>
-                <span class="qty-val" x-text="`${h.qty}${h.unit}`"></span>
-                <button class="qty-btn" :style="`color:${h.color}`" @click.stop="updateQty(h, 0.25)">+</button>
-              </div>
+            <div class="dhcard-freq" x-text="h.freq"></div>
+            <!-- Stepper: visible for quant, invisible (keeps height) for bool -->
+            <div class="qty-row" :style="h.type!=='quant' ? 'visibility:hidden' : ''" @click.stop>
+              <button class="qty-btn-lg" @click.stop="updateQty(h, -(h.increment||1))">−</button>
+              <span class="qty-val-lg" x-text="h.type==='quant' ? `${h.qty} / ${h.target} ${h.unit||''}` : ''"></span>
+              <button class="qty-btn-lg" :style="`color:${h.color}`" @click.stop="updateQty(h, h.increment||1)">+</button>
             </div>
-            <div class="hcard-pbar" style="margin-top:6px">
+            <div class="hcard-pbar">
               <div class="hcard-pbar-fill" :style="`width:${h.type==='quant' ? Math.min(h.qty/h.target*100,100) : (h.done?100:h.pct)}%;background:${h.color}`"></div>
             </div>
           </div>
@@ -300,35 +313,35 @@
         <a href="task-new.html" class="sec-new">+ New</a>
       </div>
       <div class="tabs">
-        <span class="tab" :class="{'active': taskTab==='today'}" @click="taskTab='today'">Today</span>
-        <span class="tab" :class="{'active': taskTab==='all'}" @click="taskTab='all'">All tasks</span>
+        <span class="tab" :class="{'active': taskTab==='today'}" @click="taskTab='today'">
+          Today<template x-if="overdueCount > 0"><span style="background:var(--dn);color:#fff;border-radius:8px;padding:1px 6px;font-size:9px;margin-left:5px;font-weight:700" x-text="overdueCount+' overdue'"></span></template>
+        </span>
+        <span class="tab" :class="{'active': taskTab==='upcoming'}" @click="taskTab='upcoming'">Upcoming<span x-show="upcomingCount > 0" style="color:var(--tx3);font-size:10px;margin-left:4px" x-text="'('+upcomingCount+')'"></span></span>
         <span class="tab" :class="{'active': taskTab==='done'}" @click="taskTab='done'">Completed</span>
+        <span class="tab" :class="{'active': taskTab==='all'}" @click="taskTab='all'">All</span>
       </div>
-      <div class="hscroll">
-        <template x-for="col in filteredTaskCols" :key="col.id">
-          <div class="tcol">
-            <div class="tcol-name">
-              <div class="tdot" :style="`background:${col.color}`"></div>
-              <span x-text="col.name"></span>
-              <span style="margin-left:auto;font-size:9px;color:var(--tx3)" x-text="col.tasks.length"></span>
+      <div class="hscroll" style="align-items:stretch;flex-wrap:nowrap;overflow-x:auto">
+        <template x-for="t in filteredTasks" :key="t.id">
+          <div class="tcard" :class="t.due && isOverdue(t.due) ? 'is-overdue' : t.due && isDueToday(t.due) ? 'is-today' : ''" @click="openTaskModal(t, taskCols.find(c=>c.name===t.colName))">
+            <div class="tcard-status">
+              <div class="tcard-dot" :style="`background:${t.due && isOverdue(t.due) ? 'var(--dn)' : t.due && isDueToday(t.due) ? 'var(--wn)' : 'var(--tx3)'}`"></div>
+              <span style="font-size:10px;font-weight:700;letter-spacing:.04em" :style="`color:${t.due && isOverdue(t.due) ? 'var(--dntx)' : t.due && isDueToday(t.due) ? 'var(--wntx)' : 'var(--tx3)'}`" x-text="t.due && isOverdue(t.due) ? 'Overdue' : t.due && isDueToday(t.due) ? 'Today' : t.colName"></span>
+              <div class="tcheck" :class="{done: t.colName==='Done'}" @click.stop="completeTask(t)" :title="t.colName==='Done' ? 'Mark undone' : 'Mark done'">
+                <svg x-show="t.colName==='Done'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:11px;height:11px"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
             </div>
-            <div style="max-height:180px;overflow-y:auto">
-              <template x-for="t in col.tasks" :key="t.id">
-                <div class="titem" @click="openTaskModal(t, col)">
-                  <div x-text="t.title" style="margin-bottom:3px"></div>
-                  <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">
-                    <span x-show="t.priority==='high'" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">HIGH</span>
-                    <span x-show="t.priority==='med'" style="font-size:7px;background:var(--wnbg);color:var(--wntx);padding:1px 4px;border-radius:2px">MED</span>
-                    <span x-show="t.priority==='low'" style="font-size:7px;background:var(--infbg);color:var(--inftx);padding:1px 4px;border-radius:2px">LOW</span>
-                    <span x-show="t.due && isOverdue(t.due)" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">Overdue</span>
-                    <span x-show="t.due && isDueToday(t.due)" style="font-size:7px;background:var(--acbg);color:var(--actx);padding:1px 4px;border-radius:2px">Today</span>
-                    <span style="font-size:8px;color:var(--tx3);margin-left:auto" x-text="t.project"></span>
-                  </div>
-                </div>
-              </template>
+            <div class="tcard-title" x-text="t.title"></div>
+            <div class="tcard-footer">
+              <span class="tcard-pri" :class="t.priority" x-text="t.priority.toUpperCase()"></span>
+              <span x-show="t.project" class="tcard-proj" x-text="t.project"></span>
+              <span x-show="t.due" class="tcard-date" x-text="t.due"></span>
             </div>
           </div>
         </template>
+        <a href="task-new.html" class="tcard tcard-new">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New task
+        </a>
       </div>
     </div>
 
@@ -868,20 +881,28 @@ function pageApp() {
     // Lifecycle
     async init() {
       document.addEventListener('keydown', e => { if (e.key === 'Escape') this.closeModal(); });
-      // Load habits: vault-userdata.js global → localStorage → API
-      if (window.__vaultHabits && window.__vaultHabits.length) {
-        this.habits = window.__vaultHabits;
-      } else {
-        try {
-          const stored = localStorage.getItem('vault_habits');
-          if (stored) { this.habits = JSON.parse(stored); }
-        } catch (e) {}
-      }
-      if (!this.habits.length) {
-        try {
-          const res = await fetch('/api/habits');
-          if (res.ok) { this.habits = await res.json(); }
-        } catch (e) {}
+      // Load local data first (for increment display units), then always overlay real values from API
+      const local = window.__vaultHabits || [];
+      try {
+        const res = await fetch('/api/habits');
+        if (res.ok) {
+          const apiHabits = await res.json();
+          this.habits = apiHabits.map(h => {
+            const loc = local.find(l => l.id === h.id) || {};
+            return {
+              id: h.id, name: h.name, color: h.hex, type: h.type,
+              freq: h.freq, streak: h.streak, pct: h.pct, done: h.done,
+              qty: h.qty, target: h.target, unit: h.unit || '',
+              weekDone: h.weekDone, weekGoal: h.weekGoal,
+              increment: loc.increment || h.increment || 1,
+              daysOfWeek: h.daysOfWeek || '0,1,2,3,4,5,6',
+              hmView: 'week',
+            };
+          });
+        }
+      } catch (e) {
+        // Offline fallback: use local data
+        if (local.length) this.habits = local;
       }
       try {
         const res = await fetch('/api/tasks/columns');
@@ -908,25 +929,43 @@ function pageApp() {
       document.body.style.overflow = '';
     },
 
+    get activeHabits() {
+      const today = new Date().getDay();
+      return this.habits.filter(h => {
+        if (!h.daysOfWeek) return true;
+        return h.daysOfWeek.split(',').map(Number).includes(today);
+      });
+    },
     _saveHabits() { try { localStorage.setItem('vault_habits', JSON.stringify(this.habits)); } catch(e) {} },
 
-    async toggleHabit(h) {
+    async completeTask(t) {
+      const isDone = t.colName === 'Done';
+      const targetColName = isDone ? 'To Do' : 'Done';
+      const targetCol = this.taskCols.find(c => c.name === targetColName);
+      if (!targetCol) return;
+      const srcCol = this.taskCols.find(c => c.name === t.colName);
+      if (srcCol) srcCol.tasks = srcCol.tasks.filter(x => x.id !== t.id);
+      targetCol.tasks.push({ ...t, colName: targetColName });
+      t.colName = targetColName;
+      fetch(`/api/tasks/${t.id}/move`, {
+        method: 'PATCH', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ columnId: targetCol.id, position: targetCol.tasks.length })
+      }).catch(() => {});
+    },
+
+    toggleHabit(h) {
       h.done = !h.done;
       if (h.done) h.streak = (h.streak||0) + 1; else h.streak = Math.max((h.streak||1)-1, 0);
       this._saveHabits();
-      try {
-        const res = await fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:null}) });
-        if (res.ok) { const u = await res.json(); h.streak = u.streak; h.pct = u.pct; h.done = u.done; this._saveHabits(); }
-      } catch (e) { /* offline — local state kept */ }
+      fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:null}) })
+        .then(r => r.ok ? r.json() : null).then(u => { if (u) { h.streak = u.streak; h.pct = u.pct; h.done = u.done; this._saveHabits(); } }).catch(()=>{});
     },
 
-    async updateQty(h, delta) {
+    updateQty(h, delta) {
       h.qty = Math.max(0, +(h.qty + delta).toFixed(2));
       this._saveHabits();
-      try {
-        const res = await fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:h.qty}) });
-        if (res.ok) { const u = await res.json(); h.qty = u.qty; h.streak = u.streak; h.pct = u.pct; this._saveHabits(); }
-      } catch (e) { /* offline — local state kept */ }
+      fetch(`/api/habits/${h.id}/toggle`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:h.qty}) })
+        .then(r => r.ok ? r.json() : null).then(u => { if (u) { h.qty = u.qty; h.streak = u.streak; h.pct = u.pct; this._saveHabits(); } }).catch(()=>{});
     },
 
     _tx(str) {
@@ -990,7 +1029,7 @@ function pageApp() {
         </div>`;
       const footer = `
         <button class="vm-btn danger" onclick="document.getElementById('vault-modal').classList.remove('open')">Delete</button>
-        <button class="vm-btn" onclick="document.getElementById('vault-modal').classList.remove('open')">Edit</button>
+        <button class="vm-btn" onclick="window.location.href='habit-edit.html?id=${habit.id}'">Edit</button>
         <button class="vm-btn primary" onclick="document.getElementById('vault-modal').classList.remove('open')">Done ✓</button>`;
       this.openModal({ title: habit.name, sub: 'Habit · ' + habit.freq, color: habit.color, body, footer });
     },
@@ -1086,18 +1125,33 @@ function pageApp() {
     _todayIso() { return new Date().toISOString().slice(0, 10); },
     isOverdue(due) { return due < this._todayIso(); },
     isDueToday(due) { return due === this._todayIso(); },
-    get filteredTaskCols() {
+    get flatTasks() {
+      return this.taskCols.flatMap(col => col.tasks.map(t => ({ ...t, colName: col.name, colColor: col.color })));
+    },
+    get overdueCount() {
       const today = this._todayIso();
+      return this.flatTasks.filter(t => t.colName !== 'Done' && t.due && t.due < today).length;
+    },
+    get upcomingCount() {
+      const today = this._todayIso();
+      return this.flatTasks.filter(t => t.colName !== 'Done' && (!t.due || t.due > today)).length;
+    },
+    get filteredTasks() {
+      const today = this._todayIso();
+      const active = this.flatTasks.filter(t => t.colName !== 'Done');
       if (this.taskTab === 'today') {
-        return this.taskCols.map(c => ({
-          ...c,
-          tasks: c.tasks.filter(t => t.due === today || (t.due && t.due < today))
-        })).filter(c => c.tasks.length > 0);
+        return active.filter(t => t.due && t.due <= today).sort((a,b) => a.due < b.due ? -1 : 1);
+      }
+      if (this.taskTab === 'upcoming') {
+        return active.filter(t => !t.due || t.due > today).sort((a,b) => {
+          if (!a.due && !b.due) return 0; if (!a.due) return 1; if (!b.due) return -1;
+          return a.due < b.due ? -1 : 1;
+        });
       }
       if (this.taskTab === 'done') {
-        return this.taskCols.filter(c => c.name === 'Done');
+        return this.flatTasks.filter(t => t.colName === 'Done');
       }
-      return this.taskCols;
+      return this.flatTasks;
     },
     // Returns flat 35-cell (5 weeks × 7 days) monthly calendar for April 2026.
     // April 1, 2026 = Wednesday (DOW 3). April has 30 days.

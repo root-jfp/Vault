@@ -12,6 +12,9 @@
 <script type="module" src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 <style>
 [x-cloak]{display:none!important}
+.day-picker{display:flex;gap:5px;margin-top:4px}
+.day-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--bd);background:var(--bg3);color:var(--tx3);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.day-btn.active{border-color:var(--ac);background:var(--acbg);color:var(--actx)}
 .form-layout{grid-template-columns:2fr 1fr!important}
 .form-group{margin-bottom:1.1rem}
 .type-radio{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
@@ -77,6 +80,14 @@
           <div class="form-row">
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Frequency</label><select class="form-select" x-model="form.freq"><option value="Daily">Daily</option><option value="Weekly 3x">Weekly 3x</option><option value="Weekly 5x">Weekly 5x</option><option value="Custom">Custom</option></select></div>
             <div class="form-group"><label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Weekly Goal <span style="color:var(--tx3);font-weight:400">(days)</span></label><input type="number" class="form-input" min="1" max="7" x-model="form.weeklyGoal"></div>
+          </div>
+          <div class="form-group">
+            <label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Schedule <span style="font-size:.75rem;color:var(--tx3);font-weight:400">(days of week)</span></label>
+            <div class="day-picker">
+              <template x-for="(label, idx) in ['S','M','T','W','T','F','S']" :key="idx">
+                <button type="button" class="day-btn" :class="{active: days.includes(idx)}" @click="toggleDay(idx)" x-text="label"></button>
+              </template>
+            </div>
           </div>
           <div class="form-group">
             <label style="display:block;font-size:.875rem;font-weight:600;color:var(--tx2);margin-bottom:.4rem">Color</label>
@@ -157,8 +168,19 @@ function pageApp() {
     },
     saved: false,
     selectedColor: "#1D9E75",
+    days: [0,1,2,3,4,5,6],
+    toggleDay(d) {
+      const idx = this.days.indexOf(d);
+      if (idx === -1) { this.days.push(d); }
+      else if (this.days.length > 1) { this.days.splice(idx, 1); }
+    },
     selectColor(c) { this.selectedColor = c; this.form.color = c; },
-    saveForm() { if (!this.form.name) return; this.saved = true; setTimeout(() => this.saved = false, 3000); },
+    saveForm() {
+      if (!this.form.name) return;
+      const daysOfWeek = this.days.sort((a,b)=>a-b).join(',');
+      this.saved = true;
+      setTimeout(() => this.saved = false, 3000);
+    },
   };
 }
 </script>

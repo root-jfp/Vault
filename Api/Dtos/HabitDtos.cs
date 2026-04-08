@@ -17,7 +17,8 @@ public sealed record HabitResponse(
     int WeekGoal,
     string? Icon,
     string? Notes,
-    string HmView
+    string HmView,
+    string DaysOfWeek
 );
 
 public sealed record HeatmapCell(
@@ -40,7 +41,8 @@ public sealed record HabitDetailResponse(
     int Increment,
     string? StartDate,
     int WeeklyGoal,
-    string? Notes
+    string? Notes,
+    string DaysOfWeek
 );
 
 public sealed record CreateHabitRequest(
@@ -54,7 +56,8 @@ public sealed record CreateHabitRequest(
     int? Increment,
     string? StartDate,
     int? WeeklyGoal,
-    string? Notes
+    string? Notes,
+    string? DaysOfWeek
 );
 
 public sealed record UpdateHabitRequest(
@@ -68,7 +71,8 @@ public sealed record UpdateHabitRequest(
     int? Increment,
     string? StartDate,
     int? WeeklyGoal,
-    string? Notes
+    string? Notes,
+    string? DaysOfWeek
 );
 
 public sealed record ToggleHabitRequest(

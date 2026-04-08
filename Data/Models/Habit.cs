@@ -15,6 +15,7 @@ public sealed class Habit
     public int Increment { get; set; } = 1;
     public string? Icon { get; set; }
     public string? Notes { get; set; }
+    public string DaysOfWeek { get; set; } = "0,1,2,3,4,5,6";
     public DateTime? StartDate { get; set; }
     public int SortOrder { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
