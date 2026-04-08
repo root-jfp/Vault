@@ -312,19 +312,21 @@
               <span x-text="col.name"></span>
               <span style="margin-left:auto;font-size:9px;color:var(--tx3)" x-text="col.tasks.length"></span>
             </div>
-            <template x-for="t in col.tasks" :key="t.id">
-              <div class="titem" @click="openTaskModal(t, col)">
-                <div x-text="t.title" style="margin-bottom:3px"></div>
-                <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">
-                  <span x-show="t.priority==='high'" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">HIGH</span>
-                  <span x-show="t.priority==='med'" style="font-size:7px;background:var(--wnbg);color:var(--wntx);padding:1px 4px;border-radius:2px">MED</span>
-                  <span x-show="t.priority==='low'" style="font-size:7px;background:var(--infbg);color:var(--inftx);padding:1px 4px;border-radius:2px">LOW</span>
-                  <span x-show="t.due && isOverdue(t.due)" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">Overdue</span>
-                  <span x-show="t.due && isDueToday(t.due)" style="font-size:7px;background:var(--acbg);color:var(--actx);padding:1px 4px;border-radius:2px">Today</span>
-                  <span style="font-size:8px;color:var(--tx3);margin-left:auto" x-text="t.project"></span>
+            <div style="max-height:180px;overflow-y:auto">
+              <template x-for="t in col.tasks" :key="t.id">
+                <div class="titem" @click="openTaskModal(t, col)">
+                  <div x-text="t.title" style="margin-bottom:3px"></div>
+                  <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">
+                    <span x-show="t.priority==='high'" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">HIGH</span>
+                    <span x-show="t.priority==='med'" style="font-size:7px;background:var(--wnbg);color:var(--wntx);padding:1px 4px;border-radius:2px">MED</span>
+                    <span x-show="t.priority==='low'" style="font-size:7px;background:var(--infbg);color:var(--inftx);padding:1px 4px;border-radius:2px">LOW</span>
+                    <span x-show="t.due && isOverdue(t.due)" style="font-size:7px;background:var(--dnbg);color:var(--dntx);padding:1px 4px;border-radius:2px">Overdue</span>
+                    <span x-show="t.due && isDueToday(t.due)" style="font-size:7px;background:var(--acbg);color:var(--actx);padding:1px 4px;border-radius:2px">Today</span>
+                    <span style="font-size:8px;color:var(--tx3);margin-left:auto" x-text="t.project"></span>
+                  </div>
                 </div>
-              </div>
-            </template>
+              </template>
+            </div>
           </div>
         </template>
       </div>
@@ -780,7 +782,7 @@
 function pageApp() {
   return {
     // UI state
-    taskTab: 'today',
+    taskTab: 'all',
     calTab: 'week',
     configuratorOpen: false,
     moreOpen: false,

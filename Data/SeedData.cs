@@ -41,18 +41,11 @@ public static class SeedData
             new() { Id = 6,  UserId = 1, ColumnId = 2, Title = "Municipal assistance for childbirth",
                     Priority = "high", Project = "Housing",   DueDate = null, Position = 3 },
             // To Do — Finances
-            new() { Id = 7,  UserId = 1, ColumnId = 2, Title = "Access key for Maura",
-                    Priority = "med",  Project = "Finances",  DueDate = null, Position = 4 },
-            new() { Id = 8,  UserId = 1, ColumnId = 2, Title = "Declaration of no debt",
-                    Priority = "high", Project = "Finances",  DueDate = null, Position = 5 },
-            new() { Id = 9,  UserId = 1, ColumnId = 2, Title = "Update family aggregate in José",
-                    Priority = "med",  Project = "Finances",  DueDate = null, Position = 6 },
-            new() { Id = 10, UserId = 1, ColumnId = 2, Title = "Update civil status",
-                    Priority = "high", Project = "Finances",  DueDate = null, Position = 7 },
-            new() { Id = 11, UserId = 1, ColumnId = 2, Title = "Redo IRS 2024",
-                    Priority = "high", Project = "Finances",  DueDate = null, Position = 8 },
-            new() { Id = 12, UserId = 1, ColumnId = 2, Title = "Go to Santander — create joint account",
-                    Priority = "med",  Project = "Finances",  DueDate = null, Position = 9 },
+            new() { Id = 7,  UserId = 1, ColumnId = 2, Title = "Finance admin",
+                    Description = "- Access key for Maura\n- Declaration of no debt\n- Update family aggregate in José\n- Update civil status\n- Redo IRS 2024",
+                    Priority = "high", Project = "Finances",  DueDate = null, Position = 4 },
+            new() { Id = 8,  UserId = 1, ColumnId = 2, Title = "Go to Santander — create joint account",
+                    Priority = "med",  Project = "Finances",  DueDate = null, Position = 5 },
         };
         db.TaskItems.AddRange(taskItems);
 
