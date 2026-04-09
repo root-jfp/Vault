@@ -18,7 +18,8 @@ public sealed record HabitResponse(
     string? Icon,
     string? Notes,
     string HmView,
-    string DaysOfWeek
+    string DaysOfWeek,
+    IReadOnlyList<string> DoneDates
 );
 
 public sealed record HeatmapCell(

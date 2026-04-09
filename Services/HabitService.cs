@@ -13,24 +13,17 @@ public sealed class HabitService(VaultDbContext db)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
-        var thirtyDaysAgo = today.AddDays(-30);
+        var oneYearAgo = today.AddDays(-365);
 
         var habits = await db.Habits
             .Where(h => h.UserId == DefaultUserId)
             .OrderBy(h => h.SortOrder)
-            .Include(h => h.Entries.Where(e => e.Date >= thirtyDaysAgo))
+            .Include(h => h.Entries.Where(e => e.Date >= oneYearAgo))
             .AsNoTracking()
             .ToListAsync();
 
-        // Load all entry dates for accurate streak calculation (not capped at 30 days)
-        var allDates = await db.HabitEntries
-            .Where(e => e.UserId == DefaultUserId)
-            .Select(e => new { e.HabitId, e.Date })
-            .AsNoTracking()
-            .ToListAsync();
-        var streakDatesByHabit = allDates
-            .GroupBy(e => e.HabitId)
-            .ToDictionary(g => g.Key, g => (ICollection<DateOnly>)g.Select(e => e.Date).ToHashSet());
+        var streakDatesByHabit = habits
+            .ToDictionary(h => h.Id, h => (ICollection<DateOnly>)h.Entries.Select(e => e.Date).ToHashSet());
 
         return habits.Select(h =>
         {
@@ -38,7 +31,7 @@ public sealed class HabitService(VaultDbContext db)
             var weekEntries = h.Entries.Where(e => e.Date >= weekStart && e.Date <= today).ToList();
             var streakDates = streakDatesByHabit.GetValueOrDefault(h.Id, []);
             var streak = CalculateStreak(streakDates, today);
-            var rate = CalculateRate(h.Entries, today, thirtyDaysAgo);
+            var rate = CalculateRate(h.Entries, today, oneYearAgo);
             var displayTarget = MapDisplayTarget(h.Goal, h.UnitOfMeasure);
             var displayUnit = MapDisplayUnit(h.UnitOfMeasure, h.Goal);
 
@@ -60,7 +53,8 @@ public sealed class HabitService(VaultDbContext db)
                 Icon: h.Icon,
                 Notes: h.Notes,
                 HmView: "week",
-                DaysOfWeek: h.DaysOfWeek
+                DaysOfWeek: h.DaysOfWeek,
+                DoneDates: h.Entries.Select(e => e.Date.ToString("yyyy-MM-dd")).OrderBy(d => d).ToList()
             );
         }).ToList();
     }
