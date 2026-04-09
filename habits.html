@@ -17,12 +17,16 @@
 .habit-card{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;cursor:pointer;transition:border-color .15s}
 .habit-card.done{border-color:var(--hm-color,var(--ac))}
 .hm-mini{display:grid;gap:2px;margin-top:8px}
-.hm-mini.view-week{grid-template-columns:repeat(7,1fr);grid-auto-rows:12px}
-.hm-mini.view-week .hm-cell{aspect-ratio:unset}
-.hm-mini.view-month{grid-template-columns:repeat(7,1fr);grid-auto-rows:10px}
+.hm-mini.view-week{grid-template-columns:repeat(7,1fr);grid-auto-rows:26px}
+.hm-mini.view-week .hm-cell{aspect-ratio:unset;display:flex;align-items:center;justify-content:center}
+.hm-mini.view-month{grid-template-columns:repeat(7,1fr);grid-auto-rows:14px}
+.hm-mini.view-month .hm-cell{aspect-ratio:unset;display:flex;align-items:center;justify-content:center}
 .hm-mini.view-year{grid-template-rows:repeat(7,10px);grid-auto-flow:column;grid-auto-columns:10px}
+.hm-mini.view-year .hm-cell{aspect-ratio:unset}
 .hm-cell{aspect-ratio:1;border-radius:2px;background:var(--bg3)}
-.hm-mini.view-month .hm-cell,.hm-mini.view-year .hm-cell{aspect-ratio:unset}
+.hm-hdr{background:transparent!important;border-radius:0}
+.hm-label{font-size:7px;line-height:1;pointer-events:none;user-select:none;color:var(--tx3)}
+.hm-cell.l3 .hm-label,.hm-cell.l4 .hm-label{color:rgba(255,255,255,0.75)}
 .hm-cell.l1{background:color-mix(in srgb,var(--hm-color,var(--ac)) 25%,var(--bg3))}
 .hm-cell.l2{background:color-mix(in srgb,var(--hm-color,var(--ac)) 45%,var(--bg3))}
 .hm-cell.l3{background:color-mix(in srgb,var(--hm-color,var(--ac)) 65%,var(--bg3))}
@@ -47,7 +51,7 @@
   <div class="right"><div class="page-hdr"><h1>Habits</h1><div class="page-hdr-actions"><button class="btn-primary" onclick="window.location.href='habit-new.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Habit</button></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="filter-tabs" style="margin-bottom:0"><button class="ftab" @click="filter='all'" :class="{active:filter==='all'}">All</button><button class="ftab" @click="filter='boolean'" :class="{active:filter==='boolean'}">Simple</button><button class="ftab" @click="filter='quantitative'" :class="{active:filter==='quantitative'}">Progressive</button></div><div style="display:flex;gap:3px"><button class="hmtab" @click="setAllHmView('week')" :class="{active:hmViewAll==='week'}" style="font-size:10px;padding:3px 9px">Week</button><button class="hmtab" @click="setAllHmView('month')" :class="{active:hmViewAll==='month'}" style="font-size:10px;padding:3px 9px">Month</button><button class="hmtab" @click="setAllHmView('year')" :class="{active:hmViewAll==='year'}" style="font-size:10px;padding:3px 9px">Year</button></div></div><div x-show="view==='loading'" style="text-align:center;padding:2rem;color:var(--tx3);font-size:13px">Loading habits…</div>
 <div x-show="view==='error'" style="text-align:center;padding:2rem;color:var(--dn);font-size:13px" x-text="'Error: '+error"></div>
 <div x-show="view==='empty'" style="text-align:center;padding:3rem 1rem"><div style="font-size:32px;margin-bottom:12px">&#10003;</div><div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:6px">No habits yet</div><div style="font-size:12px;color:var(--tx3);margin-bottom:20px">Start tracking your daily routines</div><button class="btn-primary" onclick="window.location.href='habit-new.html'">Create your first habit</button></div>
-<div id="habit-list" x-show="view==='list'"><template x-for="h in filtered" :key="h.id"><div class="habit-card" :class="{done:h.done}" :style="'--hm-color:'+h.color" @click="toggleDone(h)"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="font-size:12px;font-weight:700;color:var(--tx)" x-text="h.name"></div><div style="font-size:10px;color:var(--tx3);margin-top:2px" x-text="h.freq"></div></div><div style="display:flex;align-items:center;gap:6px"><div style="display:flex;gap:3px" @click.stop><button class="hmtab" @click="h.hmView='week'" :class="{active:h.hmView==='week'}">W</button><button class="hmtab" @click="h.hmView='month'" :class="{active:h.hmView==='month'}">M</button><button class="hmtab" @click="h.hmView='year'" :class="{active:h.hmView==='year'}">Y</button></div><span style="font-size:10px;color:var(--tx3)">&#128293; <span x-text="h.streak"></span>d</span><a :href="`habit-edit.html?id=${h.id}`" @click.stop style="display:flex;align-items:center;color:var(--tx3);padding:2px 4px;border-radius:4px;border:1px solid var(--bd);background:var(--bg3)" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a><div x-show="h.type==='boolean'" style="width:16px;height:16px;border-radius:50%;border:1.5px solid var(--hm-color,var(--ac))" :style="h.done?'background:var(--hm-color,var(--ac))':''"></div></div></div><div class="hm-mini" :class="'view-'+h.hmView"><template x-for="(level,i) in generateHeatmap(h,h.hmView)" :key="i"><div class="hm-cell" :class="level>0?'l'+level:''" :style="level===-1?'opacity:0':''"></div></template></div><div class="goal-bar-wrap" x-show="h.type==='boolean'"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3);margin-bottom:3px"><span>This week</span><span x-text="h.weekDone+'/'+h.weekGoal"></span></div><div class="goal-bar-bg"><div class="goal-bar-fill" :style="{width:(h.weekDone/h.weekGoal*100)+'%'}"></div></div></div><div class="goal-bar-wrap" x-show="h.type==='quantitative'"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3);margin-bottom:3px"><span>Today</span><span x-text="h.todayAmt+'/'+h.goal"></span></div><div class="goal-bar-bg"><div class="goal-bar-fill" :style="{width:(Math.min(h.todayAmt/h.goal,1)*100)+'%'}"></div></div></div></div></template></div></div></div><nav class="bnav"><div class="bnav-inner"><a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Home</span></a><a href="habits.html" class="bnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Habits</span></a><a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Tasks</span></a><a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Maint.</span></a><div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></div></div></nav>
+<div id="habit-list" x-show="view==='list'"><template x-for="h in filtered" :key="h.id"><div class="habit-card" :class="{done:h.done}" :style="'--hm-color:'+h.color" @click="toggleDone(h)"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="font-size:12px;font-weight:700;color:var(--tx)" x-text="h.name"></div><div style="font-size:10px;color:var(--tx3);margin-top:2px" x-text="h.freq"></div></div><div style="display:flex;align-items:center;gap:6px"><div style="display:flex;gap:3px" @click.stop><button class="hmtab" @click="h.hmView='week'" :class="{active:h.hmView==='week'}">W</button><button class="hmtab" @click="h.hmView='month'" :class="{active:h.hmView==='month'}">M</button><button class="hmtab" @click="h.hmView='year'" :class="{active:h.hmView==='year'}">Y</button></div><span style="font-size:10px;color:var(--tx3)">&#128293; <span x-text="h.streak"></span>d</span><a :href="`habit-edit.html?id=${h.id}`" @click.stop style="display:flex;align-items:center;color:var(--tx3);padding:2px 4px;border-radius:4px;border:1px solid var(--bd);background:var(--bg3)" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a><div x-show="h.type==='boolean'" style="width:16px;height:16px;border-radius:50%;border:1.5px solid var(--hm-color,var(--ac))" :style="h.done?'background:var(--hm-color,var(--ac))':''"></div></div></div><div class="hm-mini" :class="'view-'+h.hmView"><template x-for="(cell,i) in generateHeatmap(h,h.hmView)" :key="i"><div class="hm-cell" :class="[cell.level>0?'l'+cell.level:'', cell.type==='header'?'hm-hdr':'']" :style="cell.level===-1?'opacity:0':''"><span class="hm-label" x-text="cell.label"></span></div></template></div><div class="goal-bar-wrap" x-show="h.type==='boolean'"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3);margin-bottom:3px"><span>This week</span><span x-text="h.weekDone+'/'+h.weekGoal"></span></div><div class="goal-bar-bg"><div class="goal-bar-fill" :style="{width:(h.weekDone/h.weekGoal*100)+'%'}"></div></div></div><div class="goal-bar-wrap" x-show="h.type==='quantitative'"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3);margin-bottom:3px"><span>Today</span><span x-text="h.todayAmt+'/'+h.goal"></span></div><div class="goal-bar-bg"><div class="goal-bar-fill" :style="{width:(Math.min(h.todayAmt/h.goal,1)*100)+'%'}"></div></div></div></div></template></div></div></div><nav class="bnav"><div class="bnav-inner"><a href="index.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Home</span></a><a href="habits.html" class="bnav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Habits</span></a><a href="tasks.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Tasks</span></a><a href="maintenance.html" class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"></svg><span>Maint.</span></a><div class="bnav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></div></div></nav>
   <script>
   function pageApp() {
     return {
@@ -100,30 +104,34 @@
         const currentMon = new Date(now);
         currentMon.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
 
+        const DAYS = ['M','T','W','T','F','S','S'];
+
         if (view === 'week') {
-          // 7 cells: Mon–Sun of current week
           return Array.from({ length: 7 }, (_, i) => {
             const d = new Date(currentMon); d.setDate(currentMon.getDate() + i);
-            return ds(d) > todayStr ? 0 : (done.has(ds(d)) ? 4 : 0);
+            const s = ds(d);
+            return { level: s > todayStr ? 0 : (done.has(s) ? 4 : 0), label: DAYS[i], type: 'day' };
           });
         }
 
         if (view === 'month') {
-          // days-in-month cells starting Monday-aligned (7-column grid)
           const y = now.getFullYear(), m = now.getMonth();
           const days = new Date(y, m + 1, 0).getDate();
-          const firstDow = new Date(y, m, 1).getDay(); // 0=Sun
-          const offset = firstDow === 0 ? 6 : firstDow - 1; // blank Mon-aligned cells
-          const cells = Array(offset).fill(-1); // -1 = empty placeholder
+          const firstDow = new Date(y, m, 1).getDay();
+          const offset = firstDow === 0 ? 6 : firstDow - 1;
+          // Weekday header row
+          const cells = DAYS.map(l => ({ level: 0, label: l, type: 'header' }));
+          // Empty Mon-alignment placeholders
+          for (let i = 0; i < offset; i++) cells.push({ level: -1, label: '', type: 'empty' });
+          // Day cells with DD label
           for (let i = 1; i <= days; i++) {
             const s = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-            cells.push(s > todayStr ? 0 : (done.has(s) ? 4 : 0));
+            cells.push({ level: s > todayStr ? 0 : (done.has(s) ? 4 : 0), label: String(i), type: 'day' });
           }
           return cells;
         }
 
-        // Year: 52 cols × 7 rows, column-major (oldest week left → newest right)
-        // Start from Monday 51 weeks before currentMon
+        // Year: 52 cols × 7 rows, column-major — no labels (cells too small)
         const startMon = new Date(currentMon);
         startMon.setDate(currentMon.getDate() - 51 * 7);
         const cells = [];
@@ -132,10 +140,10 @@
             const day = new Date(startMon);
             day.setDate(startMon.getDate() + w * 7 + d);
             const s = ds(day);
-            cells.push(s > todayStr ? 0 : (done.has(s) ? 4 : 0));
+            cells.push({ level: s > todayStr ? 0 : (done.has(s) ? 4 : 0), label: '', type: 'day' });
           }
         }
-        return cells; // 364 cells, grid-auto-flow:column renders as 52 cols × 7 rows
+        return cells;
       },
 
       async toggleDone(h) {
