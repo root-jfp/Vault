@@ -105,13 +105,14 @@
         const currentMon = new Date(now);
         currentMon.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
 
-        const DAYS = ['M','T','W','T','F','S','S'];
+        const DAYS_LONG  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const DAYS_SHORT = ['M','T','W','T','F','S','S'];
 
         if (view === 'week') {
           return Array.from({ length: 7 }, (_, i) => {
             const d = new Date(currentMon); d.setDate(currentMon.getDate() + i);
             const s = ds(d);
-            return { level: s > todayStr ? 0 : (done.has(s) ? 4 : 0), label: DAYS[i], type: 'day' };
+            return { level: s > todayStr ? 0 : (done.has(s) ? 4 : 0), label: DAYS_LONG[i], type: 'day' };
           });
         }
 
@@ -121,7 +122,7 @@
           const firstDow = new Date(y, m, 1).getDay();
           const offset = firstDow === 0 ? 6 : firstDow - 1;
           // Weekday header row
-          const cells = DAYS.map(l => ({ level: 0, label: l, type: 'header' }));
+          const cells = DAYS_SHORT.map(l => ({ level: 0, label: l, type: 'header' }));
           // Empty Mon-alignment placeholders
           for (let i = 0; i < offset; i++) cells.push({ level: -1, label: '', type: 'empty' });
           // Day cells with DD label
