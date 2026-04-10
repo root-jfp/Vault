@@ -1,0 +1,11 @@
+services:
+  vault:
+    build: .
+    ports:
+      - "5100:8080"
+    volumes:
+      - vault-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  vault-data:

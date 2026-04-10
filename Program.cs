@@ -9,8 +9,11 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     WebRootPath = ".",
 });
 
+var dbPath = Environment.GetEnvironmentVariable("VAULT_DB_PATH")
+    ?? Path.Combine(AppContext.BaseDirectory, "vault.db");
+
 builder.Services.AddDbContext<VaultDbContext>(options =>
-    options.UseSqlite($"Data Source={Path.Combine(AppContext.BaseDirectory, "vault.db")}"));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 64 * 1024);

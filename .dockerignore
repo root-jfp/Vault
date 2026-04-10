@@ -1,0 +1,14 @@
+bin/
+obj/
+.git/
+.vs/
+*.md
+vault.db
+vault.db-shm
+vault.db-wal
+vault-run.log
+_*.txt
+_*.py
+_*.json
+MoonVault_pa_test_ps.txt
+new_pageapp.txt
