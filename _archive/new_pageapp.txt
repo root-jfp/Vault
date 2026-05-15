@@ -1,0 +1,75 @@
+<script>
+function pageApp() {
+  return {
+    // UI state
+    dashboardLoading: true,
+    taskTab: 'all',
+    calTab: 'week',
+    configuratorOpen: false,
+    moreOpen: false,
+    userMenuOpen: false,
+    habitToast: { show: false, name: '' },
+    _toastTimer: null,
+
+    // API data slices — all start empty; init() fills them from real endpoints
+    habits: [],
+    taskCols: [],
+    projects: [],
+    calWeek: [],
+    calDayEvents: [],
+    birthdays: [],
+    budget: { totalSpent: 0, totalBudget: 0, totalRemaining: 0, pct: 0, categories: [] },
+    notes: [],
+    shopping: { itemCount: 0, doneCount: 0, items: [] },
+    meals: { breakfast: null, lunch: null, dinner: null },
+    pantry: { low: 0, expiring: 0, out: 0 },
+    chores: [],
+    meters: [],
+    gamification: { name: 'José', xp: 0, level: 1, xpToNext: 100, xpCurrent: 0, pct: 0, leaderboard: [] },
+    waterHealth: { todayMl: 0, goalMl: 2000, pct: 0, glassesDone: 0 },
+    performance: { productivityScore: 0 },
+    maintenance: [],
+
+    // Weather — static until external API integrated
+    weather: {
+      temp: 18, cond: 'Partly cloudy', loc: 'Lisbon, PT',
+      humidity: 65, wind: 12, windDir: 'NW',
+      forecast: [
+        { day:'Tue', high:19, low:12, icon:'sun' },
+        { day:'Wed', high:16, low:10, icon:'rain' },
+        { day:'Thu', high:20, low:13, icon:'cloud-sun' },
+        { day:'Fri', high:22, low:14, icon:'sun' },
+        { day:'Sat', high:21, low:13, icon:'wind' },
+      ]
+    },
+
+    widgets: {
+      streak: true, daily: true, tasks: true, projects: true, calendar: true,
+      weather: false, 'quick-actions': false, 'daily-agenda': false,
+      'streak-gamification': false, 'water-health': false, 'fitness-weight': false,
+      birthdays: false, budget: false, notes: false, shopping: false,
+      'meal-planner': false, 'inventory-pantry': false, 'chore-rotation': false,
+      'utility-meters': false,
+    },
+
+    widgetList: [
+      { key:'streak',              label:'Habit streak & goals' },
+      { key:'daily',               label:'Daily habit tracking' },
+      { key:'tasks',               label:'Tasks' },
+      { key:'projects',            label:'Project manager' },
+      { key:'calendar',            label:'Calendar' },
+      { key:'weather',             label:'Weather' },
+      { key:'quick-actions',       label:'Quick actions' },
+      { key:'daily-agenda',        label:'Daily agenda' },
+      { key:'streak-gamification', label:'Streak & gamification' },
+      { key:'water-health',        label:'Water & health' },
+      { key:'fitness-weight',      label:'Fitness & weight' },
+      { key:'birthdays',           label:'Birthdays' },
+      { key:'budget',              label:'Budget' },
+      { key:'notes',               label:'Notes' },
+      { key:'shopping',            label:'Shopping list' },
+      { key:'meal-planner',        label:'Meal planner' },
+      { key:'inventory-pantry',    label:'Inventory & pantry' },
+      { key:'chore-rotation',      label:'Chore rotation' },
+      { key:'utility-meters',      label:'Utility meters' },
+    ],

@@ -8,18 +8,18 @@
   /* ---------- Auto-detect current page ---------- */
   var path = window.location.pathname.split('/').pop() || '';
   var PAGE_MAP = {
-    'vault_dashboard_v5_wide_scroll.html': 'home',
-    'vault_habits.html': 'habits',
-    'vault_habit_new.html': 'habits',
-    'vault_habit_edit.html': 'habits',
-    'vault_tasks.html': 'tasks',
-    'vault_task_new.html': 'tasks',
-    'vault_maintenance.html': 'maint',
-    'vault_projects.html': 'more',
-    'vault_calendar.html': 'more',
-    'vault_performance.html': 'more',
-    'vault_templates.html': 'more',
-    'vault_achievements.html': 'more'
+    'index.html': 'home',
+    'habits.html': 'habits',
+    'habit-new.html': 'habits',
+    'habit-edit.html': 'habits',
+    'tasks.html': 'tasks',
+    'task-new.html': 'tasks',
+    'maintenance.html': 'maint',
+    'projects.html': 'more',
+    'calendar.html': 'more',
+    'performance.html': 'more',
+    'templates.html': 'more',
+    'achievements.html': 'more'
   };
   var currentNav = PAGE_MAP[path] || 'home';
 

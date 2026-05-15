@@ -57,20 +57,11 @@ var VAULT_GAMIFICATION = (function () {
   ];
 
   /* ---------- USER STATE ---------- */
+  // Mutable state: populated from /api/gamification/leaderboard and /api/gamification/xp-history.
+  // Starts at 0 so an empty/offline render is truthful rather than fabricated.
   var userState = {
-    totalXp: 2780,
-    xpHistory: [
-      { date: '2026-04-06', action: 'Completed "Eat healthy"', xp: 10, type: 'habit' },
-      { date: '2026-04-06', action: 'Completed "6hr deep work"', xp: 10, type: 'habit' },
-      { date: '2026-04-05', action: 'Completed "Water plants"', xp: 15, type: 'maint' },
-      { date: '2026-04-05', action: 'Completed 3 habits', xp: 30, type: 'habit' },
-      { date: '2026-04-04', action: 'Moved "Set up email automation" to Done', xp: 40, type: 'task' },
-      { date: '2026-04-04', action: '7-day streak bonus', xp: 75, type: 'streak' },
-      { date: '2026-04-03', action: 'Completed "Clean fridge"', xp: 15, type: 'maint' },
-      { date: '2026-04-03', action: 'Completed 4 habits', xp: 40, type: 'habit' },
-      { date: '2026-04-02', action: 'Moved "Content calendar April" to Done', xp: 70, type: 'task' },
-      { date: '2026-04-01', action: 'Perfect Day badge unlocked!', xp: 50, type: 'streak' }
-    ]
+    totalXp: 0,
+    xpHistory: []
   };
 
   /* ---------- getLevelInfo ---------- */
@@ -117,7 +108,7 @@ var VAULT_GAMIFICATION = (function () {
     html += '<div class="gm-sidebar-xp">' + info.totalXp.toLocaleString() + ' XP &middot; ' + info.progress + '%</div>';
     html += '</div></div>';
     html += '<div class="gm-xp-bar"><div class="gm-xp-fill" style="width:' + info.progress + '%"></div></div>';
-    html += '<a href="vault_achievements.html" class="gm-sidebar-link">' + getUnlockedCount() + '/' + BADGES.length + ' badges &rarr;</a>';
+    html += '<a href="achievements.html" class="gm-sidebar-link">' + getUnlockedCount() + '/' + BADGES.length + ' badges &rarr;</a>';
     html += '</div>';
     container.innerHTML = html;
   }
@@ -169,12 +160,37 @@ var VAULT_GAMIFICATION = (function () {
   };
 })();
 
+/* Load real XP from the backend leaderboard; falls back to 0 on failure. */
+function loadGamificationState() {
+  return fetch('/api/gamification/leaderboard?period=all')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
+      if (!data || !Array.isArray(data.users)) return;
+      // Default user = José (id 1). Later: look up from UserContext cookie.
+      var me = data.users.find(function (u) { return u.userId === 1; }) || data.users[0];
+      if (me) {
+        VAULT_GAMIFICATION.userState.totalXp = me.totalXp || 0;
+      }
+      return fetch('/api/gamification/xp-history?days=30');
+    })
+    .then(function (r) { return r && r.ok ? r.json() : null; })
+    .then(function (hist) {
+      if (Array.isArray(hist)) VAULT_GAMIFICATION.userState.xpHistory = hist;
+    })
+    .catch(function () { /* keep defaults on error */ });
+}
+
 /* Auto-init sidebar widget on DOMContentLoaded */
 (function () {
   function initGamificationWidget() {
     var container = document.getElementById('gm-sidebar-container');
     if (container) {
+      // Render immediately with zeros to avoid flash-of-hardcoded content,
+      // then re-render after the API populates the user state.
       VAULT_GAMIFICATION.renderSidebarWidget(container);
+      loadGamificationState().then(function () {
+        VAULT_GAMIFICATION.renderSidebarWidget(container);
+      });
     }
   }
   if (document.readyState === 'loading') {

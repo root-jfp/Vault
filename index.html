@@ -157,6 +157,9 @@
 /* Habit toast */
 .habit-toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--ac);color:#fff;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.45);pointer-events:none;transition:opacity .2s,transform .2s}
 </style>
+<!-- nova-bridge -->
+<link rel="stylesheet" href="nova-bridge.css">
+<script src="nova-bridge.js" defer></script>
 </head>
 <body x-data="pageApp()" x-cloak style="overflow:hidden">
 
@@ -186,15 +189,24 @@
       <div class="lblock-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Performance</div>
       <div class="lcard">
         <div style="font-size:11px;font-weight:600;margin-bottom:3px">Performance overview</div>
-        <div class="perf-date">Monday, 6 April 2026 · Week 15</div>
+        <div class="perf-date" x-text="perfDateLabel()"></div>
         <div class="perf-section">Today's tasks</div>
-        <div class="perf-item"><div class="pdot" style="background:var(--ac)"></div>Fix IFS posting control</div>
-        <div class="perf-item"><div class="pdot" style="background:var(--inf)"></div>Study ASP.NET middleware</div>
-        <div class="perf-item"><div class="pdot" style="background:var(--pu)"></div>FERRO workout session</div>
+        <template x-for="t in perfTodayTasks()" :key="t.id">
+          <div class="perf-item"><div class="pdot" :style="'background:' + (t.color || 'var(--ac)')"></div><span x-text="t.title"></span></div>
+        </template>
+        <div x-show="perfTodayTasks().length === 0" class="perf-item" style="color:var(--tx3)">No tasks due today</div>
         <div class="perf-section">Due &amp; upcoming</div>
-        <div class="perf-item" style="color:var(--dntx)"><div class="pdot" style="background:var(--dn)"></div>Car oil change</div>
-        <div class="perf-item" style="color:var(--wntx)"><div class="pdot" style="background:var(--wn)"></div>Review invoice module</div>
-        <div class="perf-footer"><div>0 tasks overdue last week.</div><div>6 upcoming tasks this month.</div></div>
+        <template x-for="t in perfUpcomingTasks()" :key="t.id">
+          <div class="perf-item" :style="'color:' + (t.overdue ? 'var(--dntx)' : 'var(--wntx)')">
+            <div class="pdot" :style="'background:' + (t.overdue ? 'var(--dn)' : 'var(--wn)')"></div>
+            <span x-text="t.title"></span>
+          </div>
+        </template>
+        <div x-show="perfUpcomingTasks().length === 0" class="perf-item" style="color:var(--tx3)">Nothing due soon</div>
+        <div class="perf-footer">
+          <div x-text="perfOverdueLabel()"></div>
+          <div x-text="perfUpcomingLabel()"></div>
+        </div>
       </div>
     </div>
 
@@ -476,12 +488,21 @@
     <div class="sec" x-show="widgets['daily-agenda']" data-widget="daily-agenda">
       <div class="sec-hdr">
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--inf)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Daily agenda — Monday 6 Apr
+        <span x-text="'Daily agenda — ' + agendaHeaderLabel()"></span>
       </div>
-      <div class="agenda-slot"><div class="agenda-time">09:00</div><div class="agenda-dot" style="background:var(--inf)"></div><div class="agenda-content"><div class="agenda-title">Study ASP.NET middleware</div><div class="agenda-meta">Task · FERRO project</div></div></div>
-      <div class="agenda-slot"><div class="agenda-time">11:00</div><div class="agenda-dot" style="background:var(--ac)"></div><div class="agenda-content"><div class="agenda-title">Fix IFS posting control</div><div class="agenda-meta">Task · Vault App</div></div></div>
-      <div class="agenda-slot"><div class="agenda-time">14:00</div><div class="agenda-dot" style="background:var(--pu)"></div><div class="agenda-content"><div class="agenda-title">FERRO workout session</div><div class="agenda-meta">Habit · 3x week</div></div></div>
-      <div class="agenda-slot"><div class="agenda-time">19:00</div><div class="agenda-dot" style="background:var(--wn)"></div><div class="agenda-content"><div class="agenda-title">Read 30 min</div><div class="agenda-meta">Habit · Daily</div></div></div>
+      <template x-for="ev in calDayEvents" :key="ev.time + ev.title">
+        <div class="agenda-slot">
+          <div class="agenda-time" x-text="ev.time"></div>
+          <div class="agenda-dot" :style="'background:' + (ev.color || 'var(--inf)')"></div>
+          <div class="agenda-content">
+            <div class="agenda-title" x-text="ev.title"></div>
+            <div class="agenda-meta" x-text="ev.meta"></div>
+          </div>
+        </div>
+      </template>
+      <div x-show="calDayEvents.length === 0" class="agenda-slot" style="color:var(--tx3)">
+        <div class="agenda-content">No agenda items for today</div>
+      </div>
     </div>
 
     <!-- 9. STREAK GAMIFICATION widget (hidden) -->
@@ -815,6 +836,61 @@
 <script>
 function pageApp() {
   return {
+    perfDateLabel() {
+      const d = new Date();
+      const weekday = d.toLocaleString('en-US', { weekday: 'long' });
+      const month = d.toLocaleString('en-US', { month: 'long' });
+      const onejan = new Date(d.getFullYear(), 0, 1);
+      const week = Math.ceil(((d - onejan) / 86400000 + onejan.getDay() + 1) / 7);
+      return `${weekday}, ${d.getDate()} ${month} ${d.getFullYear()} · Week ${week}`;
+    },
+    agendaHeaderLabel() {
+      const d = new Date();
+      const weekday = d.toLocaleString('en-US', { weekday: 'long' });
+      const month = d.toLocaleString('en-US', { month: 'short' });
+      return `${weekday} ${d.getDate()} ${month}`;
+    },
+    _flatTasks() {
+      return (this.taskCols || [])
+        .flatMap(c => (c.tasks || c.Tasks || []).map(t => ({
+          id: t.id ?? t.Id,
+          title: t.title || t.Title || '',
+          dueDate: t.dueDate || t.DueDate || null,
+          colName: c.name || c.Name || '',
+          color: t.color || t.Color || c.color || c.Color || 'var(--inf)',
+        })));
+    },
+    perfTodayTasks() {
+      const todayIso = new Date().toISOString().split('T')[0];
+      return this._flatTasks()
+        .filter(t => t.dueDate && t.dueDate.slice(0, 10) === todayIso && t.colName !== 'Done')
+        .slice(0, 5);
+    },
+    perfUpcomingTasks() {
+      const todayIso = new Date().toISOString().split('T')[0];
+      return this._flatTasks()
+        .filter(t => t.dueDate && t.colName !== 'Done')
+        .map(t => ({ ...t, overdue: t.dueDate.slice(0, 10) < todayIso }))
+        .filter(t => t.overdue || (t.dueDate.slice(0, 10) > todayIso))
+        .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+        .slice(0, 5);
+    },
+    perfOverdueLabel() {
+      const todayIso = new Date().toISOString().split('T')[0];
+      const n = this._flatTasks().filter(t => t.dueDate && t.colName !== 'Done' && t.dueDate.slice(0, 10) < todayIso).length;
+      return `${n} task${n === 1 ? '' : 's'} overdue.`;
+    },
+    perfUpcomingLabel() {
+      const now = new Date();
+      const todayIso = now.toISOString().split('T')[0];
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      const n = this._flatTasks().filter(t => {
+        if (!t.dueDate || t.colName === 'Done') return false;
+        const d = t.dueDate.slice(0, 10);
+        return d > todayIso && d <= endOfMonth;
+      }).length;
+      return `${n} upcoming task${n === 1 ? '' : 's'} this month.`;
+    },
     dashboardLoading: true,
     taskTab: 'all',
     calTab: 'week',
@@ -938,6 +1014,7 @@ function pageApp() {
           };
         }) : [];
         try { localStorage.setItem('vault_habits', JSON.stringify(this.habits)); } catch(e) {}
+        this.loadHeatmaps();
       } else {
         if (local.length) this.habits = local.map(h => ({ ...h, justDone: false, canUndo: false }));
         console.warn('[Vault] Habits API unavailable:', results[0].reason);
@@ -1455,34 +1532,48 @@ function pageApp() {
       }
       return this.flatTasks;
     },
-    // Returns flat 35-cell (5 weeks × 7 days) monthly calendar for April 2026.
-    // April 1, 2026 = Wednesday (DOW 3). April has 30 days.
-    // Bool habits: level 0 (not done) or 4 (done).
-    // Quant habits: level 0-4 based on how much of daily target was logged.
-    getCalMonth(habit) {
-      const cells = [];
-      const startDow = 3; // Wednesday
-      const daysInMonth = 30;
-      const today = 6; // April 6
-      for (let i = 0; i < startDow; i++) cells.push({ empty: true });
-      for (let day = 1; day <= daysInMonth; day++) {
-        const isToday = day === today;
-        const future = day > today;
-        let level = 0;
-        if (!future) {
-          const n = (habit.id * 997 + day * 41) % 100;
-          if (habit.type === 'quant') {
-            // Vary 0-4: represents 0%, ~25%, ~50%, ~75%, 100% of target logged
-            const raw = (habit.id * 1123 + day * 67) % 100;
-            level = raw < 15 ? 0 : raw < 35 ? 1 : raw < 55 ? 2 : raw < 75 ? 3 : 4;
-          } else {
-            level = n >= (100 - habit.pct) ? 4 : 0;
-          }
+    // Heatmap cache: { [habitId]: [ {day, empty, isToday, future, level}, ... ] }
+    heatmaps: {},
+
+    // Fetch per-habit heatmap cells from the backend for the current month.
+    async loadHeatmaps() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const next = { ...this.heatmaps };
+      await Promise.all((this.habits || []).map(async (h) => {
+        try {
+          const res = await fetch(`/api/habits/${h.id}/heatmap?year=${year}&month=${month}`);
+          if (!res.ok) { next[h.id] = []; return; }
+          const data = await res.json();
+          next[h.id] = Array.isArray(data) ? data : [];
+        } catch (e) {
+          next[h.id] = [];
         }
-        cells.push({ empty: false, day, isToday, future, level });
+      }));
+      this.heatmaps = next;
+    },
+
+    // Returns the backend-provided 35-cell month grid, padded to 35 if shorter.
+    getCalMonth(habit) {
+      const cells = (this.heatmaps && this.heatmaps[habit.id]) || [];
+      if (!cells.length) {
+        // Backend not reachable yet — render an empty shell anchored to current month.
+        const now = new Date();
+        const startDow = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const today = now.getDate();
+        const out = [];
+        for (let i = 0; i < startDow; i++) out.push({ empty: true });
+        for (let d = 1; d <= daysInMonth; d++) {
+          out.push({ empty: false, day: d, isToday: d === today, future: d > today, level: 0 });
+        }
+        while (out.length < 35) out.push({ empty: true });
+        return out;
       }
-      while (cells.length < 35) cells.push({ empty: true });
-      return cells;
+      const padded = cells.slice();
+      while (padded.length < 35) padded.push({ empty: true });
+      return padded;
     },
   }
 }

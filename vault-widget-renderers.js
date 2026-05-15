@@ -16,11 +16,15 @@
     { name: 'Drink water', color: 'var(--inf)', freq: 'Daily', type: 'quantitative', uom: 'ml', goal: 2000, increment: 250, done: [], progress: { 1: 2000, 2: 1500, 3: 2000, 4: 750, 5: 2000, 6: 500 } },
     { name: 'Study', color: 'var(--wn)', freq: 'Daily', type: 'quantitative', uom: 'hrs', goal: 6, increment: 0.5, done: [], progress: { 1: 6, 2: 4, 3: 5.5, 4: 6, 5: 3, 6: 2 } }
   ];
-  var startDay = 3, total = 30, today = 6;
+  var _now = new Date();
+  var startDay = new Date(_now.getFullYear(), _now.getMonth(), 1).getDay();
+  var total = new Date(_now.getFullYear(), _now.getMonth() + 1, 0).getDate();
+  var today = _now.getDate();
 
+  var _todayISO = _now.toISOString().split('T')[0];
   var tasks = [
-    { id: 0, title: 'Notion template', description: 'Create a comprehensive Notion template for productivity tracking and content planning workflow.', column: 'Productivity Vault', columnColor: 'var(--ac)', label: 'Content creation', labelBg: 'var(--infbg)', labelTx: 'var(--inftx)', status: 'Not started', statusBg: 'var(--dnbg)', statusTx: 'var(--dntx)', due: '2026-04-06', dueLabel: 'due today!', priority: 'High', project: 'Notion template' },
-    { id: 1, title: 'Content creation', description: 'Plan and draft content pieces for the week including social media posts and blog articles.', column: 'Email', columnColor: 'var(--inf)', label: null, labelBg: null, labelTx: null, status: 'Not started', statusBg: 'var(--dnbg)', statusTx: 'var(--dntx)', due: '2026-04-06', dueLabel: 'due today!', priority: 'Medium', project: 'Content creation' },
+    { id: 0, title: 'Notion template', description: 'Create a comprehensive Notion template for productivity tracking and content planning workflow.', column: 'Productivity Vault', columnColor: 'var(--ac)', label: 'Content creation', labelBg: 'var(--infbg)', labelTx: 'var(--inftx)', status: 'Not started', statusBg: 'var(--dnbg)', statusTx: 'var(--dntx)', due: _todayISO, dueLabel: 'due today!', priority: 'High', project: 'Notion template' },
+    { id: 1, title: 'Content creation', description: 'Plan and draft content pieces for the week including social media posts and blog articles.', column: 'Email', columnColor: 'var(--inf)', label: null, labelBg: null, labelTx: null, status: 'Not started', statusBg: 'var(--dnbg)', statusTx: 'var(--dntx)', due: _todayISO, dueLabel: 'due today!', priority: 'Medium', project: 'Content creation' },
     { id: 2, title: 'Learn Framer', description: 'Watch Framer tutorial videos and practice building interactive prototypes and animations.', column: 'Framer 2nd video', columnColor: 'var(--wn)', label: null, labelBg: null, labelTx: null, status: 'Not started', statusBg: 'var(--dnbg)', statusTx: 'var(--dntx)', due: null, dueLabel: null, priority: 'Low', project: 'Learn Framer' }
   ];
 
@@ -85,8 +89,8 @@
   function renderStreak(container, config, instanceId) {
     var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
     var html = '<div class="sec-hdr">' + checkSvg + ' Habit streak &amp; goal tracking';
-    html += '<a href="vault_habits.html" class="sec-new" style="text-decoration:none;color:inherit">Manage</a>';
-    html += '<a href="vault_habit_new.html" class="sec-new" style="text-decoration:none;color:inherit">+ New</a></div>';
+    html += '<a href="habits.html" class="sec-new" style="text-decoration:none;color:inherit">Manage</a>';
+    html += '<a href="habit-new.html" class="sec-new" style="text-decoration:none;color:inherit">+ New</a></div>';
     html += '<div class="hscroll-wrap" data-scroll="streak"><button class="arrow left hidden" data-dir="-1">&lt;</button><div class="hscroll" id="streak-scroll">';
 
     habits.forEach(function (x) {
@@ -102,7 +106,7 @@
         html += '<div class="hcard"><div class="hcard-top"><div class="hcard-dot" style="background:' + x.color + '"></div><div class="hcard-name">' + x.name + '</div><span class="type-badge bool">bool</span></div><div class="hcard-freq">' + x.freq + '</div>' + cal(x) + '<div class="hcard-check">Completed today</div><div class="hcard-pbar"><div class="hcard-pbar-fill" style="width:' + pct + '%;background:' + x.color + '"></div></div><div class="hcard-stats"><div>Progress: ' + pct + '%</div><div class="hi">Streak: ' + streak + '</div></div></div>';
       }
     });
-    html += '<a href="vault_habit_new.html" class="sec-newpage-btn" style="flex:1 1 150px;min-width:150px;max-width:185px;align-self:stretch;text-decoration:none;color:inherit">+ New habit</a>';
+    html += '<a href="habit-new.html" class="sec-newpage-btn" style="flex:1 1 150px;min-width:150px;max-width:185px;align-self:stretch;text-decoration:none;color:inherit">+ New habit</a>';
     html += '</div><button class="arrow right" data-dir="1">&gt;</button></div>';
     container.innerHTML = html;
   }
@@ -123,7 +127,7 @@
         html += '<div class="' + cardCls + '" data-habit-idx="' + idx + '">';
         html += '<div class="dhcard-top"><div class="dhcard-name"><div style="width:7px;height:7px;border-radius:50%;background:' + x.color + ';flex-shrink:0"></div>' + x.name + '</div></div>';
         html += '<div class="dhcard-freq">' + x.freq + ' · ' + x.uom + '</div>';
-        html += '<div style="font-size:9px;color:var(--tx3);margin-bottom:3px">Today &gt; 6/April/2026</div>';
+        html += '<div style="font-size:9px;color:var(--tx3);margin-bottom:3px">Today &gt; ' + _now.getDate() + '/' + _now.toLocaleString('en-US', { month: 'long' }) + '/' + _now.getFullYear() + '</div>';
         html += '<div class="stepper" data-idx="' + idx + '">';
         html += '<button class="stepper-btn" data-action="dec">\u2212</button>';
         html += '<div class="stepper-val"><span class="stepper-cur">' + todayAmt + '</span><span class="uom"> / ' + x.goal + x.uom + '</span></div>';
@@ -142,13 +146,13 @@
         html += '<div class="' + cardCls + '" data-habit="' + x.name + '">';
         html += '<div class="dhcard-top"><div class="dhcard-name"><div style="width:7px;height:7px;border-radius:50%;background:' + x.color + ';flex-shrink:0"></div>' + x.name + '</div><div class="' + checkCls + '" data-habit="' + x.name + '">' + checkSvg + '</div></div>';
         html += '<div class="dhcard-freq">' + x.freq + '</div>';
-        html += '<div style="font-size:9px;color:var(--tx3);margin-bottom:3px">Today &gt; 6/April/2026</div>';
+        html += '<div style="font-size:9px;color:var(--tx3);margin-bottom:3px">Today &gt; ' + _now.getDate() + '/' + _now.toLocaleString('en-US', { month: 'long' }) + '/' + _now.getFullYear() + '</div>';
         html += cal(x);
         html += '<div class="hcard-stats" style="margin-top:6px"><div class="hi">Streak: ' + dstreak + '</div><div>' + (isDone ? 'Completed today' : '') + '</div></div>';
         html += '</div>';
       }
     });
-    html += '<a href="vault_habit_new.html" class="sec-newpage-btn" style="flex:1 1 150px;min-width:150px;max-width:185px;align-self:stretch;text-decoration:none;color:inherit">+ New habit</a>';
+    html += '<a href="habit-new.html" class="sec-newpage-btn" style="flex:1 1 150px;min-width:150px;max-width:185px;align-self:stretch;text-decoration:none;color:inherit">+ New habit</a>';
     html += '</div><button class="arrow right" data-dir="1">&gt;</button></div>';
     container.innerHTML = html;
   }
@@ -176,7 +180,7 @@
       var tierDot = tier === 'overdue' ? 'var(--dn)' : tier === 'today' ? 'var(--wn)' : 'var(--ac)';
       var tierTx  = tier === 'overdue' ? 'var(--dntx)' : tier === 'today' ? 'var(--wntx)' : 'var(--actx)';
       var tierLbl = tier === 'overdue' ? 'Overdue' : tier === 'today' ? 'Today' : 'Upcoming';
-      var h = '<a href="vault_task_edit.html?id=' + t.id + '" class="tcol task-dash-card" style="text-decoration:none;color:inherit;cursor:pointer;display:block">';
+      var h = '<a href="task-edit.html?id=' + t.id + '" class="tcol task-dash-card" style="text-decoration:none;color:inherit;cursor:pointer;display:block">';
       h += '<div class="tcol-name"><div class="tdot" style="background:' + tierDot + '"></div><span style="color:' + tierTx + '">' + tierLbl + '</span></div>';
       h += '<div class="titem">';
       h += '<div style="font-weight:600;margin-bottom:4px">' + t.title + '</div>';
@@ -211,7 +215,7 @@
         var msg = tabName === 'today' ? 'No overdue or today tasks' : tabName === 'upcoming' ? 'Nothing due this week' : 'No completed tasks';
         h = '<div class="tcol" style="color:var(--tx3);font-size:11px;padding:12px;text-align:center">' + msg + '</div>';
       }
-      h += '<a href="vault_task_new.html" class="sec-newpage-btn tcol-size" style="text-decoration:none">+ New task</a>';
+      h += '<a href="task-new.html" class="sec-newpage-btn tcol-size" style="text-decoration:none">+ New task</a>';
       return h;
     }
 
@@ -225,8 +229,8 @@
     else if (tdCnt > 0) tab1 += ' (' + tdCnt + ')';
 
     var html = '<div class="sec-hdr">' + icon + ' Tasks';
-    html += '<a href="vault_tasks.html" class="sec-new" style="text-decoration:none;color:inherit">Manage</a>';
-    html += '<a href="vault_task_new.html" class="sec-new" style="text-decoration:none;color:inherit">+ New</a></div>';
+    html += '<a href="tasks.html" class="sec-new" style="text-decoration:none;color:inherit">Manage</a>';
+    html += '<a href="task-new.html" class="sec-new" style="text-decoration:none;color:inherit">+ New</a></div>';
     html += '<div class="tabs">';
     html += '<span class="tab active" data-ttab="today">'    + tab1 + '</span>';
     html += '<span class="tab" data-ttab="upcoming">Upcoming (' + upCnt + ')</span>';

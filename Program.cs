@@ -48,13 +48,24 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
+var novaOriginRaw = Environment.GetEnvironmentVariable("VAULT_NOVA_ORIGIN") ?? "localhost:8080";
+if (!System.Text.RegularExpressions.Regex.IsMatch(novaOriginRaw, @"^[\w.\-]+(:\d{1,5})?$"))
+    throw new InvalidOperationException("VAULT_NOVA_ORIGIN must be host[:port] — got: " + novaOriginRaw);
+var novaOrigin = novaOriginRaw;
+var csp =
+    "default-src 'self'; " +
+    "script-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: blob:; " +
+    "media-src 'self' blob:; " +
+    $"connect-src 'self' https://cdn.tailwindcss.com https://api.open-meteo.com ws://{novaOrigin} wss://{novaOrigin} http://{novaOrigin} https://{novaOrigin};";
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    context.Response.Headers.Append("Content-Security-Policy",
-        "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.tailwindcss.com https://api.open-meteo.com;");
+    context.Response.Headers.Append("Content-Security-Policy", csp);
     await next();
 });
 
@@ -75,7 +86,7 @@ app.UseStaticFiles(new StaticFileOptions
     OnPrepareResponse = ctx =>
     {
         var ext = Path.GetExtension(ctx.File.Name);
-        if (ext is ".html")
+        if (ext is ".html" or ".js" or ".css")
             ctx.Context.Response.Headers.CacheControl = "no-cache";
     }
 });
